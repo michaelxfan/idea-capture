@@ -787,32 +787,46 @@ function inferLabel(s,d) { return s>=80?'High leverage':s>=65?'Quick win':d==='M
 // ═══════════════════════════════════════
 // STRUCTURED TEMPLATE PARSING
 // ═══════════════════════════════════════
-function parseStructuredTemplate(raw) {
-  const lines = raw.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
-  const result = {};
-  // Alias map: normalized key → canonical field
-  const ALIASES = {
-    'task name':'taskName','task':'taskName','title':'taskName',
-    'activation energy':'activationEnergy','ae':'activationEnergy','energy':'activationEnergy',
-    'duration':'duration','time':'duration','timebox':'duration',
-    'urgency':'urgency',
-    'importance':'importance',
-    'why':'why','reason':'why',
-    'how':'how','plan':'how','approach':'how','first step':'how'
-  };
-  let matched = 0;
+const STRUCT_ALIASES = {
+  'task name':'taskName','task':'taskName','title':'taskName',
+  'activation energy':'activationEnergy','ae':'activationEnergy','energy':'activationEnergy',
+  'duration':'duration','time':'duration','timebox':'duration',
+  'urgency':'urgency',
+  'importance':'importance',
+  'why':'why','reason':'why',
+  'how':'how','plan':'how','approach':'how','first step':'how'
+};
+
+function isStructuredBlock(text) {
+  const lines = text.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
+  let hits = 0;
   for (const line of lines) {
-    const colonIdx = line.indexOf(':');
-    if (colonIdx > 0) {
-      const key = line.substring(0, colonIdx).toLowerCase().trim();
-      const val = line.substring(colonIdx + 1).trim();
-      const canonical = ALIASES[key];
-      if (canonical && val) { result[canonical] = val; matched++; }
+    const ci = line.indexOf(':');
+    if (ci > 0) {
+      const key = line.substring(0, ci).toLowerCase().trim();
+      if (STRUCT_ALIASES[key]) hits++;
     }
   }
-  // Need at least taskName to consider it structured
-  if (!result.taskName || matched < 2) return null;
+  return hits >= 2;
+}
+
+function parseStructuredBlock(text) {
+  const lines = text.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
+  const result = {};
+  for (const line of lines) {
+    const ci = line.indexOf(':');
+    if (ci > 0) {
+      const key = line.substring(0, ci).toLowerCase().trim();
+      const val = line.substring(ci + 1).trim();
+      const canonical = STRUCT_ALIASES[key];
+      if (canonical && val) result[canonical] = val;
+    }
+  }
   return result;
+}
+
+function buildItemFromStructuredData(parsed, rawText) {
+  return buildFromTemplate(parsed);
 }
 
 function buildFromTemplate(tmpl) {
@@ -891,11 +905,16 @@ function generateExecutionPlanFromHow(how, taskName, dest) {
 function parseInput(raw) {
   const t=raw.trim(); if(!t) return [];
 
-  // Try structured template first
-  const tmpl = parseStructuredTemplate(t);
-  if (tmpl) return [buildFromTemplate(tmpl)];
+  // ── STRUCTURED INPUT PATH ──
+  if (isStructuredBlock(t)) {
+    const parsed = parseStructuredBlock(t);
+    if (parsed.taskName) {
+      console.log('[IdeaCapture] Structured input detected:', parsed);
+      return [buildItemFromStructuredData(parsed, t)];
+    }
+  }
 
-  // Fallback to existing unstructured parsing
+  // ── FALLBACK: unstructured messy-note parsing ──
   let lines=t.split(/\n+/).map(l=>l.trim()).filter(Boolean);
   let exp=[];
   for(const line of lines){
