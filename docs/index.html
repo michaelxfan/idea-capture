@@ -812,8 +812,17 @@ function isStructuredBlock(text) {
   return matches && matches.length >= 2;
 }
 
-function normalizeStructuredKey(rawKey) {
-  return STRUCT_ALIASES[rawKey] || null;
+function normalizeStructuredKey(key) {
+  key = key.toLowerCase();
+  if (key.includes('task')) return 'taskName';
+  if (key.includes('title')) return 'taskName';
+  if (key.includes('activation') || key === 'ae' || key.includes('energy')) return 'activationEnergy';
+  if (key.includes('duration') || key.includes('time')) return 'duration';
+  if (key.includes('urgency')) return 'urgency';
+  if (key.includes('importance')) return 'importance';
+  if (key.includes('why') || key.includes('reason')) return 'why';
+  if (key.includes('how') || key.includes('plan') || key.includes('approach')) return 'how';
+  return null;
 }
 
 function parseStructuredBlock(text) {
