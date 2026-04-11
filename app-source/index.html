@@ -400,7 +400,7 @@ how:"></textarea>
         </div>
         <div class="cap-acts">
           <button class="btn" onclick="clearCap()">Clear</button>
-          <button class="btn btn-p" onclick="processNotes()">Process</button>
+          <button class="btn btn-p" id="process-btn" onclick="processNotes()">Process</button>
         </div>
       </div>
     </div>
@@ -1240,10 +1240,14 @@ function sendAllAnn(){
 // PROCESS + RENDER MASTER
 // ═══════════════════════════════════════
 function processNotes() {
-  const raw=document.getElementById('cap-in').value;
-  if(!raw.trim()) return;
+  const capIn=document.getElementById('cap-in');
+  const raw=capIn.value;
+  if(!raw.trim()){ showToast('Enter a note first'); return; }
+
+  setProcessButtonState(true);
   const newItems=parseInput(raw);
-  if(!newItems.length) return;
+  if(!newItems.length){ setProcessButtonState(false); showToast('Nothing to process'); return; }
+
   // Merge with existing, checking for cross-session recurrence
   for(const ni of newItems){
     const existing=items.find(ei=>ei.status!=='killed'&&ei.status!=='rejected'&&similarity(ei.originalText,ni.originalText)>=.35);
@@ -1265,6 +1269,19 @@ function processNotes() {
   reScore();
   renderAll(); saveState();
   ['tp-bar','out-div','out-sec'].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+
+  // Success: clear input and confirm
+  capIn.value='';
+  setProcessButtonState(false);
+  const count=newItems.length;
+  showToast(`Captured${count>1?' '+count+' items':''} — processed`);
+}
+
+function setProcessButtonState(processing) {
+  const btn=document.getElementById('process-btn');
+  if(!btn) return;
+  if(processing){ btn.textContent='Processing...'; btn.disabled=true; }
+  else { btn.textContent='Process'; btn.disabled=false; }
 }
 
 function renderAll() {
