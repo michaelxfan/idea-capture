@@ -384,7 +384,8 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
   <!-- Capture -->
   <div class="section" id="cap-sec">
     <div class="cap-box">
-      <textarea id="cap-in" style="font-size:.82rem" placeholder="task name:
+      <textarea id="cap-in" style="font-size:.68rem" placeholder="task name:
+activation energy: low / medium / high
 duration:
 urgency: low / medium / high
 importance: low / medium / high
@@ -790,7 +791,7 @@ function parseStructuredTemplate(raw) {
   // Detect if input uses "field: value" format
   const lines = raw.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
   const fieldMap = {};
-  const KNOWN = ['task name','duration','urgency','importance','why','how'];
+  const KNOWN = ['task name','activation energy','duration','urgency','importance','why','how'];
   let matched = 0;
   for (const line of lines) {
     const m = line.match(/^([a-zA-Z\s]+?)\s*:\s*(.+)$/);
@@ -838,6 +839,7 @@ function buildFromTemplate(tmpl) {
     urgencyScore: 0, importanceScore: 0, score: 0, actionPriority: 0, label: '',
     createdAt: now, lastTouchedAt: now, firstSeenAt: now, lastActionAt: null, snoozeUntil: null,
     selected: false, annStatus: null, aiStatus: null,
+    activationEnergy: tmpl['activation energy'] ? tmpl['activation energy'].toLowerCase() : null,
     executionSteps: tmpl.how
       ? generateExecutionPlanFromHow(tmpl.how, taskName, d)
       : generateExecutionPlan(taskName, d),
@@ -849,7 +851,9 @@ function buildFromTemplate(tmpl) {
   it.urgencyScore = urgHint !== null ? urgHint : s.urg;
   it.importanceScore = impHint !== null ? impHint : s.imp;
   it.score = Math.min(100, Math.max(0, Math.round((it.urgencyScore + it.importanceScore) / 2 + (s.score - 50) * 0.5 + 25)));
-  it.actionPriority = computeActionPriority(it);
+  // Low AE boosts priority, high AE reduces it
+  const aeBonus = it.activationEnergy === 'low' ? 15 : it.activationEnergy === 'high' ? -10 : 0;
+  it.actionPriority = computeActionPriority(it) + aeBonus;
   it.label = inferLabel(it.score, it.destination);
   return it;
 }
