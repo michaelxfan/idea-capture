@@ -594,6 +594,18 @@ function loadState() {
     timeBudget = d.timeBudget || 5;
     Object.assign(tp, d.tp || {});
     execLog = d.execLog || [];
+    // Clean up old malformed items
+    items.forEach(it => {
+      if (!it.mergedFrom) it.mergedFrom = [];
+      if (!it.structuredFields) it.structuredFields = {};
+      // Remove old Priority note from fields if it exists
+      if (it.structuredFields['Priority note']) {
+        it.priorityNote = it.structuredFields['Priority note'];
+        delete it.structuredFields['Priority note'];
+      }
+      // Remove old Suggested next step
+      delete it.structuredFields['Suggested next step'];
+    });
     // Restore UI pills
     setModeUI(mode);
     setCtxUI(ctx);
@@ -840,79 +852,7 @@ function parseStructuredBlock(text) {
   return result;
 }
 
-function buildItemFromStructuredData(parsed, rawText) {
-  return buildFromTemplate(parsed);
-}
-
-function buildStructuredTemplateFields(parsed, dest) {
-  const f = {};
-  f['Task'] = parsed.taskName || '';
-  if (parsed.activationEnergy) f['Activation energy'] = parsed.activationEnergy;
-  if (parsed.duration) f['Duration'] = parsed.duration;
-  if (parsed.why) f['Why'] = parsed.why;
-  if (parsed.how) f['How'] = parsed.how;
-  return f;
-}
-
-function buildFromTemplate(tmpl) {
-  const now = Date.now();
-  const taskName = tmpl.taskName;
-  const d = inferDest(taskName);
-  const conf = inferConf(taskName, d);
-
-  // Use dedicated structured fields — NOT the generic buildFields()
-  const fields = buildStructuredTemplateFields(tmpl, d);
-
-  // Map urgency/importance text to score hints
-  const urgMap = { low: 20, medium: 50, high: 85 };
-  const impMap = { low: 20, medium: 50, high: 85 };
-  const urgHint = tmpl.urgency ? (urgMap[tmpl.urgency.toLowerCase()] || 30) : null;
-  const impHint = tmpl.importance ? (impMap[tmpl.importance.toLowerCase()] || 40) : null;
-
-  // Title is ONLY the task name — nothing else
-  const it = {
-    id: nextId++, originalText: taskName, title: taskName, destination: d, confidence: conf,
-    rationale: rationale(d), structuredFields: fields,
-    status: 'pending', recurrenceCount: 1, mergedFrom: [],
-    repeatedSignal: false, unresolvedSignal: false, recurrenceMultiplier: 1,
-    urgencyScore: 0, importanceScore: 0, score: 0, actionPriority: 0, label: '',
-    createdAt: now, lastTouchedAt: now, firstSeenAt: now, lastActionAt: null, snoozeUntil: null,
-    selected: false, annStatus: null, aiStatus: null,
-    activationEnergy: tmpl.activationEnergy ? tmpl.activationEnergy.toLowerCase() : null,
-    executionSteps: tmpl.how
-      ? generateExecutionPlanFromHow(tmpl.how, taskName, d)
-      : generateExecutionPlan(taskName, d),
-    stepsExpanded: false
-  };
-
-  // Score with hints
-  const s = scoreItem(it);
-  it.urgencyScore = urgHint !== null ? urgHint : s.urg;
-  it.importanceScore = impHint !== null ? impHint : s.imp;
-  it.score = Math.min(100, Math.max(0, Math.round((it.urgencyScore + it.importanceScore) / 2 + (s.score - 50) * 0.5 + 25)));
-  // Low AE boosts priority, high AE reduces it
-  const aeBonus = it.activationEnergy === 'low' ? 15 : it.activationEnergy === 'high' ? -10 : 0;
-  it.actionPriority = computeActionPriority(it) + aeBonus;
-  it.label = inferLabel(it.score, it.destination);
-  return it;
-}
-
-function generateExecutionPlanFromHow(how, taskName, dest) {
-  // Use the "how" field as the primary step, then add 1-2 supporting steps
-  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-  const step1 = cap(how);
-  if (dest === 'Ann') {
-    return [step1, 'Send instructions to Ann with deadline'];
-  }
-  if (dest === 'AI') {
-    return [step1, 'Review AI output and extract usable result'];
-  }
-  if (dest === 'Later') {
-    return [step1];
-  }
-  // Michael / default
-  return [step1, 'Mark complete when done'];
-}
+// (structured item builder is buildStructuredItem below)
 
 // ═══════════════════════════════════════
 // PARSING
@@ -1215,7 +1155,7 @@ function logAction(action, title) {
 function sendToAnn(id) {
   const it=items.find(i=>i.id===id); if(!it) return;
   it.destination='Ann'; it.status='executed'; it.lastActionAt=Date.now(); it.annStatus='sent';
-  it.structuredFields=buildFields(it.originalText,'Ann');
+  if (!isStructuredItem(it)) { it.structuredFields=buildFields(it.originalText,'Ann'); }
   if(it.repeatedSignal) it.priorityNote=`Appeared ${it.recurrenceCount}x`;
   clipCopy(fmtItem(it)); tp.sentAnn++; tp.executed++;
   logAction('Sent to Ann', it.title);
@@ -1232,7 +1172,7 @@ function markAnnDone(id) {
 function runWithAI(id) {
   const it=items.find(i=>i.id===id); if(!it) return;
   it.destination='AI'; it.status='executed'; it.lastActionAt=Date.now(); it.aiStatus='copied';
-  it.structuredFields=buildFields(it.originalText,'AI');
+  if (!isStructuredItem(it)) { it.structuredFields=buildFields(it.originalText,'AI'); }
   clipCopy(fmtItem(it)); tp.ranAI++; tp.executed++;
   logAction('AI prompt copied', it.title);
   renderAll(); saveState(); showToast('AI prompt copied');
@@ -1248,7 +1188,7 @@ function markAIDrafted(id) {
 function saveForMichael(id) {
   const it=items.find(i=>i.id===id); if(!it) return;
   it.destination='Michael'; it.status='approved'; it.lastActionAt=Date.now();
-  it.structuredFields=buildFields(it.originalText,'Michael');
+  if (!isStructuredItem(it)) { it.structuredFields=buildFields(it.originalText,'Michael'); }
   tp.approved++; logAction('Saved for Michael', it.title);
   renderAll(); saveState(); showToast('Saved for Michael');
 }
@@ -1292,11 +1232,18 @@ function snoozeItem(id, hours) {
   renderAll(); saveState(); showToast(`Snoozed for ${hours >= 168 ? 'next week' : hours >= 24 ? 'tomorrow' : 'later today'}`);
 }
 
+function isStructuredItem(it) {
+  return it.structuredFields && it.structuredFields.hasOwnProperty('Activation energy');
+}
+
 function updateDest(id, d) {
   const it=items.find(i=>i.id===id); if(!it) return;
   it.destination=d; it.confidence=inferConf(it.originalText,d); it.rationale=rationale(d);
-  it.structuredFields=buildFields(it.originalText,d);
-  it.executionSteps=generateExecutionPlan(it.originalText,d);
+  // Preserve structured template fields — only rebuild for generic items
+  if (!isStructuredItem(it)) {
+    it.structuredFields=buildFields(it.originalText,d);
+  }
+  it.executionSteps=generateExecutionPlan(it.originalText || it.title,d);
   const s=scoreItem(it); it.score=s.score; it.urgencyScore=s.urg; it.importanceScore=s.imp;
   it.actionPriority=computeActionPriority(it); it.label=inferLabel(it.score,d);
   if(it.repeatedSignal) it.priorityNote=`Appeared ${it.recurrenceCount}x`;
@@ -1350,9 +1297,11 @@ function processNotes() {
       existing.repeatedSignal=true;
       existing.recurrenceMultiplier=Math.min(4,existing.recurrenceCount<=1?1:existing.recurrenceCount===2?1.6:existing.recurrenceCount===3?2.5:existing.recurrenceCount===4?3.5:4);
       if(ni.unresolvedSignal) existing.unresolvedSignal=true;
-      existing.mergedFrom=[...new Set([...existing.mergedFrom,...ni.mergedFrom,ni.originalText])];
+      existing.mergedFrom=[...new Set([...(existing.mergedFrom||[]),...(ni.mergedFrom||[]),ni.originalText])];
       existing.lastTouchedAt=Date.now();
       if(existing.status==='snoozed') existing.status='pending';
+      // If new item is structured, upgrade existing item's fields
+      if(isStructuredItem(ni)) { existing.structuredFields=ni.structuredFields; existing.title=ni.title; }
       existing.priorityNote=`Appeared ${existing.recurrenceCount}x across sessions. ${existing.unresolvedSignal?'Recurring unresolved':'Repeated signal'}`;
     } else {
       items.push(ni);
@@ -1665,7 +1614,7 @@ function renderMichaelQueue() {
   if(!mItems.length){mc.innerHTML='<div class="empty">No items in Michael queue</div>';return;}
   mc.innerHTML=mItems.map(it=>{
     const lp=computeLoopPressure(it), age=computeAgeDays(it);
-    let sub=it.structuredFields['Timebox']||'';
+    let sub=it.structuredFields['Duration']||it.structuredFields['Timebox']||'';
     if(age>=1) sub+=` &middot; Open ${age}d`;
     if(lp>30) sub+=` &middot; <span style="color:#8b3a3a">Loop pressure</span>`;
     return `<div class="mq-item"><div class="mq-info"><div class="mq-tit">${esc(it.title)}</div><div class="mq-sub">${sub}</div></div><div class="mq-acts"><button class="btn btn-sm btn-app" onclick="closeItem(${it.id})">Close</button><div class="snooze-dd"><button class="btn btn-sm" onclick="togSnooze(this)">Snooze</button><div class="snooze-menu"><div class="snooze-opt" onclick="snoozeItem(${it.id},4)">Later today</div><div class="snooze-opt" onclick="snoozeItem(${it.id},24)">Tomorrow</div><div class="snooze-opt" onclick="snoozeItem(${it.id},168)">Next week</div></div></div><button class="btn btn-sm btn-kill" onclick="killItem(${it.id})">Kill</button></div></div>`;
