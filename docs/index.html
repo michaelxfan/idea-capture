@@ -294,6 +294,10 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
 .step-input{flex:1;font-family:var(--font-u);font-size:.8rem;color:var(--text);border:none;border-bottom:1px solid var(--border-light);outline:none;padding:3px 0;background:transparent;line-height:1.5;transition:border-color .12s}
 .step-input:focus{border-bottom-color:var(--accent)}
 .step-input::placeholder{color:var(--text-t);font-style:italic}
+.plan-acts{display:flex;justify-content:flex-end;gap:5px;margin-top:6px;align-items:center}
+.plan-acts .btn{font-size:.65rem;padding:3px 8px;min-height:auto}
+.plan-acts .btn-ai-gen{background:var(--ai);color:var(--ai-t);border-color:var(--ai-s)}
+.plan-acts .btn-ai-gen:hover{opacity:.85}
 
 /* Responsive */
 @media(max-width:600px){
@@ -925,6 +929,45 @@ function regenerateExecutionPlan(id) {
   showToast('Plan regenerated');
 }
 
+function generateAIPlanPrompt(id) {
+  const it = items.find(i => i.id === id);
+  if (!it) return;
+  const dest = it.destination;
+  const destCtx = {
+    Ann: 'This task should be delegated to my VA (Ann). Steps should focus on writing clear instructions and sending them.',
+    AI: 'This task should be handled with AI tools (Claude, ChatGPT). Steps should focus on crafting and running prompts.',
+    Michael: 'This task requires my personal judgment or action. Steps should focus on the exact first moves I can take right now.',
+    Later: 'This task is low priority. Steps should help me quickly decide whether to promote it or kill it.'
+  };
+  const prompt = `Task: ${it.originalText}
+
+Destination: ${dest}
+${destCtx[dest] || ''}
+
+Context:
+- This is from a personal execution system focused on speed and low friction
+- I'm often on my phone (Uber, walking, waiting) with limited time
+- The goal is to reduce activation energy so I can start immediately
+
+Give me 2–3 highly specific, low-friction first steps to start this task.
+
+Constraints:
+- Step 1 is the most important — it should be the exact first action I take
+- Each step must start with a strong verb (Open, Search, Message, Pull, Draft, Send, Write, Run)
+- Each step must be executable in under 2 minutes
+- Reference real tools, apps, people, or specific actions
+- Avoid vague phrases like "think about", "consider", "clarify", "review generally"
+- Be concrete and decisive — tell me exactly what to do
+- Fewer steps is better — only include a step if it adds real value
+
+Return only the steps as a numbered list, nothing else.`;
+
+  clipCopy(prompt);
+  showToast('Prompt copied — paste into Claude');
+  // Try to open Claude in new tab
+  try { window.open('https://claude.ai', '_blank'); } catch(e) {}
+}
+
 // ═══════════════════════════════════════
 // ACTIONS
 // ═══════════════════════════════════════
@@ -1275,7 +1318,7 @@ function renderStepsUI(it) {
   return `<div class="${togCls}" onclick="toggleSteps(${it.id})"><span class="arr">&#9654;</span> ${expanded ? 'Hide plan' : 'View plan'}</div>
     <div class="${wrapCls}">${steps.map((s, i) =>
       `<div class="step-row"><div class="step-num">${i + 1}</div><input class="step-input" type="text" value="${esc(s)}" placeholder="Action ${i + 1}..." onblur="updateStep(${it.id},${i},this.value)"></div>`
-    ).join('')}<div style="text-align:right;margin-top:4px"><button class="btn btn-sm" style="font-size:.65rem;padding:3px 8px;min-height:auto" onclick="regenerateExecutionPlan(${it.id})">Regenerate Plan</button></div></div>`;
+    ).join('')}<div class="plan-acts"><button class="btn btn-sm" onclick="regenerateExecutionPlan(${it.id})">Regenerate</button><button class="btn btn-sm btn-ai-gen" onclick="generateAIPlanPrompt(${it.id})">Generate with AI</button></div></div>`;
 }
 
 // ═══════════════════════════════════════
