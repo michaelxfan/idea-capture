@@ -812,18 +812,21 @@ function isStructuredBlock(text) {
   return matches && matches.length >= 2;
 }
 
+function normalizeStructuredKey(rawKey) {
+  return STRUCT_ALIASES[rawKey] || null;
+}
+
 function parseStructuredBlock(text) {
   const normalized = normalizeStructuredText(text);
-  const lines = normalized.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const lines = normalized.split(/\n+/).map(l => l.trim()).filter(Boolean);
   const result = {};
   for (const line of lines) {
-    const ci = line.indexOf(':');
-    if (ci > 0) {
-      const key = line.substring(0, ci).toLowerCase().trim();
-      const val = line.substring(ci + 1).trim();
-      const canonical = STRUCT_ALIASES[key];
-      if (canonical && val) result[canonical] = val;
-    }
+    const match = line.match(/^([^:]+):\s*(.+)$/);
+    if (!match) continue;
+    const rawKey = match[1].trim().toLowerCase();
+    const value = match[2].trim();
+    const key = normalizeStructuredKey(rawKey);
+    if (key) result[key] = value;
   }
   return result;
 }
