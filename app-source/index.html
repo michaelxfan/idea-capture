@@ -141,6 +141,8 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
 .badge-sugg{background:#d4c49a;color:#5a4a20}
 .badge-age{background:#e8e0f0;color:#5a4070}
 .badge-closed{background:var(--closed-b);color:#2a5030}
+.badge-pri{background:#f0d8d0;color:#8b3a3a;font-weight:700;letter-spacing:.02em}
+.badge-pri.signal{background:#f5ece0;color:#8b6b2a}
 
 .card-note{font-size:.72rem;font-style:italic;padding:0 18px;margin-bottom:6px}
 .card-note.warn{color:#8b6b2a}
@@ -382,7 +384,14 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
   <!-- Capture -->
   <div class="section" id="cap-sec">
     <div class="cap-box">
-      <textarea id="cap-in" placeholder="Paste or dictate rough thoughts, tasks, ideas, or follow-ups..."></textarea>
+      <textarea id="cap-in" placeholder="task name:
+duration:
+urgency: low / medium / high
+importance: low / medium / high
+why:
+how:
+
+— or just paste raw notes, both work"></textarea>
       <div class="cap-ft">
         <div class="chips">
           <button class="chip" onclick="insEx('delegate')">delegate</button>
@@ -685,7 +694,7 @@ function buildFields(t,d) {
   switch(d){
     case 'Ann': return {'Task':cap(task),'Why it matters':'Supports current priorities','Output needed':l.includes('data')||l.includes('numbers')?'Summary + data table':l.includes('draft')?'Draft ready for review':'Completed deliverable','Deadline':l.includes('asap')||l.includes('today')?'Today EOD':l.includes('this week')?'This week':'When possible','Context / notes':''};
     case 'AI': return {'Prompt':cap(prompt),'Desired output':l.includes('ideas')||l.includes('angles')?'List of ideas':l.includes('summary')?'Concise summary':'Polished draft','Tone / style':'Direct, clear','Context':''};
-    case 'Michael': return {'Task':cap(task),'Why Michael should own it':'Requires judgment and context','Suggested next step':l.includes('review')?'Block 20 min to review':l.includes('decide')?'Evaluate options':'Review when back at desk','Timebox':'20 minutes'};
+    case 'Michael': return {'Task':cap(task),'Why Michael should own it':'Requires judgment and context','Timebox':'20 minutes'};
     case 'Later': return {'Idea':t,'Why parked':'Not immediately actionable','Revisit trigger':'When relevant'};
   }
 }
@@ -777,10 +786,104 @@ function reScore() {
 function inferLabel(s,d) { return s>=80?'High leverage':s>=65?'Quick win':d==='Michael'?'Needs judgment':d==='Later'?'Parking lot':'Standard'; }
 
 // ═══════════════════════════════════════
+// STRUCTURED TEMPLATE PARSING
+// ═══════════════════════════════════════
+function parseStructuredTemplate(raw) {
+  // Detect if input uses "field: value" format
+  const lines = raw.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
+  const fieldMap = {};
+  const KNOWN = ['task name','duration','urgency','importance','why','how'];
+  let matched = 0;
+  for (const line of lines) {
+    const m = line.match(/^([a-zA-Z\s]+?)\s*:\s*(.+)$/);
+    if (m) {
+      const key = m[1].toLowerCase().trim();
+      const val = m[2].trim();
+      if (KNOWN.includes(key)) { fieldMap[key] = val; matched++; }
+    }
+  }
+  // Need at least task name to consider it structured
+  if (!fieldMap['task name'] || matched < 2) return null;
+  return fieldMap;
+}
+
+function buildFromTemplate(tmpl) {
+  const now = Date.now();
+  const taskName = tmpl['task name'];
+  const d = inferDest(taskName);
+  const conf = inferConf(taskName, d);
+  const fields = buildFields(taskName, d);
+
+  // Override fields with template data
+  if (tmpl.why) {
+    if (d === 'Ann') fields['Why it matters'] = tmpl.why;
+    else if (d === 'Michael') fields['Why Michael should own it'] = tmpl.why;
+    else if (d === 'Later') fields['Why parked'] = tmpl.why;
+    else if (d === 'AI') fields['Context'] = tmpl.why;
+  }
+  if (tmpl.duration) {
+    if (fields['Timebox'] !== undefined) fields['Timebox'] = tmpl.duration;
+    else if (d === 'Ann') fields['Deadline'] = tmpl.duration;
+  }
+
+  // Map urgency/importance text to score hints
+  const urgMap = { low: 20, medium: 50, high: 85 };
+  const impMap = { low: 20, medium: 50, high: 85 };
+  const urgHint = tmpl.urgency ? (urgMap[tmpl.urgency.toLowerCase()] || 30) : null;
+  const impHint = tmpl.importance ? (impMap[tmpl.importance.toLowerCase()] || 40) : null;
+
+  const it = {
+    id: nextId++, originalText: taskName, title: genTitle(taskName), destination: d, confidence: conf,
+    rationale: rationale(d), structuredFields: fields,
+    status: 'pending', recurrenceCount: 1, mergedFrom: [],
+    repeatedSignal: false, unresolvedSignal: false, recurrenceMultiplier: 1,
+    urgencyScore: 0, importanceScore: 0, score: 0, actionPriority: 0, label: '',
+    createdAt: now, lastTouchedAt: now, firstSeenAt: now, lastActionAt: null, snoozeUntil: null,
+    selected: false, annStatus: null, aiStatus: null,
+    executionSteps: tmpl.how
+      ? generateExecutionPlanFromHow(tmpl.how, taskName, d)
+      : generateExecutionPlan(taskName, d),
+    stepsExpanded: false
+  };
+
+  // Score with hints
+  const s = scoreItem(it);
+  it.urgencyScore = urgHint !== null ? urgHint : s.urg;
+  it.importanceScore = impHint !== null ? impHint : s.imp;
+  it.score = Math.min(100, Math.max(0, Math.round((it.urgencyScore + it.importanceScore) / 2 + (s.score - 50) * 0.5 + 25)));
+  it.actionPriority = computeActionPriority(it);
+  it.label = inferLabel(it.score, it.destination);
+  return it;
+}
+
+function generateExecutionPlanFromHow(how, taskName, dest) {
+  // Use the "how" field as the primary step, then add 1-2 supporting steps
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const step1 = cap(how);
+  if (dest === 'Ann') {
+    return [step1, 'Send instructions to Ann with deadline'];
+  }
+  if (dest === 'AI') {
+    return [step1, 'Review AI output and extract usable result'];
+  }
+  if (dest === 'Later') {
+    return [step1];
+  }
+  // Michael / default
+  return [step1, 'Mark complete when done'];
+}
+
+// ═══════════════════════════════════════
 // PARSING
 // ═══════════════════════════════════════
 function parseInput(raw) {
   const t=raw.trim(); if(!t) return [];
+
+  // Try structured template first
+  const tmpl = parseStructuredTemplate(t);
+  if (tmpl) return [buildFromTemplate(tmpl)];
+
+  // Fallback to existing unstructured parsing
   let lines=t.split(/\n+/).map(l=>l.trim()).filter(Boolean);
   let exp=[];
   for(const line of lines){
@@ -806,7 +909,7 @@ function parseInput(raw) {
     const s=scoreItem(it); it.score=s.score; it.urgencyScore=s.urg; it.importanceScore=s.imp;
     it.actionPriority=computeActionPriority(it);
     it.label=inferLabel(it.score,it.destination);
-    if(it.repeatedSignal) it.structuredFields['Priority note']=`Appeared ${it.recurrenceCount}x. ${it.unresolvedSignal?'Recurring unresolved':'Repeated signal'}`;
+    if(it.repeatedSignal) it.priorityNote=`Appeared ${it.recurrenceCount}x. ${it.unresolvedSignal?'Recurring unresolved':'Repeated signal'}`;
     return it;
   });
 }
@@ -1017,7 +1120,7 @@ function sendToAnn(id) {
   const it=items.find(i=>i.id===id); if(!it) return;
   it.destination='Ann'; it.status='executed'; it.lastActionAt=Date.now(); it.annStatus='sent';
   it.structuredFields=buildFields(it.originalText,'Ann');
-  if(it.repeatedSignal) it.structuredFields['Priority note']=`Appeared ${it.recurrenceCount}x`;
+  if(it.repeatedSignal) it.priorityNote=`Appeared ${it.recurrenceCount}x`;
   clipCopy(fmtItem(it)); tp.sentAnn++; tp.executed++;
   logAction('Sent to Ann', it.title);
   renderAll(); saveState(); showToast('Ann task copied');
@@ -1100,7 +1203,7 @@ function updateDest(id, d) {
   it.executionSteps=generateExecutionPlan(it.originalText,d);
   const s=scoreItem(it); it.score=s.score; it.urgencyScore=s.urg; it.importanceScore=s.imp;
   it.actionPriority=computeActionPriority(it); it.label=inferLabel(it.score,d);
-  if(it.repeatedSignal) it.structuredFields['Priority note']=`Appeared ${it.recurrenceCount}x`;
+  if(it.repeatedSignal) it.priorityNote=`Appeared ${it.recurrenceCount}x`;
   renderAll(); saveState();
 }
 
@@ -1150,7 +1253,7 @@ function processNotes() {
       existing.mergedFrom=[...new Set([...existing.mergedFrom,...ni.mergedFrom,ni.originalText])];
       existing.lastTouchedAt=Date.now();
       if(existing.status==='snoozed') existing.status='pending';
-      existing.structuredFields['Priority note']=`Appeared ${existing.recurrenceCount}x across sessions. ${existing.unresolvedSignal?'Recurring unresolved':'Repeated signal'}`;
+      existing.priorityNote=`Appeared ${existing.recurrenceCount}x across sessions. ${existing.unresolvedSignal?'Recurring unresolved':'Repeated signal'}`;
     } else {
       items.push(ni);
     }
@@ -1300,10 +1403,13 @@ function renderCard(it) {
   if(isEscalated(it)&&it.status==='pending') cls+=' esc';
   if(selectMode) cls+=' selectable';
 
-  const fields=Object.entries(it.structuredFields).map(([l,v])=>`<div class="f-row"><div class="f-lbl">${l}</div><textarea class="f-val" rows="1" oninput="updateField(${it.id},'${escA(l)}',this.value);autoR(this)">${esc(v)}</textarea></div>`).join('');
+  const fields=Object.entries(it.structuredFields).filter(([l])=>l!=='Priority note').map(([l,v])=>`<div class="f-row"><div class="f-lbl">${l}</div><textarea class="f-val" rows="1" oninput="updateField(${it.id},'${escA(l)}',this.value);autoR(this)">${esc(v)}</textarea></div>`).join('');
 
   let badges='';
-  if(it.repeatedSignal) badges+=`<span class="badge badge-rec${isEscalated(it)?' hot':''}">\u21bb ${it.recurrenceCount}x</span>`;
+  // Priority note as prominent badge
+  const priNote = it.priorityNote || it.structuredFields?.['Priority note'] || '';
+  if(priNote) badges+=`<span class="badge badge-pri${it.unresolvedSignal?' ':' signal'}">${esc(priNote)}</span>`;
+  if(it.repeatedSignal && !priNote) badges+=`<span class="badge badge-rec${isEscalated(it)?' hot':''}">\u21bb ${it.recurrenceCount}x</span>`;
   if(isSuggested(it)&&it.status==='pending') badges+='<span class="badge badge-sugg">Suggested</span>';
   const age=computeAgeDays(it);
   if(age>=2) badges+=`<span class="badge badge-age">${age}d</span>`;
@@ -1437,7 +1543,7 @@ function renderMichaelQueue() {
   if(!mItems.length){mc.innerHTML='<div class="empty">No items in Michael queue</div>';return;}
   mc.innerHTML=mItems.map(it=>{
     const lp=computeLoopPressure(it), age=computeAgeDays(it);
-    let sub=it.structuredFields['Suggested next step']||it.structuredFields['Timebox']||'';
+    let sub=it.structuredFields['Timebox']||'';
     if(age>=1) sub+=` &middot; Open ${age}d`;
     if(lp>30) sub+=` &middot; <span style="color:#8b3a3a">Loop pressure</span>`;
     return `<div class="mq-item"><div class="mq-info"><div class="mq-tit">${esc(it.title)}</div><div class="mq-sub">${sub}</div></div><div class="mq-acts"><button class="btn btn-sm btn-app" onclick="closeItem(${it.id})">Close</button><div class="snooze-dd"><button class="btn btn-sm" onclick="togSnooze(this)">Snooze</button><div class="snooze-menu"><div class="snooze-opt" onclick="snoozeItem(${it.id},4)">Later today</div><div class="snooze-opt" onclick="snoozeItem(${it.id},24)">Tomorrow</div><div class="snooze-opt" onclick="snoozeItem(${it.id},168)">Next week</div></div></div><button class="btn btn-sm btn-kill" onclick="killItem(${it.id})">Kill</button></div></div>`;
