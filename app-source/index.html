@@ -298,6 +298,13 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
 .plan-acts .btn{font-size:.65rem;padding:3px 8px;min-height:auto}
 .plan-acts .btn-ai-gen{background:var(--ai);color:var(--ai-t);border-color:var(--ai-s)}
 .plan-acts .btn-ai-gen:hover{opacity:.85}
+.paste-area{margin-top:8px;display:none}
+.paste-area.open{display:block}
+.paste-area textarea{width:100%;min-height:60px;border:1px solid var(--ai-s);border-radius:var(--r);padding:8px 10px;font-family:var(--font-u);font-size:.78rem;line-height:1.5;color:var(--text);resize:vertical;outline:none;background:var(--bg)}
+.paste-area textarea:focus{border-color:var(--accent)}
+.paste-area textarea::placeholder{color:var(--text-t);font-style:italic}
+.paste-acts{display:flex;gap:5px;margin-top:5px;justify-content:flex-end}
+.paste-acts .btn{font-size:.65rem;padding:3px 8px;min-height:auto}
 
 /* Responsive */
 @media(max-width:600px){
@@ -921,6 +928,36 @@ function ensureExecutionPlan(it) {
   }
 }
 
+function togglePasteArea(id) {
+  const area = document.getElementById(`paste-area-${id}`);
+  if (area) { area.classList.toggle('open'); if (area.classList.contains('open')) document.getElementById(`paste-ta-${id}`).focus(); }
+}
+
+function applyPastedPlan(id) {
+  const it = items.find(i => i.id === id);
+  if (!it) return;
+  const ta = document.getElementById(`paste-ta-${id}`);
+  if (!ta || !ta.value.trim()) { showToast('Nothing to apply'); return; }
+  const parsed = parseAISteps(ta.value.trim());
+  if (!parsed.length) { showToast('Could not parse steps'); return; }
+  it.executionSteps = parsed;
+  renderAll(); saveState();
+  showToast(`Applied ${parsed.length} steps`);
+}
+
+function parseAISteps(text) {
+  // Parse numbered list: "1. Step text" or "1) Step text" or "- Step text"
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+  const steps = [];
+  for (const line of lines) {
+    // Strip numbering: "1. ", "1) ", "- ", "• "
+    const cleaned = line.replace(/^(\d+[\.\)]\s*|[\-\*\u2022]\s*)/, '').trim();
+    if (cleaned.length > 3) steps.push(cleaned);
+  }
+  // Cap at 3 steps
+  return steps.slice(0, 3);
+}
+
 function regenerateExecutionPlan(id) {
   const it = items.find(i => i.id === id);
   if (!it) return;
@@ -1318,7 +1355,7 @@ function renderStepsUI(it) {
   return `<div class="${togCls}" onclick="toggleSteps(${it.id})"><span class="arr">&#9654;</span> ${expanded ? 'Hide plan' : 'View plan'}</div>
     <div class="${wrapCls}">${steps.map((s, i) =>
       `<div class="step-row"><div class="step-num">${i + 1}</div><input class="step-input" type="text" value="${esc(s)}" placeholder="Action ${i + 1}..." onblur="updateStep(${it.id},${i},this.value)"></div>`
-    ).join('')}<div class="plan-acts"><button class="btn btn-sm" onclick="regenerateExecutionPlan(${it.id})">Regenerate</button><button class="btn btn-sm btn-ai-gen" onclick="generateAIPlanPrompt(${it.id})">Generate with AI</button></div></div>`;
+    ).join('')}<div class="plan-acts"><button class="btn btn-sm" onclick="regenerateExecutionPlan(${it.id})">Regenerate</button><button class="btn btn-sm btn-ai-gen" onclick="generateAIPlanPrompt(${it.id})">Generate with AI</button><button class="btn btn-sm" onclick="togglePasteArea(${it.id})">Paste from AI</button></div><div class="paste-area" id="paste-area-${it.id}"><textarea id="paste-ta-${it.id}" placeholder="Paste Claude's numbered list here..."></textarea><div class="paste-acts"><button class="btn btn-sm" onclick="togglePasteArea(${it.id})">Cancel</button><button class="btn btn-sm btn-p" onclick="applyPastedPlan(${it.id})">Apply</button></div></div></div>`;
 }
 
 // ═══════════════════════════════════════
