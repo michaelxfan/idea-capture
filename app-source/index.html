@@ -1285,6 +1285,15 @@ function processNotes() {
   setProcessButtonState(false);
   const count=newItems.length;
   showToast(`Captured${count>1?' '+count+' items':''} — processed`);
+
+  // Scroll to the first created/updated card
+  const firstItem = newItems[0];
+  if (firstItem) {
+    requestAnimationFrame(() => {
+      const card = document.getElementById(`card-${firstItem.id}`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
 }
 
 function setProcessButtonState(processing) {
