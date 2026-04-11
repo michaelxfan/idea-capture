@@ -802,10 +802,10 @@ function parseStructuredTemplate(raw) {
   };
   let matched = 0;
   for (const line of lines) {
-    const m = line.match(/^([a-zA-Z\s]+?)\s*:\s*(.+)$/);
-    if (m) {
-      const key = m[1].toLowerCase().trim();
-      const val = m[2].trim();
+    const colonIdx = line.indexOf(':');
+    if (colonIdx > 0) {
+      const key = line.substring(0, colonIdx).toLowerCase().trim();
+      const val = line.substring(colonIdx + 1).trim();
       const canonical = ALIASES[key];
       if (canonical && val) { result[canonical] = val; matched++; }
     }
