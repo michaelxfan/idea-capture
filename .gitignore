@@ -1,0 +1,21 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (from other apps in repo)
+node_modules/
+npm-debug.log*
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Env
+.env
+.env.local
+
+# Claude internal
+.claude/
