@@ -800,15 +800,6 @@ function inferLabel(s,d) { return s>=80?'High leverage':s>=65?'Quick win':d==='M
 // STRUCTURED TEMPLATE PARSING
 // ═══════════════════════════════════════
 const STRUCT_KEYS_PATTERN = 'task name|task|title|activation energy|ae|energy|duration|time|timebox|urgency|importance|why|reason|how|plan|approach|first step';
-const STRUCT_ALIASES = {
-  'task name':'taskName','task':'taskName','title':'taskName',
-  'activation energy':'activationEnergy','ae':'activationEnergy','energy':'activationEnergy',
-  'duration':'duration','time':'duration','timebox':'duration',
-  'urgency':'urgency',
-  'importance':'importance',
-  'why':'why','reason':'why',
-  'how':'how','plan':'how','approach':'how','first step':'how'
-};
 
 function normalizeStructuredText(text) {
   // Normalize line endings, then ensure each known key starts on its own line
@@ -829,7 +820,7 @@ function normalizeStructuredKey(key) {
   if (key.includes('task')) return 'taskName';
   if (key.includes('title')) return 'taskName';
   if (key.includes('activation') || key === 'ae' || key.includes('energy')) return 'activationEnergy';
-  if (key.includes('duration') || key.includes('time')) return 'duration';
+  if (key.includes('duration') || key === 'time' || key === 'timebox') return 'duration';
   if (key.includes('urgency')) return 'urgency';
   if (key.includes('importance')) return 'importance';
   if (key.includes('why') || key.includes('reason')) return 'why';
@@ -868,7 +859,7 @@ function buildStructuredItem(parsed, rawText) {
 
   const item = {
     id: nextId++,
-    originalText: rawText,
+    originalText: task,
     title: task,
     destination: d,
     confidence: conf,
@@ -1100,7 +1091,12 @@ function parseAISteps(text) {
 function regenerateExecutionPlan(id) {
   const it = items.find(i => i.id === id);
   if (!it) return;
-  it.executionSteps = generateExecutionPlan(it.originalText || it.title, it.destination);
+  const how = it.structuredFields && it.structuredFields['How'];
+  if (isStructuredItem(it) && how) {
+    it.executionSteps = how.split(/[,.]/).map(s => s.trim()).filter(Boolean);
+  } else {
+    it.executionSteps = generateExecutionPlan(it.originalText || it.title, it.destination);
+  }
   renderAll(); saveState();
   showToast('Plan regenerated');
 }
@@ -1115,7 +1111,7 @@ function generateAIPlanPrompt(id) {
     Michael: 'This task requires my personal judgment or action. Steps should focus on the exact first moves I can take right now.',
     Later: 'This task is low priority. Steps should help me quickly decide whether to promote it or kill it.'
   };
-  const prompt = `Task: ${it.originalText}
+  const prompt = `Task: ${it.title}
 
 Destination: ${dest}
 ${destCtx[dest] || ''}
