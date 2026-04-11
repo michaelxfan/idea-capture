@@ -917,18 +917,18 @@ function generateExecutionPlanFromHow(how, taskName, dest) {
 // ═══════════════════════════════════════
 // PARSING
 // ═══════════════════════════════════════
-function parseInput(raw) {
-  const t=raw.trim(); if(!t) return [];
+function buildStructuredItem(parsed, rawText) {
+  return buildFromTemplate(parsed);
+}
 
-  // ── STRUCTURED INPUT PATH ──
+function parseInput(raw) {
+  const t = raw.trim();
+  if (!t) return [];
+
   if (isStructuredBlock(t)) {
     const parsed = parseStructuredBlock(t);
-    if (parsed.taskName) {
-      console.log('[IdeaCapture] STRUCTURED PATH:', JSON.stringify(parsed));
-      return [buildItemFromStructuredData(parsed, t)];
-    }
+    return [buildStructuredItem(parsed, t)];
   }
-  console.log('[IdeaCapture] FALLBACK PATH — not structured');
 
   // ── FALLBACK: unstructured messy-note parsing ──
   let lines=t.split(/\n+/).map(l=>l.trim()).filter(Boolean);
