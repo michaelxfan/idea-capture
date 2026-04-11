@@ -282,6 +282,19 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
 .modal-ft{padding:12px 20px;border-top:1px solid var(--border-light);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .modal-ft .btn{min-height:40px}
 
+/* Execution Steps */
+.steps-tog{font-size:.72rem;color:var(--text-s);cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:4px;padding:4px 18px 6px;transition:color .12s}
+.steps-tog:hover{color:var(--text)}
+.steps-tog .arr{font-size:.5rem;transition:transform .15s}
+.steps-tog.open .arr{transform:rotate(90deg)}
+.steps-wrap{padding:0 18px 12px;display:none}
+.steps-wrap.open{display:block}
+.step-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;counter-increment:step}
+.step-num{flex-shrink:0;width:20px;height:20px;background:var(--border-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:var(--text-s);margin-top:3px}
+.step-input{flex:1;font-family:var(--font-u);font-size:.8rem;color:var(--text);border:none;border-bottom:1px solid var(--border-light);outline:none;padding:3px 0;background:transparent;line-height:1.5;transition:border-color .12s}
+.step-input:focus{border-bottom-color:var(--accent)}
+.step-input::placeholder{color:var(--text-t);font-style:italic}
+
 /* Responsive */
 @media(max-width:600px){
   header h1{font-size:1.3rem}
@@ -291,6 +304,8 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
   .f-lbl{min-width:auto}
   .cap-ft{flex-direction:column;align-items:stretch}
   .cap-acts{justify-content:flex-end}
+  .steps-tog{padding:6px 18px 8px;font-size:.76rem}
+  .step-input{font-size:.82rem;padding:5px 0}
 }
 </style>
 </head>
@@ -774,7 +789,8 @@ function parseInput(raw) {
       repeatedSignal:cl.repeated, unresolvedSignal:cl.unresolved, recurrenceMultiplier:cl.mult,
       urgencyScore:0, importanceScore:0, score:0, actionPriority:0, label:'',
       createdAt:now, lastTouchedAt:now, firstSeenAt:now, lastActionAt:null, snoozeUntil:null,
-      selected:false, annStatus:null, aiStatus:null
+      selected:false, annStatus:null, aiStatus:null,
+      executionSteps:generateDefaultSteps(cl.text,d), stepsExpanded:false
     };
     const s=scoreItem(it); it.score=s.score; it.urgencyScore=s.urg; it.importanceScore=s.imp;
     it.actionPriority=computeActionPriority(it);
@@ -785,6 +801,34 @@ function parseInput(raw) {
 }
 
 function genTitle(t) { let s=t.length>60?t.substring(0,60).replace(/\s+\S*$/,'')+'...':t; return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function generateDefaultSteps(text, dest) {
+  const l = text.toLowerCase();
+  switch(dest) {
+    case 'Ann':
+      return [
+        'Draft clear instructions for Ann with context and deadline',
+        'Send task to Ann via preferred channel',
+        'Review Ann\'s output and close the loop'
+      ];
+    case 'AI':
+      return [
+        'Refine the prompt with specific constraints and desired format',
+        'Run the prompt and review AI output',
+        'Edit/apply the result and mark complete'
+      ];
+    case 'Michael':
+      if (l.includes('decide') || l.includes('choose') || l.includes('whether'))
+        return ['List the options and key tradeoffs', 'Block 15 min to evaluate and decide', 'Communicate the decision and next steps'];
+      if (l.includes('review') || l.includes('evaluate'))
+        return ['Pull up the relevant data or document', 'Review with a clear rubric or criteria', 'Record decision and follow-up actions'];
+      return ['Clarify what outcome you need from this', 'Block focused time to work through it', 'Capture the result and close the loop'];
+    case 'Later':
+      return ['Set a revisit trigger or calendar reminder', 'When triggered, re-evaluate if still relevant', 'Either promote to active or kill it'];
+    default:
+      return ['Define the desired outcome', 'Take the next concrete action', 'Verify completion and close'];
+  }
+}
 
 // ═══════════════════════════════════════
 // ACTIONS
@@ -878,6 +922,7 @@ function updateDest(id, d) {
   const it=items.find(i=>i.id===id); if(!it) return;
   it.destination=d; it.confidence=inferConf(it.originalText,d); it.rationale=rationale(d);
   it.structuredFields=buildFields(it.originalText,d);
+  it.executionSteps=generateDefaultSteps(it.originalText,d);
   const s=scoreItem(it); it.score=s.score; it.urgencyScore=s.urg; it.importanceScore=s.imp;
   it.actionPriority=computeActionPriority(it); it.label=inferLabel(it.score,d);
   if(it.repeatedSignal) it.structuredFields['Priority note']=`Appeared ${it.recurrenceCount}x`;
@@ -886,6 +931,8 @@ function updateDest(id, d) {
 
 function updateTitle(id,t){const it=items.find(i=>i.id===id);if(it)it.title=t;}
 function updateField(id,f,v){const it=items.find(i=>i.id===id);if(it&&it.structuredFields[f]!==undefined)it.structuredFields[f]=v;}
+function updateStep(id,idx,v){const it=items.find(i=>i.id===id);if(it&&it.executionSteps){it.executionSteps[idx]=v;saveState();}}
+function toggleSteps(id){const it=items.find(i=>i.id===id);if(!it)return;it.stepsExpanded=!it.stepsExpanded;const tog=document.querySelector(`#card-${id} .steps-tog`);const wrap=document.querySelector(`#card-${id} .steps-wrap`);if(tog)tog.classList.toggle('open',it.stepsExpanded);if(wrap)wrap.classList.toggle('open',it.stepsExpanded);saveState();}
 function sortQ(){items.sort((a,b)=>b.actionPriority-a.actionPriority);renderAll();showToast('Sorted');}
 
 // Batch
@@ -1119,8 +1166,24 @@ function renderCard(it) {
     <div class="card-conf"><span class="conf-lev ${it.confidence}">${it.confidence}</span> &mdash; ${it.rationale}</div>
     ${scoreHtml}${mergedHtml}
     <div class="card-fields">${fields}</div>
+    ${renderStepsUI(it)}
     <div class="card-acts"><div class="ca-l"><label style="font-size:.7rem;color:var(--text-t)">Route</label><select class="d-sel" onchange="updateDest(${it.id},this.value)">${['Ann','AI','Michael','Later'].map(d=>`<option value="${d}"${d===it.destination?' selected':''}>${d}</option>`).join('')}</select></div><div class="ca-r">${directBtns}</div></div>
   </div>`;
+}
+
+function renderStepsUI(it) {
+  if (!it.executionSteps) {
+    it.executionSteps = generateDefaultSteps(it.originalText, it.destination);
+    it.stepsExpanded = false;
+  }
+  const steps = it.executionSteps;
+  const expanded = it.stepsExpanded;
+  const togCls = 'steps-tog' + (expanded ? ' open' : '');
+  const wrapCls = 'steps-wrap' + (expanded ? ' open' : '');
+  return `<div class="${togCls}" onclick="toggleSteps(${it.id})"><span class="arr">&#9654;</span> ${expanded ? 'Hide steps' : 'View steps'}</div>
+    <div class="${wrapCls}">${steps.map((s, i) =>
+      `<div class="step-row"><div class="step-num">${i + 1}</div><input class="step-input" type="text" value="${esc(s)}" placeholder="Step ${i + 1}..." onblur="updateStep(${it.id},${i},this.value)"></div>`
+    ).join('')}</div>`;
 }
 
 // ═══════════════════════════════════════
