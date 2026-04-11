@@ -790,7 +790,7 @@ function parseInput(raw) {
       urgencyScore:0, importanceScore:0, score:0, actionPriority:0, label:'',
       createdAt:now, lastTouchedAt:now, firstSeenAt:now, lastActionAt:null, snoozeUntil:null,
       selected:false, annStatus:null, aiStatus:null,
-      executionSteps:generateDefaultSteps(cl.text,d), stepsExpanded:false
+      executionSteps:generateExecutionPlan(cl.text,d), stepsExpanded:false
     };
     const s=scoreItem(it); it.score=s.score; it.urgencyScore=s.urg; it.importanceScore=s.imp;
     it.actionPriority=computeActionPriority(it);
@@ -802,32 +802,127 @@ function parseInput(raw) {
 
 function genTitle(t) { let s=t.length>60?t.substring(0,60).replace(/\s+\S*$/,'')+'...':t; return s.charAt(0).toUpperCase()+s.slice(1); }
 
-function generateDefaultSteps(text, dest) {
+// ═══════════════════════════════════════
+// EXECUTION KICKOFF PLAN
+// ═══════════════════════════════════════
+function generateExecutionPlan(text, dest) {
   const l = text.toLowerCase();
-  switch(dest) {
-    case 'Ann':
-      return [
-        'Draft clear instructions for Ann with context and deadline',
-        'Send task to Ann via preferred channel',
-        'Review Ann\'s output and close the loop'
-      ];
-    case 'AI':
-      return [
-        'Refine the prompt with specific constraints and desired format',
-        'Run the prompt and review AI output',
-        'Edit/apply the result and mark complete'
-      ];
-    case 'Michael':
-      if (l.includes('decide') || l.includes('choose') || l.includes('whether'))
-        return ['List the options and key tradeoffs', 'Block 15 min to evaluate and decide', 'Communicate the decision and next steps'];
-      if (l.includes('review') || l.includes('evaluate'))
-        return ['Pull up the relevant data or document', 'Review with a clear rubric or criteria', 'Record decision and follow-up actions'];
-      return ['Clarify what outcome you need from this', 'Block focused time to work through it', 'Capture the result and close the loop'];
-    case 'Later':
-      return ['Set a revisit trigger or calendar reminder', 'When triggered, re-evaluate if still relevant', 'Either promote to active or kill it'];
-    default:
-      return ['Define the desired outcome', 'Take the next concrete action', 'Verify completion and close'];
+  const t = text.trim();
+
+  // Extract key entities for specificity
+  const people = t.match(/\b(?:Ann|Morgan|Anthony|[A-Z][a-z]{2,})\b/g) || [];
+  const person = people.find(p => p !== 'Ann') || '';
+  const hasAnn = l.includes('ann');
+
+  // ── Ann ──
+  if (dest === 'Ann') {
+    // Follow-up / email tasks
+    if (l.includes('follow up') || l.includes('follow-up') || l.includes('email') || l.includes('message') || l.includes('draft')) {
+      const who = person || 'the recipient';
+      return [`Message Ann: "Draft a follow-up to ${who}" with key points and tone`, `Send via Slack/text and set 24h follow-up reminder`];
+    }
+    // Data / research tasks
+    if (l.includes('pull') || l.includes('data') || l.includes('numbers') || l.includes('research') || l.includes('find') || l.includes('look up') || l.includes('summary') || l.includes('mtd')) {
+      const what = l.includes('margin') ? 'margin data' : l.includes('mtd') ? 'MTD summary' : l.includes('numbers') ? 'the numbers' : 'the data';
+      return [`Message Ann: "Pull ${what}" — specify date range, source, and format needed`, `Set deadline and confirm she has access to the source`];
+    }
+    // Organize / admin tasks
+    if (l.includes('organize') || l.includes('schedule') || l.includes('book') || l.includes('arrange') || l.includes('set up') || l.includes('contracts') || l.includes('filing') || l.includes('folder')) {
+      return [`Message Ann with exact task, expected output format, and deadline`, `Send via Slack/text with any reference files attached`];
+    }
+    // Check status / vendor / shipment
+    if (l.includes('status') || l.includes('check') || l.includes('vendor') || l.includes('supplier') || l.includes('shipment')) {
+      return [`Message Ann: "Check status of [X]" — include tracking/reference numbers if available`, `Ask for a status update by end of day`];
+    }
+    // Generic Ann
+    return [`Write a 1-2 sentence instruction for Ann: task + expected output + deadline`, `Send to Ann via preferred channel`];
   }
+
+  // ── AI ──
+  if (dest === 'AI') {
+    // Content / brainstorm
+    if (l.includes('brainstorm') || l.includes('ideas') || l.includes('angles') || l.includes('content') || l.includes('tiktok') || l.includes('hooks')) {
+      const topic = t.replace(/^(brainstorm|generate|write|create|draft)\s*/i, '').substring(0, 50);
+      return [`Open Claude and run: "Give me 10 specific ${topic.toLowerCase()}"`, `Pick top 3 and refine into usable format`];
+    }
+    // Writing / summary
+    if (l.includes('write') || l.includes('draft') || l.includes('summarize') || l.includes('summary') || l.includes('polish') || l.includes('rewrite')) {
+      return [`Open Claude and paste the source material with: "Draft a concise version of this"`, `Edit the output for tone and accuracy, then use it`];
+    }
+    // Outline / structure
+    if (l.includes('outline') || l.includes('script') || l.includes('newsletter') || l.includes('blog') || l.includes('podcast') || l.includes('episode')) {
+      return [`Open Claude: "Create a detailed outline for [topic] with sections and key points"`, `Review structure, adjust order, then draft from outline`];
+    }
+    // Onboarding / flow / process
+    if (l.includes('onboarding') || l.includes('flow') || l.includes('process')) {
+      return [`Open Claude: "Design a step-by-step [flow/process] for [X] with specific actions at each step"`, `Map output to your actual tools and timeline`];
+    }
+    // Generic AI
+    return [`Open Claude and run a specific prompt for this task`, `Review output, refine once, and extract the usable result`];
+  }
+
+  // ── Michael ──
+  if (dest === 'Michael') {
+    // Learn / explore / try
+    if (l.includes('learn') || l.includes('explore') || l.includes('try') || l.includes('look into') || l.includes('check out')) {
+      const what = t.replace(/^(learn|explore|try|look into|check out)\s*/i, '');
+      return [`Open ${what || 'it'} and go through the main interface or onboarding flow`, `Try one specific action to test if it's useful`, `Note 1-2 ways this could fit your current workflow`];
+    }
+    // Follow up with person
+    if ((l.includes('follow up') || l.includes('follow-up')) && person) {
+      return [`Open last conversation with ${person} and review context`, `Draft a 2-3 sentence follow-up message`, `Send and set a reminder if no reply in 48h`];
+    }
+    // Decide / choose / whether
+    if (l.includes('decide') || l.includes('choose') || l.includes('whether') || l.includes('should')) {
+      const opts = l.includes('vs') || l.includes('or ');
+      if (opts) return [`Write down the 2-3 options with one pro/con each`, `Pick one and commit — set a 10-min timer`];
+      return [`Write down what you'd do if you had to decide in 60 seconds`, `Identify the one thing blocking the decision and resolve it`];
+    }
+    // Review / evaluate
+    if (l.includes('review') || l.includes('evaluate') || l.includes('assess')) {
+      const what = l.includes('risk') ? 'the risk factors' : l.includes('payment') ? 'the payments dashboard' : 'the relevant data';
+      return [`Open ${what} and scan for the top 2-3 issues`, `Write down your call and the next action in one sentence`];
+    }
+    // Hire / invest / negotiate / strategic
+    if (l.includes('hire') || l.includes('invest') || l.includes('negotiate') || l.includes('renegotiate') || l.includes('renew')) {
+      return [`Pull up the current numbers or contract terms`, `Write down your target outcome and walk-away point`, `Draft the opening message or proposal`];
+    }
+    // Talk to / conversation / relationship
+    if (l.includes('talk to') || l.includes('conversation') || l.includes('personally') || l.includes('relationship')) {
+      const who = person || 'them';
+      return [`Open your calendar and block 20 min for this conversation`, `Write down the one key point you need to communicate to ${who}`];
+    }
+    // Think through (general)
+    if (l.includes('think through') || l.includes('figure out')) {
+      return [`Open a note and write the problem in one sentence`, `List 2-3 possible next steps and pick one to try first`];
+    }
+    // Generic Michael — make it action-oriented
+    const actionSubject = t.replace(/^(need to|should|want to|have to)\s*/i, '').substring(0, 40);
+    return [`Open the most relevant app/doc/tool for "${actionSubject}" right now`, `Spend 5 focused minutes on the first concrete action`];
+  }
+
+  // ── Later ──
+  if (dest === 'Later') {
+    return [`Decide in 30 seconds: is this worth doing? If yes, assign to Ann/AI/Michael`, `If no, kill it now`];
+  }
+
+  // Fallback
+  return [`Open the most relevant tool and take the first action`, `Spend 5 minutes and either finish or hand off`];
+}
+
+function ensureExecutionPlan(it) {
+  if (!it.executionSteps || !it.executionSteps.length) {
+    it.executionSteps = generateExecutionPlan(it.originalText || it.title, it.destination);
+    it.stepsExpanded = false;
+  }
+}
+
+function regenerateExecutionPlan(id) {
+  const it = items.find(i => i.id === id);
+  if (!it) return;
+  it.executionSteps = generateExecutionPlan(it.originalText || it.title, it.destination);
+  renderAll(); saveState();
+  showToast('Plan regenerated');
 }
 
 // ═══════════════════════════════════════
@@ -922,7 +1017,7 @@ function updateDest(id, d) {
   const it=items.find(i=>i.id===id); if(!it) return;
   it.destination=d; it.confidence=inferConf(it.originalText,d); it.rationale=rationale(d);
   it.structuredFields=buildFields(it.originalText,d);
-  it.executionSteps=generateDefaultSteps(it.originalText,d);
+  it.executionSteps=generateExecutionPlan(it.originalText,d);
   const s=scoreItem(it); it.score=s.score; it.urgencyScore=s.urg; it.importanceScore=s.imp;
   it.actionPriority=computeActionPriority(it); it.label=inferLabel(it.score,d);
   if(it.repeatedSignal) it.structuredFields['Priority note']=`Appeared ${it.recurrenceCount}x`;
@@ -932,7 +1027,7 @@ function updateDest(id, d) {
 function updateTitle(id,t){const it=items.find(i=>i.id===id);if(it)it.title=t;}
 function updateField(id,f,v){const it=items.find(i=>i.id===id);if(it&&it.structuredFields[f]!==undefined)it.structuredFields[f]=v;}
 function updateStep(id,idx,v){const it=items.find(i=>i.id===id);if(it&&it.executionSteps){it.executionSteps[idx]=v;saveState();}}
-function toggleSteps(id){const it=items.find(i=>i.id===id);if(!it)return;it.stepsExpanded=!it.stepsExpanded;const tog=document.querySelector(`#card-${id} .steps-tog`);const wrap=document.querySelector(`#card-${id} .steps-wrap`);if(tog)tog.classList.toggle('open',it.stepsExpanded);if(wrap)wrap.classList.toggle('open',it.stepsExpanded);saveState();}
+function toggleSteps(id){const it=items.find(i=>i.id===id);if(!it)return;it.stepsExpanded=!it.stepsExpanded;const tog=document.querySelector(`#card-${id} .steps-tog`);const wrap=document.querySelector(`#card-${id} .steps-wrap`);if(tog){tog.classList.toggle('open',it.stepsExpanded);const lbl=tog.childNodes[tog.childNodes.length-1];if(lbl)lbl.textContent=it.stepsExpanded?' Hide plan':' View plan';}if(wrap)wrap.classList.toggle('open',it.stepsExpanded);saveState();}
 function sortQ(){items.sort((a,b)=>b.actionPriority-a.actionPriority);renderAll();showToast('Sorted');}
 
 // Batch
@@ -1172,18 +1267,15 @@ function renderCard(it) {
 }
 
 function renderStepsUI(it) {
-  if (!it.executionSteps) {
-    it.executionSteps = generateDefaultSteps(it.originalText, it.destination);
-    it.stepsExpanded = false;
-  }
-  const steps = it.executionSteps;
+  ensureExecutionPlan(it);
+  const steps = it.executionSteps.filter(s => s && s.trim());
   const expanded = it.stepsExpanded;
   const togCls = 'steps-tog' + (expanded ? ' open' : '');
   const wrapCls = 'steps-wrap' + (expanded ? ' open' : '');
-  return `<div class="${togCls}" onclick="toggleSteps(${it.id})"><span class="arr">&#9654;</span> ${expanded ? 'Hide steps' : 'View steps'}</div>
+  return `<div class="${togCls}" onclick="toggleSteps(${it.id})"><span class="arr">&#9654;</span> ${expanded ? 'Hide plan' : 'View plan'}</div>
     <div class="${wrapCls}">${steps.map((s, i) =>
-      `<div class="step-row"><div class="step-num">${i + 1}</div><input class="step-input" type="text" value="${esc(s)}" placeholder="Step ${i + 1}..." onblur="updateStep(${it.id},${i},this.value)"></div>`
-    ).join('')}</div>`;
+      `<div class="step-row"><div class="step-num">${i + 1}</div><input class="step-input" type="text" value="${esc(s)}" placeholder="Action ${i + 1}..." onblur="updateStep(${it.id},${i},this.value)"></div>`
+    ).join('')}<div style="text-align:right;margin-top:4px"><button class="btn btn-sm" style="font-size:.65rem;padding:3px 8px;min-height:auto" onclick="regenerateExecutionPlan(${it.id})">Regenerate Plan</button></div></div>`;
 }
 
 // ═══════════════════════════════════════
