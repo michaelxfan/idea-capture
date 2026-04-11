@@ -859,7 +859,7 @@ function buildStructuredItem(parsed, rawText) {
 
   const item = {
     id: nextId++,
-    originalText: task,
+    originalText: rawText,
     title: task,
     destination: d,
     confidence: conf,
@@ -1470,7 +1470,7 @@ function renderCard(it) {
   if(isEscalated(it)&&it.status==='pending') cls+=' esc';
   if(selectMode) cls+=' selectable';
 
-  const fields=Object.entries(it.structuredFields).filter(([l])=>l!=='Priority note').map(([l,v])=>`<div class="f-row"><div class="f-lbl">${l}</div><textarea class="f-val" rows="1" oninput="updateField(${it.id},'${escA(l)}',this.value);autoR(this)">${esc(v)}</textarea></div>`).join('');
+  const fields=Object.entries(it.structuredFields).filter(([l])=>l!=='Priority note'&&l!=='Task').map(([l,v])=>`<div class="f-row"><div class="f-lbl">${l}</div><textarea class="f-val" rows="1" oninput="updateField(${it.id},'${escA(l)}',this.value);autoR(this)">${esc(v)}</textarea></div>`).join('');
 
   let badges='';
   // Priority note as prominent badge
@@ -1509,7 +1509,7 @@ function renderCard(it) {
 
   return `<div class="${cls}" id="card-${it.id}">
     ${selectMode?`<input type="checkbox" class="card-sel" ${it.selected?'checked':''} onchange="toggleItemSel(${it.id})">`:''}
-    <div class="card-top"><div class="card-tit-area"><div class="card-tit" contenteditable="true" onblur="updateTitle(${it.id},this.textContent)">${esc(it.title)}</div><div class="card-orig">${esc(it.originalText)}</div></div><div class="card-meta">${badges}<span style="font-size:.65rem;color:var(--text-t)">${it.label}</span><span class="dest ${dc}">${it.destination}</span></div></div>
+    <div class="card-top"><div class="card-tit-area"><div class="card-tit" contenteditable="true" onblur="updateTitle(${it.id},this.textContent)">${esc(it.title)}</div></div><div class="card-meta">${badges}<span style="font-size:.65rem;color:var(--text-t)">${it.label}</span><span class="dest ${dc}">${it.destination}</span></div></div>
     ${noteHtml}${escHtml}
     <div class="card-conf"><span class="conf-lev ${it.confidence}">${it.confidence}</span> &mdash; ${it.rationale}</div>
     ${scoreHtml}${mergedHtml}
@@ -1528,7 +1528,7 @@ function renderStepsUI(it) {
   return `<div class="${togCls}" onclick="toggleSteps(${it.id})"><span class="arr">&#9654;</span> ${expanded ? 'Hide plan' : 'View plan'}</div>
     <div class="${wrapCls}">${steps.map((s, i) =>
       `<div class="step-row"><div class="step-num">${i + 1}</div><input class="step-input" type="text" value="${esc(s)}" placeholder="Action ${i + 1}..." onblur="updateStep(${it.id},${i},this.value)"></div>`
-    ).join('')}<div class="plan-acts"><button class="btn btn-sm" onclick="regenerateExecutionPlan(${it.id})">Regenerate</button><button class="btn btn-sm btn-ai-gen" onclick="generateAIPlanPrompt(${it.id})">Generate with AI</button><button class="btn btn-sm" onclick="togglePasteArea(${it.id})">Paste from AI</button></div><div class="paste-area" id="paste-area-${it.id}"><textarea id="paste-ta-${it.id}" placeholder="Paste Claude's numbered list here..."></textarea><div class="paste-acts"><button class="btn btn-sm" onclick="togglePasteArea(${it.id})">Cancel</button><button class="btn btn-sm btn-p" onclick="applyPastedPlan(${it.id})">Apply</button></div></div></div>`;
+    ).join('')}<div class="plan-acts"><button class="btn btn-sm" onclick="regenerateExecutionPlan(${it.id})">Regenerate</button><button class="btn btn-sm btn-ai-gen" onclick="generateAIPlanPrompt(${it.id})">Generate with AI</button><button class="btn btn-sm" onclick="togglePasteArea(${it.id})">Paste from AI</button></div><div class="paste-area" id="paste-area-${it.id}"><textarea id="paste-ta-${it.id}" placeholder="Paste Claude's numbered list here..."></textarea><div class="paste-acts"><button class="btn btn-sm" onclick="togglePasteArea(${it.id})">Cancel</button><button class="btn btn-sm btn-p" onclick="applyPastedPlan(${it.id})">Apply</button></div></div>${it.originalText&&it.originalText!==it.title?`<div class="steps-tog" style="margin-top:6px" onclick="var w=this.nextElementSibling;w.classList.toggle('open');this.innerHTML=w.classList.contains('open')?'\\u25BC Input':'\\u25B6 Input'"><span class="arr">&#9654;</span> Input</div><div class="steps-wrap"><div class="card-orig" style="padding:8px 14px">${esc(it.originalText)}</div></div>`:''}</div>`;
 }
 
 // ═══════════════════════════════════════
