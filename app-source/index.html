@@ -829,25 +829,24 @@ function buildItemFromStructuredData(parsed, rawText) {
   return buildFromTemplate(parsed);
 }
 
+function buildStructuredTemplateFields(parsed, dest) {
+  const f = {};
+  f['Task'] = parsed.taskName || '';
+  if (parsed.activationEnergy) f['Activation energy'] = parsed.activationEnergy;
+  if (parsed.duration) f['Duration'] = parsed.duration;
+  if (parsed.why) f['Why'] = parsed.why;
+  if (parsed.how) f['How'] = parsed.how;
+  return f;
+}
+
 function buildFromTemplate(tmpl) {
   const now = Date.now();
   const taskName = tmpl.taskName;
   const d = inferDest(taskName);
   const conf = inferConf(taskName, d);
-  const fields = buildFields(taskName, d);
 
-  // Override fields with template data
-  if (tmpl.why) {
-    if (d === 'Ann') fields['Why it matters'] = tmpl.why;
-    else if (d === 'Michael') fields['Why Michael should own it'] = tmpl.why;
-    else if (d === 'Later') fields['Why parked'] = tmpl.why;
-    else if (d === 'AI') fields['Context'] = tmpl.why;
-  }
-  if (tmpl.duration) {
-    if (fields['Timebox'] !== undefined) fields['Timebox'] = tmpl.duration;
-    else if (d === 'Ann') fields['Deadline'] = tmpl.duration;
-    else fields['Timebox'] = tmpl.duration;
-  }
+  // Use dedicated structured fields — NOT the generic buildFields()
+  const fields = buildStructuredTemplateFields(tmpl, d);
 
   // Map urgency/importance text to score hints
   const urgMap = { low: 20, medium: 50, high: 85 };
@@ -855,8 +854,9 @@ function buildFromTemplate(tmpl) {
   const urgHint = tmpl.urgency ? (urgMap[tmpl.urgency.toLowerCase()] || 30) : null;
   const impHint = tmpl.importance ? (impMap[tmpl.importance.toLowerCase()] || 40) : null;
 
+  // Title is ONLY the task name — nothing else
   const it = {
-    id: nextId++, originalText: taskName, title: genTitle(taskName), destination: d, confidence: conf,
+    id: nextId++, originalText: taskName, title: taskName, destination: d, confidence: conf,
     rationale: rationale(d), structuredFields: fields,
     status: 'pending', recurrenceCount: 1, mergedFrom: [],
     repeatedSignal: false, unresolvedSignal: false, recurrenceMultiplier: 1,
