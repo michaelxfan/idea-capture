@@ -808,16 +808,8 @@ function normalizeStructuredText(text) {
 
 function isStructuredBlock(text) {
   const normalized = normalizeStructuredText(text);
-  const lines = normalized.split(/\n/).map(l => l.trim()).filter(Boolean);
-  let hits = 0;
-  for (const line of lines) {
-    const ci = line.indexOf(':');
-    if (ci > 0) {
-      const key = line.substring(0, ci).toLowerCase().trim();
-      if (STRUCT_ALIASES[key]) hits++;
-    }
-  }
-  return hits >= 2;
+  const matches = normalized.match(/(?:^|\n)\s*(task name|task|title|activation energy|ae|energy|duration|time|timebox|urgency|importance|why|reason|how|plan|approach|first step)\s*:/gim);
+  return matches && matches.length >= 2;
 }
 
 function parseStructuredBlock(text) {
