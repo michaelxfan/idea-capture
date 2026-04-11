@@ -787,6 +787,7 @@ function inferLabel(s,d) { return s>=80?'High leverage':s>=65?'Quick win':d==='M
 // ═══════════════════════════════════════
 // STRUCTURED TEMPLATE PARSING
 // ═══════════════════════════════════════
+const STRUCT_KEYS_PATTERN = 'task name|task|title|activation energy|ae|energy|duration|time|timebox|urgency|importance|why|reason|how|plan|approach|first step';
 const STRUCT_ALIASES = {
   'task name':'taskName','task':'taskName','title':'taskName',
   'activation energy':'activationEnergy','ae':'activationEnergy','energy':'activationEnergy',
@@ -797,8 +798,17 @@ const STRUCT_ALIASES = {
   'how':'how','plan':'how','approach':'how','first step':'how'
 };
 
+function normalizeStructuredText(text) {
+  // Normalize line endings, then ensure each known key starts on its own line
+  let t = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const re = new RegExp('\\s+(' + STRUCT_KEYS_PATTERN + ')\\s*:', 'gi');
+  t = t.replace(re, '\n$1:');
+  return t.trim();
+}
+
 function isStructuredBlock(text) {
-  const lines = text.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
+  const normalized = normalizeStructuredText(text);
+  const lines = normalized.split(/\n/).map(l => l.trim()).filter(Boolean);
   let hits = 0;
   for (const line of lines) {
     const ci = line.indexOf(':');
@@ -811,7 +821,8 @@ function isStructuredBlock(text) {
 }
 
 function parseStructuredBlock(text) {
-  const lines = text.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
+  const normalized = normalizeStructuredText(text);
+  const lines = normalized.split(/\n/).map(l => l.trim()).filter(Boolean);
   const result = {};
   for (const line of lines) {
     const ci = line.indexOf(':');
@@ -909,10 +920,11 @@ function parseInput(raw) {
   if (isStructuredBlock(t)) {
     const parsed = parseStructuredBlock(t);
     if (parsed.taskName) {
-      console.log('[IdeaCapture] Structured input detected:', parsed);
+      console.log('[IdeaCapture] STRUCTURED PATH:', JSON.stringify(parsed));
       return [buildItemFromStructuredData(parsed, t)];
     }
   }
+  console.log('[IdeaCapture] FALLBACK PATH — not structured');
 
   // ── FALLBACK: unstructured messy-note parsing ──
   let lines=t.split(/\n+/).map(l=>l.trim()).filter(Boolean);
