@@ -261,9 +261,26 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
 .divider{border:none;border-top:1px solid var(--border-light);margin:24px 0}
 .hidden{display:none}
 
-/* Reset button */
-.reset-btn{position:fixed;top:12px;right:12px;font-size:.65rem;color:var(--text-t);background:transparent;border:1px solid var(--border);border-radius:var(--r);padding:4px 10px;cursor:pointer;font-family:var(--font-u);z-index:10}
-.reset-btn:hover{background:var(--border-light);color:var(--text-s)}
+/* Reset + data buttons */
+.top-actions{position:fixed;top:10px;right:10px;display:flex;gap:5px;z-index:10}
+.top-actions button{font-size:.65rem;color:var(--text-t);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 10px;cursor:pointer;font-family:var(--font-u)}
+.top-actions button:hover{background:var(--border-light);color:var(--text-s)}
+@media(max-width:600px){.top-actions{top:6px;right:6px;gap:3px}.top-actions button{padding:5px 8px;font-size:.68rem}}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--r);box-shadow:0 4px 24px rgba(0,0,0,.12);width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-hdr{padding:16px 20px 12px;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:var(--font-b);font-size:1rem;font-weight:400}
+.modal-close{background:none;border:none;font-size:1.2rem;color:var(--text-t);cursor:pointer;padding:4px 8px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:16px 20px;flex:1;overflow-y:auto}
+.modal-body textarea{width:100%;min-height:200px;border:1px solid var(--border);border-radius:var(--r);padding:12px;font-family:monospace;font-size:.75rem;line-height:1.5;color:var(--text);resize:vertical;outline:none;background:var(--bg)}
+.modal-body textarea:focus{border-color:var(--accent)}
+.modal-body p{font-size:.78rem;color:var(--text-s);margin-bottom:10px}
+.modal-ft{padding:12px 20px;border-top:1px solid var(--border-light);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.modal-ft .btn{min-height:40px}
 
 /* Responsive */
 @media(max-width:600px){
@@ -279,7 +296,23 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
 </head>
 <body>
 
-<button class="reset-btn" onclick="if(confirm('Reset all data?')){resetAppState()}">Reset Session</button>
+<div class="top-actions">
+  <button onclick="openExportModal()">Export</button>
+  <button onclick="openImportModal()">Import</button>
+  <button onclick="if(confirm('Reset all data?')){resetAppState()}">Reset</button>
+</div>
+
+<!-- Data Modal -->
+<div class="modal-overlay" id="data-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title">Export Data</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-ft" id="modal-ft"></div>
+  </div>
+</div>
 
 <div class="container">
   <header>
@@ -1232,6 +1265,100 @@ document.addEventListener('keydown',e=>{
   const mod=e.metaKey||e.ctrlKey;
   if(mod&&e.key==='Enter'){e.preventDefault();processNotes();}
 });
+
+// ═══════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════
+function exportAppData() {
+  return JSON.stringify({ items, nextId, mode, ctx, timeBudget, tp, execLog, exportedAt: new Date().toISOString() }, null, 2);
+}
+
+function validateImportedData(data) {
+  if (!data || typeof data !== 'object') return false;
+  if (!Array.isArray(data.items)) return false;
+  if (typeof data.nextId !== 'number') return false;
+  if (!data.tp || typeof data.tp !== 'object') return false;
+  return true;
+}
+
+function importAppData(json) {
+  let data;
+  try { data = JSON.parse(json); } catch(e) { showToast('Invalid JSON'); return false; }
+  if (!validateImportedData(data)) { showToast('Invalid data format'); return false; }
+  items = data.items || [];
+  nextId = data.nextId || 1;
+  mode = data.mode || 'standard';
+  ctx = data.ctx || 'uber';
+  timeBudget = data.timeBudget || 5;
+  Object.assign(tp, data.tp || {});
+  execLog = data.execLog || [];
+  setModeUI(mode); setCtxUI(ctx); setTimeUI(timeBudget);
+  reScore();
+  saveState();
+  renderAll();
+  ['tp-bar','out-div','out-sec'].forEach(id => { if(items.length) document.getElementById(id).classList.remove('hidden'); });
+  return true;
+}
+
+function downloadAppData() {
+  const json = exportAppData();
+  const now = new Date();
+  const ts = now.toISOString().slice(0,16).replace(/[T:]/g,'-');
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `idea-capture-backup-${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+}
+
+function openExportModal() {
+  const json = exportAppData();
+  document.getElementById('modal-title').textContent = 'Export Data';
+  document.getElementById('modal-body').innerHTML =
+    '<p>Copy this JSON to transfer your data to another device.</p>' +
+    '<textarea id="export-ta" readonly>' + esc(json) + '</textarea>';
+  document.getElementById('modal-ft').innerHTML =
+    '<button class="btn btn-sm" onclick="downloadAppData();closeModal()">Download File</button>' +
+    '<button class="btn btn-sm btn-p" onclick="copyExport()">Copy to Clipboard</button>';
+  document.getElementById('data-modal').classList.add('open');
+  // Try auto-copy
+  clipCopy(json);
+}
+
+function copyExport() {
+  const ta = document.getElementById('export-ta');
+  if (ta) { clipCopy(ta.value); showToast('Data copied to clipboard'); }
+}
+
+function openImportModal() {
+  document.getElementById('modal-title').textContent = 'Import Data';
+  document.getElementById('modal-body').innerHTML =
+    '<p>Paste exported JSON below. This will replace all current data on this device.</p>' +
+    '<textarea id="import-ta" placeholder="Paste JSON here..."></textarea>';
+  document.getElementById('modal-ft').innerHTML =
+    '<button class="btn btn-sm" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-sm btn-p" onclick="confirmImport()">Import</button>';
+  document.getElementById('data-modal').classList.add('open');
+}
+
+function confirmImport() {
+  const ta = document.getElementById('import-ta');
+  if (!ta || !ta.value.trim()) { showToast('No data to import'); return; }
+  if (!confirm('Importing will replace all current local data. Continue?')) return;
+  if (importAppData(ta.value.trim())) {
+    closeModal();
+    showToast('Data imported successfully');
+  }
+}
+
+function closeModal() {
+  document.getElementById('data-modal').classList.remove('open');
+}
 
 // Init
 document.addEventListener('DOMContentLoaded',loadState);
