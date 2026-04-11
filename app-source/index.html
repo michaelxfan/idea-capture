@@ -788,27 +788,36 @@ function inferLabel(s,d) { return s>=80?'High leverage':s>=65?'Quick win':d==='M
 // STRUCTURED TEMPLATE PARSING
 // ═══════════════════════════════════════
 function parseStructuredTemplate(raw) {
-  // Detect if input uses "field: value" format
   const lines = raw.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
-  const fieldMap = {};
-  const KNOWN = ['task name','activation energy','duration','urgency','importance','why','how'];
+  const result = {};
+  // Alias map: normalized key → canonical field
+  const ALIASES = {
+    'task name':'taskName','task':'taskName','title':'taskName',
+    'activation energy':'activationEnergy','ae':'activationEnergy','energy':'activationEnergy',
+    'duration':'duration','time':'duration','timebox':'duration',
+    'urgency':'urgency',
+    'importance':'importance',
+    'why':'why','reason':'why',
+    'how':'how','plan':'how','approach':'how','first step':'how'
+  };
   let matched = 0;
   for (const line of lines) {
     const m = line.match(/^([a-zA-Z\s]+?)\s*:\s*(.+)$/);
     if (m) {
       const key = m[1].toLowerCase().trim();
       const val = m[2].trim();
-      if (KNOWN.includes(key)) { fieldMap[key] = val; matched++; }
+      const canonical = ALIASES[key];
+      if (canonical && val) { result[canonical] = val; matched++; }
     }
   }
-  // Need at least task name to consider it structured
-  if (!fieldMap['task name'] || matched < 2) return null;
-  return fieldMap;
+  // Need at least taskName to consider it structured
+  if (!result.taskName || matched < 2) return null;
+  return result;
 }
 
 function buildFromTemplate(tmpl) {
   const now = Date.now();
-  const taskName = tmpl['task name'];
+  const taskName = tmpl.taskName;
   const d = inferDest(taskName);
   const conf = inferConf(taskName, d);
   const fields = buildFields(taskName, d);
@@ -823,6 +832,7 @@ function buildFromTemplate(tmpl) {
   if (tmpl.duration) {
     if (fields['Timebox'] !== undefined) fields['Timebox'] = tmpl.duration;
     else if (d === 'Ann') fields['Deadline'] = tmpl.duration;
+    else fields['Timebox'] = tmpl.duration;
   }
 
   // Map urgency/importance text to score hints
@@ -839,7 +849,7 @@ function buildFromTemplate(tmpl) {
     urgencyScore: 0, importanceScore: 0, score: 0, actionPriority: 0, label: '',
     createdAt: now, lastTouchedAt: now, firstSeenAt: now, lastActionAt: null, snoozeUntil: null,
     selected: false, annStatus: null, aiStatus: null,
-    activationEnergy: tmpl['activation energy'] ? tmpl['activation energy'].toLowerCase() : null,
+    activationEnergy: tmpl.activationEnergy ? tmpl.activationEnergy.toLowerCase() : null,
     executionSteps: tmpl.how
       ? generateExecutionPlanFromHow(tmpl.how, taskName, d)
       : generateExecutionPlan(taskName, d),
