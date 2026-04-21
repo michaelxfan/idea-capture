@@ -123,6 +123,14 @@ interface ExplainPayload {
   timebox: string;
 }
 
+/* ───────── Tier auto-selection ───────── */
+
+function tierForTimeOfDay(tod: ReturnType<typeof classifyTimeOfDay>): Preference {
+  if (tod === "early-morning" || tod === "late-morning") return "strategic";      // Tier 1
+  if (tod === "early-afternoon" || tod === "late-afternoon") return "quick-wins"; // Tier 3
+  return "balanced"; // evening, night → Tier 2
+}
+
 /* ───────── Main component ───────── */
 
 const BOARD_OPTIONS = [
@@ -135,7 +143,9 @@ const BOARD_OPTIONS = [
 export default function WorkNowView() {
   const [assignee, setAssignee] = useState<string>(ASSIGNEES[0]?.name || "Michael");
   const [board, setBoard] = useState<string>("all");
-  const [preference, setPreference] = useState<Preference>("strategic");
+  const [preference, setPreference] = useState<Preference>(() =>
+    tierForTimeOfDay(classifyTimeOfDay(new Date()))
+  );
   const [loading, setLoading] = useState(false);
   const [explaining, setExplaining] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,6 +166,11 @@ export default function WorkNowView() {
   }, []);
   const currentTod = useMemo(() => classifyTimeOfDay(now), [now]);
   const currentTodLabel = useMemo(() => timeOfDayLabel(currentTod), [currentTod]);
+
+  // Auto-update tier when time-of-day segment changes (morning → Tier 1, afternoon → Tier 3, evening → Tier 2)
+  useEffect(() => {
+    setPreference(tierForTimeOfDay(currentTod));
+  }, [currentTod]);
 
   // Re-score tasks whenever preference changes without refetching
   useEffect(() => {
