@@ -8,31 +8,21 @@ const MOCK_RATIONALES: Record<string, string> = {
 };
 
 export function generateMockTasks(rawInput: string): Task[] {
-  const lines = rawInput
-    .split(/[\n.!?]+/)
-    .map((l) => l.trim())
-    .filter((l) => l.length > 5);
+  const dest = "Michael" as const;
+  const task: Task = {
+    id: `mock-${Date.now()}-0`,
+    rawInput,
+    taskName: rawInput.length > 60 ? rawInput.slice(0, 57) + "..." : rawInput,
+    activationEnergy: "medium",
+    duration: "30 min",
+    urgency: "medium",
+    importance: "high",
+    whyRouted: MOCK_RATIONALES[dest],
+    how: `Start by reviewing what "${rawInput.slice(0, 30)}..." requires`,
+    destination: dest,
+    confidence: 0.75,
+    createdAt: new Date().toISOString(),
+  };
 
-  const dests = ["Michael", "Ann", "AI", "Later"] as const;
-
-  const tasks: Task[] = (lines.length > 0 ? lines.slice(0, 3) : [rawInput]).map(
-    (line, i) => {
-      const dest = dests[i % 4];
-      return {
-        id: `mock-${Date.now()}-${i}`,
-        rawInput: line,
-        taskName: line.length > 60 ? line.slice(0, 57) + "..." : line,
-        activationEnergy: (["low", "medium", "high"] as const)[i % 3],
-        duration: ["15 min", "30 min", "1 hour"][i % 3],
-        urgency: (["medium", "high", "low"] as const)[i % 3],
-        importance: (["high", "medium", "low"] as const)[i % 3],
-        whyRouted: MOCK_RATIONALES[dest],
-        how: `Start by reviewing what "${line.slice(0, 30)}..." requires`,
-        destination: dest,
-        confidence: 0.7 + Math.random() * 0.25,
-      };
-    }
-  );
-
-  return tasks;
+  return [task];
 }
