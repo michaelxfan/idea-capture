@@ -59,6 +59,11 @@ export interface ScoredTask {
   shortReason: string;
 }
 
+export interface BatchSuggestion {
+  tasks: NormalizedTask[];
+  totalMinutes: number | null;
+}
+
 export interface RecommendationResult {
   timeOfDay: TimeOfDay;
   timeOfDayLabel: string;
@@ -66,6 +71,7 @@ export interface RecommendationResult {
   backups: ScoredTask[];
   all: ScoredTask[];
   explanation: string; // deterministic template; LLM may replace it
+  batchSuggestion?: BatchSuggestion;
 }
 
 export type Preference = "balanced" | "strategic" | "quick-wins";
@@ -412,7 +418,12 @@ export function normalizeClickUpTask(raw: ClickUpRawTask): NormalizedTask {
 
 export function recommend(
   tasks: NormalizedTask[],
-  opts: { now?: Date; preference?: Preference } = {}
+  opts: {
+    now?: Date;
+    preference?: Preference;
+    timeAvailable?: number | null; // minutes; null/undefined = no filter
+    snoozedIds?: string[];         // task IDs to exclude this session
+  } = {}
 ): RecommendationResult {
   const now = opts.now ?? new Date();
   const preference = opts.preference ?? "balanced";
@@ -420,13 +431,37 @@ export function recommend(
 
   // Filter out closed/completed and non-actionable statuses (external, blocked)
   const EXCLUDED_STATUSES = /^(external|blocked|cancelled|canceled|done|complete|completed)$/i;
+  const snoozedSet = new Set(opts.snoozedIds ?? []);
+
   const active = tasks.filter(
     (t) =>
       t.statusType !== "closed" &&
-      !(t.status && EXCLUDED_STATUSES.test(t.status.trim()))
+      !(t.status && EXCLUDED_STATUSES.test(t.status.trim())) &&
+      !snoozedSet.has(t.id)
   );
 
-  const scored: ScoredTask[] = active.map((task) => {
+  // Time-available filter: only exclude tasks that have an explicit duration AND exceed the window
+  const timeFiltered = opts.timeAvailable
+    ? active.filter((t) => !t.durationMinutes || t.durationMinutes <= opts.timeAvailable!)
+    : active;
+
+  // Detect batch opportunity: 3+ low-activation tasks that are short
+  const quickTasks = active.filter(
+    (t) => t.activationEnergy === "low" && (!t.durationMinutes || t.durationMinutes <= 20)
+  );
+  let batchSuggestion: BatchSuggestion | undefined;
+  if (quickTasks.length >= 3) {
+    const batch = quickTasks.slice(0, 5);
+    const withDuration = batch.filter((t) => t.durationMinutes != null);
+    batchSuggestion = {
+      tasks: batch,
+      totalMinutes: withDuration.length > 0
+        ? withDuration.reduce((s, t) => s + (t.durationMinutes ?? 0), 0)
+        : null,
+    };
+  }
+
+  const scored: ScoredTask[] = timeFiltered.map((task) => {
     const breakdown = scoreTask(task, now, tod, preference);
     return {
       task,
@@ -452,6 +487,7 @@ export function recommend(
     backups,
     all: scored,
     explanation,
+    batchSuggestion,
   };
 }
 

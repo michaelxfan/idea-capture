@@ -3,6 +3,7 @@
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { ASSIGNEES } from "@/lib/assignees";
 import {
+  BatchSuggestion,
   NormalizedTask,
   Preference,
   RecommendationResult,
@@ -125,10 +126,59 @@ interface ExplainPayload {
 
 /* ───────── Tier auto-selection ───────── */
 
+const TIER_ORDER: Preference[] = ["quick-wins", "balanced", "strategic"]; // ascending capability
+
 function tierForTimeOfDay(tod: ReturnType<typeof classifyTimeOfDay>): Preference {
   if (tod === "early-morning" || tod === "late-morning") return "strategic";      // Tier 1
   if (tod === "early-afternoon" || tod === "late-afternoon") return "quick-wins"; // Tier 3
   return "balanced"; // evening, night → Tier 2
+}
+
+/** Recovery score (0-100) caps the tier ceiling. Low recovery → quick-wins. */
+function effectiveTier(tod: ReturnType<typeof classifyTimeOfDay>, recovery: number | null): Preference {
+  const timeTier = tierForTimeOfDay(tod);
+  if (recovery === null) return timeTier;
+  const timeTierIdx = TIER_ORDER.indexOf(timeTier);
+  const maxIdx = recovery < 33 ? 0 : recovery < 67 ? 1 : 2;
+  return TIER_ORDER[Math.min(timeTierIdx, maxIdx)];
+}
+
+/* ───────── localStorage helpers ───────── */
+
+const SNOOZE_KEY = "work-now-snoozed";
+const DEFERRAL_KEY = "work-now-deferrals";
+const today = () => new Date().toISOString().slice(0, 10);
+
+function loadSnoozed(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(SNOOZE_KEY);
+    if (!raw) return new Set();
+    const parsed: Record<string, string> = JSON.parse(raw);
+    const todayStr = today();
+    return new Set(Object.entries(parsed).filter(([, d]) => d === todayStr).map(([id]) => id));
+  } catch { return new Set(); }
+}
+
+function saveSnoozed(s: Set<string>) {
+  if (typeof window === "undefined") return;
+  const todayStr = today();
+  const obj: Record<string, string> = {};
+  s.forEach((id) => { obj[id] = todayStr; });
+  localStorage.setItem(SNOOZE_KEY, JSON.stringify(obj));
+}
+
+function loadDeferrals(): Record<string, number> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(DEFERRAL_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveDeferrals(d: Record<string, number>) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(DEFERRAL_KEY, JSON.stringify(d));
 }
 
 /* ───────── Main component ───────── */
@@ -143,14 +193,24 @@ const BOARD_OPTIONS = [
 export default function WorkNowView() {
   const [assignee, setAssignee] = useState<string>(ASSIGNEES[0]?.name || "Michael");
   const [board, setBoard] = useState<string>("all");
+  const [timeAvailable, setTimeAvailable] = useState<string>("any");
   const [preference, setPreference] = useState<Preference>(() =>
-    tierForTimeOfDay(classifyTimeOfDay(new Date()))
+    effectiveTier(classifyTimeOfDay(new Date()), null)
   );
   const [loading, setLoading] = useState(false);
   const [explaining, setExplaining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mock, setMock] = useState(false);
   const [fetchErrors, setFetchErrors] = useState<string[] | null>(null);
+
+  // WHOOP / recovery
+  const [recoveryScore, setRecoveryScore] = useState<number | null>(null);
+  const [recoverySource, setRecoverySource] = useState<"whoop" | "none">("none");
+  const [manualRecovery, setManualRecovery] = useState<string>("");
+
+  // Snooze & deferrals (localStorage-backed)
+  const [snoozed, setSnoozed] = useState<Set<string>>(() => loadSnoozed());
+  const [deferrals, setDeferrals] = useState<Record<string, number>>(() => loadDeferrals());
 
   const [tasks, setTasks] = useState<NormalizedTask[] | null>(null);
   const [result, setResult] = useState<RecommendationResult | null>(null);
@@ -167,24 +227,52 @@ export default function WorkNowView() {
   const currentTod = useMemo(() => classifyTimeOfDay(now), [now]);
   const currentTodLabel = useMemo(() => timeOfDayLabel(currentTod), [currentTod]);
 
-  // Auto-update tier when time-of-day segment changes (morning → Tier 1, afternoon → Tier 3, evening → Tier 2)
+  // Fetch WHOOP recovery on mount
   useEffect(() => {
-    setPreference(tierForTimeOfDay(currentTod));
-  }, [currentTod]);
+    fetch("/api/whoop-recovery")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.recoveryScore !== null) {
+          setRecoveryScore(d.recoveryScore);
+          setRecoverySource("whoop");
+        }
+      })
+      .catch(() => {});
+  }, []);
 
-  // Re-score tasks whenever preference changes without refetching
+  // Derive effective recovery: WHOOP takes priority, then manual input
+  const effectiveRecovery = useMemo(() => {
+    if (recoverySource === "whoop" && recoveryScore !== null) return recoveryScore;
+    const m = parseInt(manualRecovery, 10);
+    return !isNaN(m) && m >= 0 && m <= 100 ? m : null;
+  }, [recoveryScore, recoverySource, manualRecovery]);
+
+  // Auto-update tier when time-of-day or recovery changes
+  useEffect(() => {
+    setPreference(effectiveTier(currentTod, effectiveRecovery));
+  }, [currentTod, effectiveRecovery]);
+
+  // Re-score tasks whenever preference or time-available changes
   useEffect(() => {
     if (!tasks) return;
-    const r = recommend(tasks, { preference, now: new Date() });
+    const minutes = timeAvailable === "any" ? null : parseInt(timeAvailable, 10);
+    const r = recommend(tasks, { preference, now: new Date(), timeAvailable: minutes, snoozedIds: [...snoozed] });
     setResult(r);
     setExplain(null);
     setShowingBackupId(null);
     if (r.top) fetchExplanation(r.top, r);
-    // fetchExplanation is stable (defined outside effect) — excluding it from deps is safe
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preference, tasks]);
+  }, [preference, tasks, timeAvailable, snoozed]);
 
   async function handleRecommend(refresh = false) {
+    // Track deferral: if re-recommending and there was a top task, count it as skipped
+    if (result?.top) {
+      const skippedId = result.top.task.id;
+      const updated = { ...deferrals, [skippedId]: (deferrals[skippedId] ?? 0) + 1 };
+      setDeferrals(updated);
+      saveDeferrals(updated);
+    }
+
     setLoading(true);
     setError(null);
     setExplain(null);
@@ -204,7 +292,8 @@ export default function WorkNowView() {
       const fetched: NormalizedTask[] = data.tasks || [];
       setTasks(fetched);
 
-      const r = recommend(fetched, { preference, now: new Date() });
+      const minutes = timeAvailable === "any" ? null : parseInt(timeAvailable, 10);
+      const r = recommend(fetched, { preference, now: new Date(), timeAvailable: minutes, snoozedIds: [...snoozed] });
       setResult(r);
 
       if (r.top) {
@@ -217,8 +306,32 @@ export default function WorkNowView() {
     }
   }
 
+  function snoozeTask(id: string) {
+    const updated = new Set(snoozed);
+    updated.add(id);
+    setSnoozed(updated);
+    saveSnoozed(updated);
+  }
+
   async function fetchExplanation(target: ScoredTask, r: RecommendationResult) {
     setExplaining(true);
+
+    // Fetch latest comment in parallel with nothing blocking — fire and forget into the explain call
+    let latestComment: string | null = null;
+    try {
+      if (target.task.id && !target.task.id.startsWith("mock-")) {
+        const cRes = await fetch("/api/task-comments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ taskId: target.task.id }),
+        });
+        if (cRes.ok) {
+          const cData = await cRes.json();
+          latestComment = cData.latestComment ?? null;
+        }
+      }
+    } catch { /* silently ignore */ }
+
     try {
       const res = await fetch("/api/work-now-explain", {
         method: "POST",
@@ -229,6 +342,7 @@ export default function WorkNowView() {
           timeOfDayLabel: r.timeOfDayLabel,
           preference,
           breakdown: target.breakdown,
+          latestComment,
         }),
       });
       const data = await res.json();
@@ -288,10 +402,11 @@ export default function WorkNowView() {
       <section style={{ marginBottom: 24 }}>
         <div className="section-label">Controls</div>
         <div style={{ ...styles.card, padding: 14 }}>
+          {/* Row 1: Assignee / Board / Mode / Time available */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr",
               gap: 10,
               marginBottom: 10,
             }}
@@ -304,9 +419,7 @@ export default function WorkNowView() {
                 style={styles.select}
               >
                 {ASSIGNEES.map((a) => (
-                  <option key={a.name} value={a.name}>
-                    {a.name}
-                  </option>
+                  <option key={a.name} value={a.name}>{a.name}</option>
                 ))}
               </select>
             </div>
@@ -318,9 +431,7 @@ export default function WorkNowView() {
                 style={styles.select}
               >
                 {BOARD_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
+                  <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
             </div>
@@ -335,6 +446,67 @@ export default function WorkNowView() {
                 <option value="balanced">Tier 2 hours</option>
                 <option value="quick-wins">Tier 3 hours</option>
               </select>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <label style={styles.fieldLabel}>Time available</label>
+              <select
+                value={timeAvailable}
+                onChange={(e) => setTimeAvailable(e.target.value)}
+                style={styles.select}
+              >
+                <option value="any">Any</option>
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="60">1 hour</option>
+                <option value="120">2 hours</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Row 2: Recovery score (WHOOP auto or manual) */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={styles.fieldLabel}>Recovery</span>
+              {recoverySource === "whoop" && recoveryScore !== null ? (
+                <span
+                  style={{
+                    ...styles.pill(recoveryScore >= 67 ? "accent" : recoveryScore >= 33 ? "muted" : "warn"),
+                    fontSize: "0.65rem",
+                  }}
+                >
+                  WHOOP {recoveryScore}%
+                </span>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    placeholder="Score 0–100"
+                    value={manualRecovery}
+                    onChange={(e) => setManualRecovery(e.target.value)}
+                    style={{
+                      ...styles.select,
+                      width: 120,
+                      padding: "5px 8px",
+                      fontSize: "0.78rem",
+                    }}
+                  />
+                  {effectiveRecovery !== null && (
+                    <span
+                      style={{
+                        ...styles.pill(effectiveRecovery >= 67 ? "accent" : effectiveRecovery >= 33 ? "muted" : "warn"),
+                        fontSize: "0.65rem",
+                      }}
+                    >
+                      {effectiveRecovery >= 67 ? "High" : effectiveRecovery >= 33 ? "Medium" : "Low"} recovery
+                    </span>
+                  )}
+                  <span style={{ fontSize: "0.65rem", color: "var(--text-tertiary)", fontFamily: "var(--font-body)" }}>
+                    optional · sets tier ceiling
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -485,6 +657,13 @@ export default function WorkNowView() {
         </div>
       )}
 
+      {/* Batch suggestion */}
+      {!loading && result?.batchSuggestion && !showingBackupId && (
+        <div style={{ marginBottom: 16 }}>
+          <BatchCard batch={result.batchSuggestion} deferrals={deferrals} onSnooze={snoozeTask} />
+        </div>
+      )}
+
       {/* Recommendation */}
       {!loading && result && activeScored && (
         <section>
@@ -524,6 +703,8 @@ export default function WorkNowView() {
             scored={activeScored}
             explain={explain}
             explaining={explaining}
+            deferralCount={deferrals[activeScored.task.id] ?? 0}
+            onSnooze={() => snoozeTask(activeScored.task.id)}
           />
 
           {/* Backups */}
@@ -536,7 +717,9 @@ export default function WorkNowView() {
                     key={b.task.id}
                     scored={b}
                     active={showingBackupId === b.task.id}
+                    deferralCount={deferrals[b.task.id] ?? 0}
                     onSelect={() => selectBackup(b)}
+                    onSnooze={() => snoozeTask(b.task.id)}
                   />
                 ))}
               </div>
@@ -594,10 +777,14 @@ function RecommendedCard({
   scored,
   explain,
   explaining,
+  deferralCount,
+  onSnooze,
 }: {
   scored: ScoredTask;
   explain: ExplainPayload | null;
   explaining: boolean;
+  deferralCount: number;
+  onSnooze: () => void;
 }) {
   const { task } = scored;
   return (
@@ -621,6 +808,9 @@ function RecommendedCard({
           <span style={styles.pill("accent")}>Recommended</span>
           {task.listName && <span style={styles.pill()}>{task.listName}</span>}
           {task.isBlocked && <span style={styles.pill("warn")}>Possibly blocked</span>}
+          {deferralCount >= 2 && (
+            <span style={styles.pill("warn")}>skipped {deferralCount}×</span>
+          )}
         </div>
         <h2
           style={{
@@ -763,44 +953,59 @@ function RecommendedCard({
         )}
 
         {/* Accept CTA */}
-        {task.url && (
-          <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 10 }}>
-            <a
-              href={task.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "0.82rem",
-                fontWeight: 600,
-                padding: "9px 20px",
-                borderRadius: 6,
-                background: "var(--accent)",
-                color: "#fff",
-                textDecoration: "none",
-                letterSpacing: "0.02em",
-                display: "inline-block",
-              }}
-            >
-              Start this task →
-            </a>
-            <a
-              href={task.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--text-tertiary)",
-                fontFamily: "var(--font-body)",
-                textDecoration: "none",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-secondary)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}
-            >
-              Open in ClickUp
-            </a>
-          </div>
-        )}
+        <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {task.url && (
+            <>
+              <a
+                href={task.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  padding: "9px 20px",
+                  borderRadius: 6,
+                  background: "var(--accent)",
+                  color: "#fff",
+                  textDecoration: "none",
+                  letterSpacing: "0.02em",
+                  display: "inline-block",
+                }}
+              >
+                Start this task →
+              </a>
+              <a
+                href={task.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: "0.7rem",
+                  color: "var(--text-tertiary)",
+                  fontFamily: "var(--font-body)",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-secondary)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}
+              >
+                Open in ClickUp
+              </a>
+            </>
+          )}
+          <button
+            onClick={onSnooze}
+            style={{
+              ...styles.ghostButton,
+              marginLeft: task.url ? "auto" : 0,
+              fontSize: "0.7rem",
+              padding: "5px 10px",
+              minHeight: 28,
+            }}
+            title="Hide this task for the rest of today"
+          >
+            Not now
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -811,75 +1016,121 @@ function RecommendedCard({
 function BackupRow({
   scored,
   active,
+  deferralCount,
   onSelect,
+  onSnooze,
 }: {
   scored: ScoredTask;
   active: boolean;
+  deferralCount: number;
   onSelect: () => void;
+  onSnooze: () => void;
 }) {
   const { task } = scored;
   return (
-    <button
-      onClick={onSelect}
+    <div
       style={{
         ...styles.card,
         padding: "10px 12px",
-        cursor: "pointer",
-        textAlign: "left",
         border: active ? "1px solid var(--text-primary)" : "1px solid var(--border)",
         background: active ? "var(--border-light)" : "var(--surface)",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 8,
       }}
     >
-      <div
+      <button
+        onClick={onSelect}
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 8,
+          flex: 1,
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+          padding: 0,
+          minWidth: 0,
         }}
       >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "0.88rem",
-              fontWeight: 400,
-              color: "var(--text-primary)",
-              lineHeight: 1.4,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {task.name}
-          </div>
-          <div
-            style={{
-              fontSize: "0.7rem",
-              color: "var(--text-tertiary)",
-              fontFamily: "var(--font-body)",
-              marginTop: 3,
-              lineHeight: 1.5,
-            }}
-          >
-            {scored.shortReason}
-          </div>
-        </div>
         <div
           style={{
-            fontSize: "0.62rem",
-            fontWeight: 600,
-            padding: "2px 8px",
-            borderRadius: 20,
-            background: "var(--border-light)",
-            color: "var(--text-secondary)",
-            fontFamily: "var(--font-body)",
-            whiteSpace: "nowrap",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 8,
           }}
         >
-          {Math.round(scored.score * 100)}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "0.88rem",
+                fontWeight: 400,
+                color: "var(--text-primary)",
+                lineHeight: 1.4,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {task.name}
+              {deferralCount >= 2 && (
+                <span
+                  style={{
+                    marginLeft: 8,
+                    fontSize: "0.62rem",
+                    color: "var(--high-text)",
+                    fontFamily: "var(--font-body)",
+                  }}
+                >
+                  skipped {deferralCount}×
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                fontSize: "0.7rem",
+                color: "var(--text-tertiary)",
+                fontFamily: "var(--font-body)",
+                marginTop: 3,
+                lineHeight: 1.5,
+              }}
+            >
+              {scored.shortReason}
+            </div>
+          </div>
+          <div
+            style={{
+              fontSize: "0.62rem",
+              fontWeight: 600,
+              padding: "2px 8px",
+              borderRadius: 20,
+              background: "var(--border-light)",
+              color: "var(--text-secondary)",
+              fontFamily: "var(--font-body)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {Math.round(scored.score * 100)}
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); onSnooze(); }}
+        title="Hide for today"
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "var(--text-tertiary)",
+          fontSize: "0.7rem",
+          padding: "2px 4px",
+          fontFamily: "var(--font-body)",
+          flexShrink: 0,
+          alignSelf: "center",
+        }}
+      >
+        ✕
+      </button>
+    </div>
   );
 }
 
@@ -992,6 +1243,151 @@ function MetadataPanel({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ───────── Batch card ───────── */
+
+function BatchCard({
+  batch,
+  deferrals,
+  onSnooze,
+}: {
+  batch: BatchSuggestion;
+  deferrals: Record<string, number>;
+  onSnooze: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const totalLabel = batch.totalMinutes
+    ? `~${batch.totalMinutes} min`
+    : `${batch.tasks.length} tasks`;
+
+  return (
+    <div
+      style={{
+        ...styles.card,
+        border: "1px dashed var(--border)",
+        background: "var(--border-light)",
+      }}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: "10px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          textAlign: "left",
+        }}
+      >
+        <span style={{ fontSize: "0.8rem" }}>⚡</span>
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.9rem",
+            color: "var(--text-primary)",
+            flex: 1,
+          }}
+        >
+          Quick batch: {batch.tasks.length} low-energy tasks — {totalLabel}
+        </span>
+        <span
+          style={{
+            fontSize: "0.62rem",
+            color: "var(--text-tertiary)",
+            fontFamily: "var(--font-body)",
+            transform: open ? "rotate(180deg)" : "none",
+            display: "inline-block",
+          }}
+        >
+          ▼
+        </span>
+      </button>
+
+      {open && (
+        <div
+          style={{
+            borderTop: "1px solid var(--border)",
+            padding: "10px 14px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+          }}
+        >
+          {batch.tasks.map((t) => (
+            <div
+              key={t.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: "0.8rem",
+                fontFamily: "var(--font-body)",
+                color: "var(--text-primary)",
+              }}
+            >
+              <span style={{ flex: 1 }}>
+                {t.name}
+                {deferrals[t.id] >= 2 && (
+                  <span style={{ marginLeft: 6, fontSize: "0.65rem", color: "var(--high-text)" }}>
+                    skipped {deferrals[t.id]}×
+                  </span>
+                )}
+                {t.durationMinutes && (
+                  <span style={{ marginLeft: 6, fontSize: "0.68rem", color: "var(--text-tertiary)" }}>
+                    {t.durationMinutes} min
+                  </span>
+                )}
+              </span>
+              {t.url && (
+                <a
+                  href={t.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontSize: "0.68rem",
+                    color: "var(--text-tertiary)",
+                    fontFamily: "var(--font-body)",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Open ↗
+                </a>
+              )}
+              <button
+                onClick={() => onSnooze(t.id)}
+                title="Hide for today"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--text-tertiary)",
+                  fontSize: "0.7rem",
+                  padding: "0 2px",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: "0.68rem",
+              color: "var(--text-tertiary)",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            Run these back-to-back to clear your admin queue.
+          </div>
+        </div>
+      )}
     </div>
   );
 }

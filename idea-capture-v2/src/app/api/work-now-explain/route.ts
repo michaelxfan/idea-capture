@@ -19,7 +19,7 @@ Return JSON only, no markdown, no wrapping:
 }`;
 
 export async function POST(req: NextRequest) {
-  const { task, timeOfDay, timeOfDayLabel, preference, breakdown } = await req.json();
+  const { task, timeOfDay, timeOfDayLabel, preference, breakdown, latestComment } = await req.json();
 
   if (!task) {
     return NextResponse.json({ error: "task required" }, { status: 400 });
@@ -47,7 +47,8 @@ Task:
 - Tags: ${(task.tags || []).join(", ") || "none"}
 - Strategic: ${task.isStrategic ? "yes" : "no"}
 - Possibly blocked: ${task.isBlocked ? "yes" : "no"}
-- Description: ${task.description ? task.description.slice(0, 800) : "(none)"}
+- Description: ${task.description ? task.description.slice(0, 600) : "(none)"}
+- Latest comment: ${latestComment ? latestComment.slice(0, 400) : "(none)"}
 
 Score signals (0-1 scale, for context only — do not quote them):
 ${breakdown ? JSON.stringify(breakdown) : "n/a"}
