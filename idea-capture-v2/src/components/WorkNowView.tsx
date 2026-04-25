@@ -114,6 +114,75 @@ const styles = {
   } as CSSProperties,
 };
 
+/* ───────── Recovery ring ───────── */
+
+function RecoveryRing({ score, size = 52 }: { score: number; size?: number }) {
+  const strokeWidth = 7;
+  const r = (size - strokeWidth) / 2;
+  const cx = size / 2;
+  const cy = size / 2;
+  const circumference = 2 * Math.PI * r;
+  const filled = (score / 100) * circumference;
+  const color =
+    score >= 67 ? "#22c55e" : score >= 33 ? "#f59e0b" : "#ef4444";
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: size,
+        height: size,
+        flexShrink: 0,
+      }}
+    >
+      <svg
+        width={size}
+        height={size}
+        style={{ display: "block", transform: "rotate(-90deg)" }}
+      >
+        {/* Track */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          fill="none"
+          stroke="var(--border)"
+          strokeWidth={strokeWidth}
+        />
+        {/* Progress */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={`${filled} ${circumference}`}
+          strokeLinecap="round"
+        />
+      </svg>
+      {/* Score label — un-rotated overlay */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "var(--font-body)",
+          fontSize: size * 0.24,
+          fontWeight: 700,
+          color,
+          letterSpacing: "-0.02em",
+          lineHeight: 1,
+        }}
+      >
+        {score}
+      </div>
+    </div>
+  );
+}
+
 /* ───────── Types ───────── */
 
 interface ExplainPayload {
@@ -122,6 +191,16 @@ interface ExplainPayload {
   nextSteps: string[];
   blockersToCheck: string[];
   timebox: string;
+}
+
+/* ───────── WHOOP connect URL — env-aware ───────── */
+// Local dev: reuse TAOS (redirect URI already registered at localhost:3000)
+// Production: use our own OAuth route (requires Vercel callback URI registered)
+function whoopConnectUrl(): string {
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:3000/auth/whoop";
+  }
+  return "/api/whoop/connect";
 }
 
 /* ───────── Tier auto-selection ───────── */
@@ -205,7 +284,13 @@ export default function WorkNowView() {
 
   // WHOOP / recovery
   const [recoveryScore, setRecoveryScore] = useState<number | null>(null);
+  const [recoveryHrv, setRecoveryHrv] = useState<number | null>(null);
+  const [recoveryRhr, setRecoveryRhr] = useState<number | null>(null);
+  const [sleepHours, setSleepHours] = useState<number | null>(null);
+  const [sleepPerformance, setSleepPerformance] = useState<number | null>(null);
   const [recoverySource, setRecoverySource] = useState<"whoop" | "none">("none");
+  const [whoopConnected, setWhoopConnected] = useState(false);
+  const [whoopNotice, setWhoopNotice] = useState<"connected" | "error" | "disconnected" | null>(null);
   const [manualRecovery, setManualRecovery] = useState<string>("");
 
   // Snooze & deferrals (localStorage-backed)
@@ -227,17 +312,42 @@ export default function WorkNowView() {
   const currentTod = useMemo(() => classifyTimeOfDay(now), [now]);
   const currentTodLabel = useMemo(() => timeOfDayLabel(currentTod), [currentTod]);
 
-  // Fetch WHOOP recovery on mount
+  // Detect ?whoop= query param from OAuth callback
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const wp = params.get("whoop");
+    if (wp === "connected" || wp === "error" || wp === "disconnected") {
+      setWhoopNotice(wp as "connected" | "error" | "disconnected");
+      // Clean URL without reload
+      const clean = window.location.pathname;
+      window.history.replaceState({}, "", clean);
+    }
+  }, []);
+
+  // Fetch WHOOP recovery on mount (and re-fetch after connect)
+  const fetchWhoopRecovery = () => {
     fetch("/api/whoop-recovery")
       .then((r) => r.json())
       .then((d) => {
+        setWhoopConnected(!!d.connected);
         if (d.recoveryScore !== null) {
           setRecoveryScore(d.recoveryScore);
+          setRecoveryHrv(d.hrv ?? null);
+          setRecoveryRhr(d.restingHeartRate ?? null);
+          setSleepHours(d.sleepHours ?? null);
+          setSleepPerformance(d.sleepPerformance ?? null);
           setRecoverySource("whoop");
+        } else {
+          setRecoverySource("none");
         }
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchWhoopRecovery();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Derive effective recovery: WHOOP takes priority, then manual input
@@ -398,6 +508,61 @@ export default function WorkNowView() {
 
   return (
     <div>
+      {/* WHOOP OAuth notice */}
+      {whoopNotice && (
+        <div
+          style={{
+            marginBottom: 16,
+            padding: "10px 14px",
+            borderRadius: 6,
+            border: `1px solid ${whoopNotice === "connected" ? "#bbf7d0" : whoopNotice === "disconnected" ? "var(--border)" : "#fecaca"}`,
+            background:
+              whoopNotice === "connected"
+                ? "#f0fdf4"
+                : whoopNotice === "disconnected"
+                ? "var(--border-light)"
+                : "#fef2f2",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.78rem",
+              fontFamily: "var(--font-body)",
+              color:
+                whoopNotice === "connected"
+                  ? "#15803d"
+                  : whoopNotice === "disconnected"
+                  ? "var(--text-secondary)"
+                  : "#b91c1c",
+            }}
+          >
+            {whoopNotice === "connected"
+              ? "✓ WHOOP connected — recovery data loaded"
+              : whoopNotice === "disconnected"
+              ? "WHOOP disconnected"
+              : "⚠ WHOOP connection failed — check that the redirect URI is registered in your WHOOP developer app"}
+          </span>
+          <button
+            onClick={() => setWhoopNotice(null)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--text-tertiary)",
+              fontSize: "0.75rem",
+              padding: "0 4px",
+              fontFamily: "var(--font-body)",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Controls */}
       <section style={{ marginBottom: 24 }}>
         <div className="section-label">Controls</div>
@@ -406,7 +571,7 @@ export default function WorkNowView() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
               gap: 10,
               marginBottom: 10,
             }}
@@ -463,51 +628,202 @@ export default function WorkNowView() {
             </div>
           </div>
 
-          {/* Row 2: Recovery score (WHOOP auto or manual) */}
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={styles.fieldLabel}>Recovery</span>
-              {recoverySource === "whoop" && recoveryScore !== null ? (
+          {/* Row 2: Recovery / WHOOP */}
+          <div
+            style={{
+              marginBottom: 10,
+              padding: "10px 12px",
+              border: "1px solid var(--border-light)",
+              borderRadius: 6,
+              background: "var(--bg)",
+            }}
+          >
+            {recoverySource === "whoop" && recoveryScore !== null ? (
+              /* ── Connected + data ── */
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <RecoveryRing score={recoveryScore} size={52} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      fontSize: "0.82rem",
+                      fontWeight: 600,
+                      color:
+                        recoveryScore >= 67
+                          ? "#22c55e"
+                          : recoveryScore >= 33
+                          ? "#f59e0b"
+                          : "#ef4444",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {recoveryScore >= 67
+                      ? "High recovery"
+                      : recoveryScore >= 33
+                      ? "Medium recovery"
+                      : "Low recovery"}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      fontSize: "0.65rem",
+                      color: "var(--text-tertiary)",
+                      marginTop: 2,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      WHOOP
+                      {recoveryHrv !== null && ` · HRV ${recoveryHrv} ms`}
+                      {recoveryRhr !== null && ` · RHR ${recoveryRhr} bpm`}
+                    </div>
+                    {(sleepHours !== null || sleepPerformance !== null) && (
+                      <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {sleepHours !== null && `${sleepHours}h sleep`}
+                        {sleepHours !== null && sleepPerformance !== null && " · "}
+                        {sleepPerformance !== null && `${sleepPerformance}% quality`}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <a
+                  href="/api/whoop/disconnect"
+                  style={{
+                    fontSize: "0.65rem",
+                    color: "var(--text-tertiary)",
+                    fontFamily: "var(--font-body)",
+                    textDecoration: "none",
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--text-secondary)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--text-tertiary)")
+                  }
+                >
+                  Disconnect
+                </a>
+              </div>
+            ) : whoopConnected ? (
+              /* ── Connected but no data today ── */
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={styles.fieldLabel}>Recovery</span>
                 <span
                   style={{
-                    ...styles.pill(recoveryScore >= 67 ? "accent" : recoveryScore >= 33 ? "muted" : "warn"),
-                    fontSize: "0.65rem",
+                    fontSize: "0.75rem",
+                    color: "var(--text-secondary)",
+                    fontFamily: "var(--font-body)",
+                    flex: 1,
                   }}
                 >
-                  WHOOP {recoveryScore}%
+                  WHOOP connected — no data yet today
                 </span>
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    placeholder="Score 0–100"
-                    value={manualRecovery}
-                    onChange={(e) => setManualRecovery(e.target.value)}
+                <a
+                  href="/api/whoop/disconnect"
+                  style={{
+                    fontSize: "0.65rem",
+                    color: "var(--text-tertiary)",
+                    fontFamily: "var(--font-body)",
+                    textDecoration: "none",
+                  }}
+                >
+                  Disconnect
+                </a>
+              </div>
+            ) : (
+              /* ── Not connected ── */
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  rowGap: 8,
+                }}
+              >
+                <span style={{ ...styles.fieldLabel, flexShrink: 0 }}>Recovery</span>
+                <a
+                  href={whoopConnectUrl()}
+                  target={whoopConnectUrl().startsWith("http://localhost") ? "_blank" : "_self"}
+                  rel="noopener noreferrer"
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    padding: "5px 12px",
+                    borderRadius: 6,
+                    background: "#1a1a2e",
+                    color: "#fff",
+                    textDecoration: "none",
+                    letterSpacing: "0.02em",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  ⚡ Connect WHOOP
+                </a>
+                {/* divider */}
+                <span
+                  style={{
+                    fontSize: "0.62rem",
+                    color: "var(--text-tertiary)",
+                    fontFamily: "var(--font-body)",
+                  }}
+                >
+                  or
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  placeholder="0–100"
+                  value={manualRecovery}
+                  onChange={(e) => setManualRecovery(e.target.value)}
+                  style={{
+                    ...styles.select,
+                    width: 76,
+                    padding: "5px 8px",
+                    fontSize: "0.78rem",
+                    flexShrink: 0,
+                  }}
+                />
+                {effectiveRecovery !== null ? (
+                  <span
                     style={{
-                      ...styles.select,
-                      width: 120,
-                      padding: "5px 8px",
-                      fontSize: "0.78rem",
+                      ...styles.pill(
+                        effectiveRecovery >= 67
+                          ? "accent"
+                          : effectiveRecovery >= 33
+                          ? "muted"
+                          : "warn"
+                      ),
+                      fontSize: "0.65rem",
                     }}
-                  />
-                  {effectiveRecovery !== null && (
-                    <span
-                      style={{
-                        ...styles.pill(effectiveRecovery >= 67 ? "accent" : effectiveRecovery >= 33 ? "muted" : "warn"),
-                        fontSize: "0.65rem",
-                      }}
-                    >
-                      {effectiveRecovery >= 67 ? "High" : effectiveRecovery >= 33 ? "Medium" : "Low"} recovery
-                    </span>
-                  )}
-                  <span style={{ fontSize: "0.65rem", color: "var(--text-tertiary)", fontFamily: "var(--font-body)" }}>
-                    optional · sets tier ceiling
+                  >
+                    {effectiveRecovery >= 67
+                      ? "High"
+                      : effectiveRecovery >= 33
+                      ? "Med"
+                      : "Low"}
                   </span>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: "0.62rem",
+                      color: "var(--text-tertiary)",
+                      fontFamily: "var(--font-body)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    manual
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div

@@ -118,43 +118,77 @@ export async function GET() {
       recoveryScore: null,
       hrv: null,
       restingHeartRate: null,
+      sleepHours: null,
+      sleepPerformance: null,
       source: "none",
       connected: false,
     });
   }
 
   try {
-    const res = await fetch(
-      "https://api.prod.whoop.com/developer/v2/recovery?limit=1&sort=desc",
-      {
+    // Fetch recovery and sleep in parallel
+    const [recoveryRes, sleepRes] = await Promise.all([
+      fetch("https://api.prod.whoop.com/developer/v2/recovery?limit=1&sort=desc", {
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
-      }
-    );
+      }),
+      fetch("https://api.prod.whoop.com/developer/v1/sleep?limit=1&sort=desc", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      }),
+    ]);
 
-    if (!res.ok) {
-      console.error("WHOOP API error:", res.status);
+    if (!recoveryRes.ok) {
+      console.error("WHOOP recovery API error:", recoveryRes.status);
       return NextResponse.json({
         recoveryScore: null,
         hrv: null,
         restingHeartRate: null,
+        sleepHours: null,
+        sleepPerformance: null,
         source: "none",
         connected,
       });
     }
 
-    const data = await res.json();
-    const record = data?.records?.[0];
+    const recoveryData = await recoveryRes.json();
+    const record = recoveryData?.records?.[0];
     const recoveryScore = record?.score?.recovery_score ?? null;
     const hrv = record?.score?.hrv_rmssd_milli
       ? Math.round(record.score.hrv_rmssd_milli)
       : null;
     const restingHeartRate = record?.score?.resting_heart_rate ?? null;
 
+    // Parse sleep data (non-fatal if it fails)
+    let sleepHours: number | null = null;
+    let sleepPerformance: number | null = null;
+    try {
+      if (sleepRes.ok) {
+        const sleepData = await sleepRes.json();
+        const sleepRecord = sleepData?.records?.[0];
+        const stages = sleepRecord?.score?.stage_summary;
+        if (stages) {
+          const totalSleepMs =
+            (stages.total_light_sleep_time_milli ?? 0) +
+            (stages.total_slow_wave_sleep_time_milli ?? 0) +
+            (stages.total_rem_sleep_time_milli ?? 0);
+          if (totalSleepMs > 0) {
+            sleepHours = Math.round((totalSleepMs / 3_600_000) * 10) / 10;
+          }
+        }
+        const perf = sleepRecord?.score?.sleep_performance_percentage;
+        if (perf != null) sleepPerformance = Math.round(perf);
+      }
+    } catch (sleepErr) {
+      console.error("WHOOP sleep parse error:", sleepErr);
+    }
+
     return NextResponse.json({
       recoveryScore,
       hrv,
       restingHeartRate,
+      sleepHours,
+      sleepPerformance,
       source: "whoop",
       connected: true,
     });
@@ -164,6 +198,8 @@ export async function GET() {
       recoveryScore: null,
       hrv: null,
       restingHeartRate: null,
+      sleepHours: null,
+      sleepPerformance: null,
       source: "none",
       connected,
     });
