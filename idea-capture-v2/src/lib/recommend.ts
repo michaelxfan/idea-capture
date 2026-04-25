@@ -105,6 +105,17 @@ export function timeOfDayLabel(t: TimeOfDay): string {
   }
 }
 
+export function timeOfDayShortLabel(t: TimeOfDay): string {
+  switch (t) {
+    case "early-morning": return "Morning";
+    case "late-morning":  return "Midday";
+    case "early-afternoon": return "Afternoon";
+    case "late-afternoon":  return "Evening";
+    case "evening":       return "Evening";
+    case "night":         return "Night";
+  }
+}
+
 /**
  * For a given time-of-day, returns how well a task's activation energy fits.
  * Returns 0..1.

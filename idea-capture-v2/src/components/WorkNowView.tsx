@@ -11,6 +11,7 @@ import {
   classifyTimeOfDay,
   recommend,
   timeOfDayLabel,
+  timeOfDayShortLabel,
 } from "@/lib/recommend";
 
 /* ───────── Styles — reuse app design tokens ───────── */
@@ -311,6 +312,7 @@ export default function WorkNowView() {
   }, []);
   const currentTod = useMemo(() => classifyTimeOfDay(now), [now]);
   const currentTodLabel = useMemo(() => timeOfDayLabel(currentTod), [currentTod]);
+  const currentTodShort = useMemo(() => timeOfDayShortLabel(currentTod), [currentTod]);
 
   // Detect ?whoop= query param from OAuth callback
   useEffect(() => {
@@ -839,11 +841,7 @@ export default function WorkNowView() {
               disabled={loading}
               style={styles.primaryButton(loading)}
             >
-              {loading
-                ? "Thinking..."
-                : result
-                ? "Recommend again"
-                : "Recommend what to work on"}
+              {loading ? "Thinking..." : "Recommend"}
             </button>
             {result && (
               <button
@@ -856,7 +854,7 @@ export default function WorkNowView() {
               </button>
             )}
             <span style={{ ...styles.pill("accent"), marginLeft: "auto" }}>
-              {currentTodLabel}
+              {currentTodShort}
             </span>
           </div>
 

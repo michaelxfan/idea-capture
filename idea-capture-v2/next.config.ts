@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      // Serve the root page for /work-now so hard reloads work
+      { source: "/work-now", destination: "/" },
+    ];
+  },
 };
 
 export default nextConfig;

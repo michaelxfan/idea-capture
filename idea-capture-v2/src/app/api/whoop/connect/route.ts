@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     client_id: WHOOP_CLIENT_ID,
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: "read:recovery",
+    scope: "read:recovery read:sleep",
     state: "idea-capture",
   });
 

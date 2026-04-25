@@ -11,11 +11,13 @@ import {
   updateTask as dbUpdateTask,
   deleteTask as dbDeleteTask,
   deleteAllTasks as dbDeleteAllTasks,
+  subscribeToTasks,
 } from "@/lib/db";
 import DestinationSection from "@/components/DestinationSection";
 import ExecutiveSummary from "@/components/ExecutiveSummary";
 import TaskCard from "@/components/TaskCard";
 import WorkNowView from "@/components/WorkNowView";
+import CompletedSummary from "@/components/CompletedSummary";
 
 type Tab = "capture" | "work-now";
 
@@ -59,7 +61,12 @@ function groupByDestination(tasks: Task[]): Record<Destination, Task[]> {
 }
 
 export default function Home() {
-  const [tab, setTab] = useState<Tab>("capture");
+  const [tab, setTab] = useState<Tab>(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/work-now") {
+      return "work-now";
+    }
+    return "capture";
+  });
   const [input, setInput] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
@@ -74,6 +81,105 @@ export default function Home() {
   const [emailParsing, setEmailParsing] = useState(false);
   const emlInputRef = useRef<HTMLInputElement | null>(null);
   const imgInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Search filter
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Dictation
+  const [isDictating, setIsDictating] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const dictationBaseRef = useRef<string>("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const SR =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    const recog = new SR();
+    recog.continuous = true;
+    recog.interimResults = true;
+    recog.lang = "en-US";
+    recog.onresult = (e: any) => {
+      let finalText = "";
+      let interimText = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interimText += r[0].transcript;
+      }
+      if (finalText) {
+        dictationBaseRef.current =
+          (dictationBaseRef.current + (dictationBaseRef.current && !dictationBaseRef.current.endsWith(" ") ? " " : "") + finalText).trimStart();
+        setInput(dictationBaseRef.current);
+      } else if (interimText) {
+        const base = dictationBaseRef.current;
+        setInput((base ? base + " " : "") + interimText);
+      }
+    };
+    recog.onend = () => setIsDictating(false);
+    recog.onerror = () => setIsDictating(false);
+    recognitionRef.current = recog;
+    return () => {
+      try { recog.stop(); } catch {}
+    };
+  }, []);
+
+  function toggleDictation() {
+    const recog = recognitionRef.current;
+    if (!recog) {
+      alert("Dictation is not supported in this browser. Try Chrome or Safari.");
+      return;
+    }
+    if (isDictating) {
+      try { recog.stop(); } catch {}
+      setIsDictating(false);
+    } else {
+      dictationBaseRef.current = input;
+      try {
+        recog.start();
+        setIsDictating(true);
+      } catch {
+        setIsDictating(false);
+      }
+    }
+  }
+
+  // Undo toast: holds the snapshot needed to reverse the last destructive action
+  const [undoState, setUndoState] = useState<
+    | { kind: "delete"; task: Task }
+    | { kind: "complete"; task: Task }
+    | null
+  >(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showUndo(state: NonNullable<typeof undoState>) {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoState(state);
+    undoTimerRef.current = setTimeout(() => setUndoState(null), 6000);
+  }
+
+  function handleUndo() {
+    if (!undoState) return;
+    if (undoState.kind === "delete") {
+      setTasks((prev) => {
+        const next = [undoState.task, ...prev];
+        saveLocalTasks(next);
+        return next;
+      });
+      dbUpsertTasks([undoState.task]);
+    } else if (undoState.kind === "complete") {
+      const restored = { ...undoState.task, completed: false };
+      setTasks((prev) => {
+        const next = prev.map((t) => (t.id === restored.id ? restored : t));
+        saveLocalTasks(next);
+        return next;
+      });
+      dbUpdateTask(restored);
+    }
+    setUndoState(null);
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+  }
 
   // Hydrate: Supabase is source of truth; localStorage is offline fallback only
   useEffect(() => {
@@ -96,6 +202,36 @@ export default function Home() {
       }
     }
     load();
+  }, []);
+
+  // Realtime sync: changes from other devices propagate without reload
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const unsub = subscribeToTasks({
+      onInsert: (task) => {
+        setTasks((prev) => {
+          if (prev.some((t) => t.id === task.id)) return prev; // already have it (we made the change)
+          const next = [task, ...prev];
+          saveLocalTasks(next);
+          return next;
+        });
+      },
+      onUpdate: (task) => {
+        setTasks((prev) => {
+          const next = prev.map((t) => (t.id === task.id ? task : t));
+          saveLocalTasks(next);
+          return next;
+        });
+      },
+      onDelete: (id) => {
+        setTasks((prev) => {
+          const next = prev.filter((t) => t.id !== id);
+          saveLocalTasks(next);
+          return next;
+        });
+      },
+    });
+    return unsub;
   }, []);
 
   // Scroll to newly created task
@@ -237,19 +373,29 @@ export default function Home() {
   }
 
   function handleDeleteTask(id: string) {
+    const removed = tasks.find((t) => t.id === id);
     setTasks((prev) => {
       const next = prev.filter((t) => t.id !== id);
       saveLocalTasks(next);
       return next;
     });
     dbDeleteTask(id);
+    if (removed) showUndo({ kind: "delete", task: removed });
   }
 
   function handleCompleteTask(id: string) {
     const updated = tasks.find((t) => t.id === id);
     if (!updated) return;
-    const completed = { ...updated, completed: true };
+    const completed = { ...updated, completed: true, completedAt: new Date().toISOString() };
     handleUpdateTask(completed);
+    showUndo({ kind: "complete", task: updated });
+  }
+
+  function handleDuplicateTask(task: Task) {
+    // Pre-fill the input with the task's raw input so the user can adjust and re-create
+    setInput(task.rawInput || task.taskName);
+    // Scroll to the input
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function handleClearAll() {
@@ -259,8 +405,16 @@ export default function Home() {
     dbDeleteAllTasks();
   }
 
-  const activeTasks = tasks.filter((t) => !t.completed);
-  const completedTasks = tasks.filter((t) => t.completed);
+  const q = searchQuery.trim().toLowerCase();
+  const matchesSearch = (t: Task) =>
+    !q ||
+    t.taskName.toLowerCase().includes(q) ||
+    (t.rawInput || "").toLowerCase().includes(q) ||
+    (t.how || "").toLowerCase().includes(q) ||
+    (t.whyRouted || "").toLowerCase().includes(q);
+
+  const activeTasks = tasks.filter((t) => !t.completed && matchesSearch(t));
+  const completedTasks = tasks.filter((t) => t.completed && matchesSearch(t));
   const grouped = groupByDestination(activeTasks);
   const totalTasks = tasks.length;
 
@@ -320,7 +474,11 @@ export default function Home() {
           return (
             <button
               key={id}
-              onClick={() => setTab(id)}
+              onClick={() => {
+                setTab(id);
+                const path = id === "work-now" ? "/work-now" : "/";
+                window.history.pushState({}, "", path);
+              }}
               style={{
                 appearance: "none",
                 background: "none",
@@ -584,47 +742,23 @@ export default function Home() {
             }}
             style={{ display: "none" }}
           />
-          <div
-            style={{
-              borderTop: "1px solid var(--border-light)",
-              padding: "8px 16px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <span
-              style={{
-                fontSize: "0.7rem",
-                color: "var(--text-tertiary)",
-                flex: 1,
-                minWidth: 0,
-              }}
-            >
-              {input.trim()
-                ? `${input.trim().split(/\s+/).length} words`
-                : ""}
+          <div className="input-footer">
+            <span className="input-footer-word-count">
+              {input.trim() ? `${input.trim().split(/\s+/).length}w` : ""}
             </span>
+            <button
+              onClick={toggleDictation}
+              disabled={loading}
+              title={isDictating ? "Stop dictation" : "Start dictation"}
+              className={`input-footer-btn${isDictating ? " input-footer-btn-dictate-active" : ""}`}
+            >
+              {isDictating ? "● Stop" : "🎙 Dictate"}
+            </button>
             <button
               onClick={() => imgInputRef.current?.click()}
               disabled={loading}
               title="Attach image"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "0.72rem",
-                fontWeight: 500,
-                padding: "7px 10px",
-                borderRadius: 6,
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--text-secondary)",
-                cursor: loading ? "not-allowed" : "pointer",
-                minHeight: 34,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
+              className="input-footer-btn"
             >
               Image
             </button>
@@ -632,34 +766,15 @@ export default function Home() {
               onClick={() => emlInputRef.current?.click()}
               disabled={loading || emailParsing}
               title="Attach email (.eml)"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "0.72rem",
-                fontWeight: 500,
-                padding: "7px 10px",
-                borderRadius: 6,
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--text-secondary)",
-                cursor: loading || emailParsing ? "not-allowed" : "pointer",
-                minHeight: 34,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
+              className="input-footer-btn"
             >
-              ✉ Attach
+              ✉ Email
             </button>
             <button
               onClick={handleInterpret}
               disabled={loading || (!input.trim() && !emailContext)}
+              className="input-footer-btn-primary"
               style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "0.72rem",
-                fontWeight: 600,
-                padding: "7px 14px",
-                borderRadius: 6,
-                border: "none",
                 background:
                   loading || (!input.trim() && !emailContext)
                     ? "var(--border)"
@@ -670,12 +785,9 @@ export default function Home() {
                     : "#fff",
                 cursor:
                   loading || (!input.trim() && !emailContext) ? "not-allowed" : "pointer",
-                transition: "all 0.12s",
-                letterSpacing: "0.02em",
-                minHeight: 34,
               }}
             >
-              {loading ? "Creating..." : "Create Task"}
+              {loading ? "Creating…" : "Create"}
             </button>
           </div>
         </div>
@@ -772,6 +884,27 @@ export default function Home() {
       {/* Results — grouped by destination */}
       {!loading && totalTasks > 0 && (
         <section>
+          {/* Search bar */}
+          <div style={{ marginBottom: 12 }}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tasks..."
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                fontSize: "0.8rem",
+                fontFamily: "var(--font-body)",
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                color: "var(--text-primary)",
+                outline: "none",
+                boxShadow: "var(--shadow)",
+              }}
+            />
+          </div>
           {/* Section header */}
           <div
             style={{
@@ -836,6 +969,7 @@ export default function Home() {
               onUpdateTask={handleUpdateTask}
               onDeleteTask={handleDeleteTask}
               onCompleteTask={handleCompleteTask}
+              onDuplicateTask={handleDuplicateTask}
             />
           ))}
         </section>
@@ -896,32 +1030,77 @@ export default function Home() {
             </span>
           </div>
           {!completedCollapsed && (
-            <div
-              style={{
-                opacity: 0.5,
-              }}
-            >
+            <div>
+              <CompletedSummary tasks={completedTasks} />
               <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
+                  opacity: 0.5,
                 }}
               >
-                {completedTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onUpdate={handleUpdateTask}
-                    onDelete={handleDeleteTask}
-                  />
-                ))}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                  }}
+                >
+                  {completedTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onUpdate={handleUpdateTask}
+                      onDelete={handleDeleteTask}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           )}
         </section>
       )}
       </>)}
+
+      {/* Undo toast */}
+      {undoState && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 24,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "var(--text-primary)",
+            color: "var(--surface)",
+            padding: "10px 14px",
+            borderRadius: 8,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            fontFamily: "var(--font-body)",
+            fontSize: "0.78rem",
+            zIndex: 1000,
+          }}
+        >
+          <span>
+            {undoState.kind === "delete" ? "Task deleted" : "Task completed"}
+          </span>
+          <button
+            onClick={handleUndo}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "var(--surface)",
+              fontWeight: 600,
+              cursor: "pointer",
+              textDecoration: "underline",
+              fontSize: "0.78rem",
+              padding: 0,
+            }}
+          >
+            Undo
+          </button>
+        </div>
+      )}
     </div>
   );
 }
