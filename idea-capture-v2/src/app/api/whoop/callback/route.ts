@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const WHOOP_CLIENT_ID = process.env.WHOOP_CLIENT_ID ?? "";
-const WHOOP_CLIENT_SECRET = process.env.WHOOP_CLIENT_SECRET ?? "";
+const WHOOP_CLIENT_ID = (process.env.WHOOP_CLIENT_ID ?? "").trim();
+const WHOOP_CLIENT_SECRET = (process.env.WHOOP_CLIENT_SECRET ?? "").trim();
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = req.nextUrl;

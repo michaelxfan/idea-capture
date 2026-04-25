@@ -1,10 +1,33 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import fs from "fs";
+import path from "path";
 
 export const maxDuration = 15;
 
-const WHOOP_CLIENT_ID = process.env.WHOOP_CLIENT_ID ?? "";
-const WHOOP_CLIENT_SECRET = process.env.WHOOP_CLIENT_SECRET ?? "";
+const WHOOP_CLIENT_ID = (process.env.WHOOP_CLIENT_ID ?? "").trim();
+const WHOOP_CLIENT_SECRET = (process.env.WHOOP_CLIENT_SECRET ?? "").trim();
+
+// Path to the TAOS token file (local dev — registered redirect URI already lives there)
+const TAOS_TOKEN_PATH =
+  process.env.TAOS_TOKEN_PATH ??
+  path.join(
+    process.cwd(),
+    "../03_decide/time-allocation-os/.whoop-tokens.json"
+  );
+
+function readTaosToken(): { token: string; connected: true } | null {
+  try {
+    const raw = fs.readFileSync(TAOS_TOKEN_PATH, "utf8");
+    const parsed = JSON.parse(raw);
+    if (parsed?.accessToken) {
+      return { token: parsed.accessToken, connected: true };
+    }
+  } catch {
+    // File not found or no token — fall through
+  }
+  return null;
+}
 
 interface WhoopTokenRow {
   id: string;
@@ -18,10 +41,14 @@ async function getAccessToken(): Promise<{
   token: string | null;
   connected: boolean;
 }> {
-  // Legacy: static env var
+  // 1. Legacy static env var
   if (process.env.WHOOP_ACCESS_TOKEN) {
     return { token: process.env.WHOOP_ACCESS_TOKEN, connected: true };
   }
+
+  // 2. TAOS token file (local dev — reuses the already-registered redirect URI)
+  const taos = readTaosToken();
+  if (taos) return taos;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
