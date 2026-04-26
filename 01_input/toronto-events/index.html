@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toronto Weekly Events · Apr 6 – 12, 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0f0f0f;
+      --surface:    #1a1a1a;
+      --surface2:   #222222;
+      --border:     #2a2a2a;
+      --text:       #f0f0f0;
+      --text-muted: #888;
+      --sports:     #3b82f6;
+      --nightlife:  #a855f7;
+      --holiday:    #f97316;
+      --arts:       #14b8a6;
+      --restaurants:#22c55e;
+      --heart:      #f43f5e;
+      --radius:     12px;
+      --radius-sm:  8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a0a2e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 20px 20px;
+      text-align: center;
+    }
+    .header-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .header h1 {
+      font-size: clamp(22px, 5vw, 34px);
+      font-weight: 800;
+      background: linear-gradient(90deg, #fff 0%, #a78bfa 50%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* ── STICKY FILTER BAR ──────────────────────────────── */
+    .filter-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,15,15,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-btn {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: #555; color: var(--text); }
+    .filter-btn.active { color: #fff; border-color: transparent; }
+    .filter-btn[data-filter="all"].active       { background: #ffffff20; color: #fff; border-color: #ffffff40; }
+    .filter-btn[data-filter="sports"].active    { background: var(--sports);      border-color: var(--sports); }
+    .filter-btn[data-filter="nightlife"].active { background: var(--nightlife);   border-color: var(--nightlife); }
+    .filter-btn[data-filter="holiday"].active   { background: var(--holiday);     border-color: var(--holiday); }
+    .filter-btn[data-filter="arts"].active      { background: var(--arts);        border-color: var(--arts); }
+    .filter-btn[data-filter="restaurants"].active { background: var(--restaurants); border-color: var(--restaurants); }
+
+    /* ── MAIN ───────────────────────────────────────────── */
+    .main { max-width: 780px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    /* ── DAY SECTION ────────────────────────────────────── */
+    .day-section { margin-bottom: 36px; }
+    .day-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .day-name  { font-size: 18px; font-weight: 700; color: var(--text); }
+    .day-date  { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+    .day-badge {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--holiday);
+      color: #fff;
+    }
+
+    /* ── EVENT CARDS ────────────────────────────────────── */
+    .cards-grid { display: grid; gap: 12px; }
+
+    .event-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .event-card:hover {
+      transform: translateY(-2px);
+      border-color: #3a3a3a;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .event-card[data-category="sports"]      { border-left: 3px solid var(--sports); }
+    .event-card[data-category="nightlife"]   { border-left: 3px solid var(--nightlife); }
+    .event-card[data-category="holiday"]     { border-left: 3px solid var(--holiday); }
+    .event-card[data-category="arts"]        { border-left: 3px solid var(--arts); }
+    .event-card[data-category="restaurants"] { border-left: 3px solid var(--restaurants); }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      flex: 1;
+      line-height: 1.35;
+    }
+    .heart-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      opacity: 0.35;
+      transition: opacity 0.15s, transform 0.15s;
+      line-height: 1;
+      padding: 0;
+      margin-top: -1px;
+    }
+    .heart-btn:hover  { opacity: 0.7; transform: scale(1.15); }
+    .heart-btn.liked  { opacity: 1; animation: heartPop 0.25s ease; }
+
+    @keyframes heartPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .tag-sports      { background: #3b82f620; color: var(--sports); }
+    .tag-nightlife   { background: #a855f720; color: var(--nightlife); }
+    .tag-holiday     { background: #f9731620; color: var(--holiday); }
+    .tag-arts        { background: #14b8a620; color: var(--arts); }
+    .tag-restaurants { background: #22c55e20; color: var(--restaurants); }
+
+    .card-time   { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    .card-venue  { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    .card-venue::before { content: "📍"; font-size: 11px; }
+
+    .card-info-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 12px;
+      color: #777;
+    }
+    .card-info-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .card-info-item .icon { font-size: 11px; }
+
+    .card-description {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.45;
+    }
+
+    .card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .card-actions { display: flex; gap: 8px; align-items: center; }
+
+    .bring-friends-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .bring-friends-btn:hover {
+      background: #ffffff12;
+      border-color: #555;
+      color: var(--text);
+    }
+
+    .tickets-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      background: #ffffff14;
+      color: #ccc;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .tickets-btn:hover {
+      background: #ffffff22;
+      color: #fff;
+    }
+
+    /* price pill */
+    .price-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #a3e635;
+      background: #a3e63514;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* ── RESTAURANT GRID ────────────────────────────────── */
+    .restaurant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .restaurant-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--restaurants);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .restaurant-card:hover {
+      transform: translateY(-2px);
+      border-color: #3a3a3a;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .restaurant-name     { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .restaurant-location { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+    .restaurant-desc     { font-size: 12px; color: #666; line-height: 1.45; }
+
+    /* ── SECTION LABEL ──────────────────────────────────── */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      margin-top: 6px;
+    }
+
+    /* ── SHORTLIST ───────────────────────────────────────── */
+    .shortlist-section {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 16px 80px;
+    }
+    .shortlist-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .shortlist-header h2 { font-size: 18px; font-weight: 700; }
+    .shortlist-count {
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--heart);
+      color: #fff;
+      border-radius: 20px;
+      padding: 2px 8px;
+      min-width: 24px;
+      text-align: center;
+    }
+    .shortlist-empty {
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 20px 0;
+      text-align: center;
+    }
+    #shortlist-cards { display: grid; gap: 10px; }
+    .shortlist-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .shortlist-dot    { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .shortlist-info   { flex: 1; }
+    .shortlist-title  { font-size: 13px; font-weight: 600; }
+    .shortlist-meta   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .shortlist-remove {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+      padding: 0;
+    }
+    .shortlist-remove:hover { opacity: 1; }
+
+    /* ── HIDDEN ─────────────────────────────────────────── */
+    .event-card[data-hidden="true"],
+    .day-section.hidden { display: none; }
+
+    /* ── FOOTER ─────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: #333;
+      padding: 20px;
+      border-top: 1px solid #1a1a1a;
+    }
+    .footer a { color: #555; text-decoration: none; }
+    .footer a:hover { color: #888; }
+
+    /* ── SOURCES NOTE ───────────────────────────────────── */
+    .sources-note {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 16px 32px;
+      font-size: 11px;
+      color: #444;
+      line-height: 1.7;
+    }
+    .sources-note a { color: #555; text-decoration: none; }
+    .sources-note a:hover { color: #999; }
+    .sources-note strong { color: #666; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .header { padding: 20px 16px 16px; }
+      .card-title { font-size: 14px; }
+      .bring-friends-btn, .tickets-btn { font-size: 10px; padding: 5px 11px; }
+      .restaurant-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-eyebrow">Toronto · Apr 6 – 12, 2026</div>
+  <h1>What's On This Week</h1>
+  <div class="header-sub">Easter Monday → Sunday &nbsp;·&nbsp; RAYE · Martin Lawrence · Lily Allen &nbsp;·&nbsp; Prices &amp; links verified</div>
+</header>
+
+<!-- FILTER BAR -->
+<nav class="filter-bar" id="filter-bar">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="sports">🏒 Sports</button>
+  <button class="filter-btn" data-filter="nightlife">🎵 Nightlife</button>
+  <button class="filter-btn" data-filter="arts">🎨 Arts</button>
+  <button class="filter-btn" data-filter="restaurants">🍝 Restaurants</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main" id="main-content">
+
+  <!-- ── MONDAY APR 6 ── -->
+  <section class="day-section" id="day-mon-6" data-day="mon">
+    <div class="day-header">
+      <span class="day-name">Monday</span>
+      <span class="day-date">April 6</span>
+      <span class="day-badge">Easter Monday</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="event-card" data-category="nightlife" data-id="the-neighbourhood"
+           data-title="The Neighbourhood – The Wourld Tour" data-time="8:00 PM" data-venue="Scotiabank Arena">
+        <div class="card-top">
+          <div class="card-title">The Neighbourhood · The Wourld Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">From ~$55</span>
+        </div>
+        <div class="card-venue">Scotiabank Arena · 40 Bay St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">🎤</span> Alt / Indie Rock</span>
+        </div>
+        <div class="card-description">The Neighbourhood kick off the week with their Wourld Tour at Scotiabank Arena. "Sweater Weather" band in full arena mode — perfect Easter Monday night out.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.scotiabankarena.com/events" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── TUESDAY APR 7 ── -->
+  <section class="day-section" id="day-tue" data-day="tue">
+    <div class="day-header">
+      <span class="day-name">Tuesday</span>
+      <span class="day-date">April 7</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="event-card" data-category="sports" data-id="raptors-heat-tue"
+           data-title="Toronto Raptors vs Miami Heat" data-time="7:30 PM" data-venue="Scotiabank Arena">
+        <div class="card-top">
+          <div class="card-title">Toronto Raptors vs Miami Heat</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">7:30 PM</span>
+          <span class="price-pill">From ~$31</span>
+        </div>
+        <div class="card-venue">Scotiabank Arena · 40 Bay St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2.5 hrs</span>
+          <span class="card-info-item"><span class="icon">🏀</span> NBA Regular Season</span>
+          <span class="card-info-item"><span class="icon">🚪</span> Doors 6:30 PM</span>
+        </div>
+        <div class="card-description">Late-season home game with playoff seeding on the line. Raptors vs Heat — strong atmosphere at Scotiabank Arena to close out the regular season stretch.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-raptors-tickets/artist/806034" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="sports" data-id="jays-dodgers-1"
+           data-title="Toronto Blue Jays vs LA Dodgers (Game 1)" data-time="7:07 PM" data-venue="Rogers Centre">
+        <div class="card-top">
+          <div class="card-title">Toronto Blue Jays vs LA Dodgers · Game 1</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">7:07 PM</span>
+          <span class="price-pill">From ~$25</span>
+        </div>
+        <div class="card-venue">Rogers Centre · 1 Blue Jays Way</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~3 hrs</span>
+          <span class="card-info-item"><span class="icon">⚾</span> MLB Regular Season</span>
+        </div>
+        <div class="card-description">Marquee matchup — the World Series champion Dodgers come to the Rogers Centre. One of the most anticipated home series of the year. Get here early.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-blue-jays-tickets/artist/806032" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="lily-allen-1"
+           data-title="Lily Allen – West End Girl Tour (Night 1)" data-time="8:00 PM" data-venue="Massey Hall">
+        <div class="card-top">
+          <div class="card-title">Lily Allen – West End Girl Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">Resale only</span>
+        </div>
+        <div class="card-venue">Massey Hall · 178 Victoria St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">🎤</span> Night 1 of 2</span>
+        </div>
+        <div class="card-description">Lily Allen performs her critically acclaimed new album *West End Girl* in full. Both Toronto dates sold out fast — resale available. Second night Apr 8.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://masseyhall.mhrth.com/tickets/lily-allen/" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="poison-the-well"
+           data-title="Poison the Well + Converge – Peace in Place Tour" data-time="6:00 PM" data-venue="HISTORY">
+        <div class="card-top">
+          <div class="card-title">Poison the Well + Converge · Peace in Place Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">6:00 PM (doors)</span>
+          <span class="price-pill">From ~$45</span>
+        </div>
+        <div class="card-venue">HISTORY · 1663 Queen St E</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~3 hrs</span>
+          <span class="card-info-item"><span class="icon">🎸</span> Melodic Hardcore</span>
+        </div>
+        <div class="card-description">Melodic hardcore legends Poison the Well return for their first North American tour in over a decade, paired with Converge. A historic reunion for fans of the genre.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/poison-the-well-tickets/artist/711033" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── WEDNESDAY APR 8 ── -->
+  <section class="day-section" id="day-wed" data-day="wed">
+    <div class="day-header">
+      <span class="day-name">Wednesday</span>
+      <span class="day-date">April 8</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="event-card" data-category="sports" data-id="leafs-capitals"
+           data-title="Toronto Maple Leafs vs Washington Capitals" data-time="7:30 PM" data-venue="Scotiabank Arena">
+        <div class="card-top">
+          <div class="card-title">Toronto Maple Leafs vs Washington Capitals</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">7:30 PM</span>
+          <span class="price-pill">From ~$140</span>
+        </div>
+        <div class="card-venue">Scotiabank Arena · 40 Bay St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2.5 hrs</span>
+          <span class="card-info-item"><span class="icon">🏒</span> NHL Regular Season</span>
+          <span class="card-info-item"><span class="icon">📱</span> Mobile entry</span>
+        </div>
+        <div class="card-description">Key late-season home game — Leafs jockeying for playoff positioning. Post-Easter Week energy at the ACC.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.com/toronto-maple-leafs-tickets/artist/806033" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="sports" data-id="jays-dodgers-2"
+           data-title="Toronto Blue Jays vs LA Dodgers (Game 2)" data-time="3:07 PM" data-venue="Rogers Centre">
+        <div class="card-top">
+          <div class="card-title">Toronto Blue Jays vs LA Dodgers · Game 2</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">3:07 PM</span>
+          <span class="price-pill">From ~$25</span>
+        </div>
+        <div class="card-venue">Rogers Centre · 1 Blue Jays Way</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~3 hrs</span>
+          <span class="card-info-item"><span class="icon">⚾</span> Matinee</span>
+        </div>
+        <div class="card-description">Afternoon matinee — great midweek option. Final game of the Dodgers series before an off day. Dome is open weather permitting.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-blue-jays-tickets/artist/806032" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="lily-allen-2"
+           data-title="Lily Allen – West End Girl Tour (Night 2)" data-time="8:00 PM" data-venue="Massey Hall">
+        <div class="card-top">
+          <div class="card-title">Lily Allen – West End Girl Tour <span style="font-weight:400;color:#666">(Night 2)</span></div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">Resale only</span>
+        </div>
+        <div class="card-venue">Massey Hall · 178 Victoria St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">🎤</span> Final Toronto date</span>
+        </div>
+        <div class="card-description">Missed Night 1? This is the last chance — same intimate Massey Hall setting, same album performed in full.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.livenation.com/event/1A8ZkCeGkezuIO2/lily-allen-performs-west-end-girl" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="arts" data-id="ago-free-wed"
+           data-title="AGO Open Door – Free Admission Evening" data-time="1:00–8:00 PM" data-venue="Art Gallery of Ontario">
+        <div class="card-top">
+          <div class="card-title">AGO Open Door · Free Admission Evening</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-arts">Arts</span>
+          <span class="card-time">1:00–8:00 PM</span>
+          <span class="price-pill">Free</span>
+        </div>
+        <div class="card-venue">Art Gallery of Ontario · 317 Dundas St W</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> Self-paced</span>
+          <span class="card-info-item"><span class="icon">🖼</span> Monthly free night</span>
+        </div>
+        <div class="card-description">The AGO's monthly free evening. On view: *Paul McCartney: Eyes of the Storm* (photographs 1963–64), *Moments in Modernism* (through Apr 26), and *Allison Katz: Inner Momentum*. Print Room tours also available.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://ago.ca/events/browse" target="_blank" rel="noopener">Info</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── THURSDAY APR 9 ── -->
+  <section class="day-section" id="day-thu" data-day="thu">
+    <div class="day-header">
+      <span class="day-name">Thursday</span>
+      <span class="day-date">April 9</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="event-card" data-category="sports" data-id="raptors-heat-thu"
+           data-title="Toronto Raptors vs Miami Heat (Game 2)" data-time="7:00 PM" data-venue="Scotiabank Arena">
+        <div class="card-top">
+          <div class="card-title">Toronto Raptors vs Miami Heat <span style="font-weight:400;color:#666">(Game 2)</span></div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">7:00 PM</span>
+          <span class="price-pill">From ~$31</span>
+        </div>
+        <div class="card-venue">Scotiabank Arena · 40 Bay St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2.5 hrs</span>
+          <span class="card-info-item"><span class="icon">🏀</span> NBA Regular Season</span>
+        </div>
+        <div class="card-description">Second home game against Miami this week. Late-season stakes — every win matters for seeding. Good back-to-back scheduling for Raptors fans.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-raptors-tickets/artist/806034" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="michelle-buteau"
+           data-title="Michelle Buteau – Stand-Up Comedy" data-time="7:30 PM" data-venue="Massey Hall">
+        <div class="card-top">
+          <div class="card-title">Michelle Buteau – Stand-Up Comedy</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">7:30 PM</span>
+          <span class="price-pill">From ~$55</span>
+        </div>
+        <div class="card-venue">Massey Hall · 178 Victoria St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~90 min</span>
+          <span class="card-info-item"><span class="icon">😂</span> 18+</span>
+        </div>
+        <div class="card-description">Comedian, podcast host (*Adulting*), and Netflix's *The Circle* host brings her stand-up tour to Massey Hall. Sharp, warm, and very funny — great date night option.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://masseyhall.mhrth.com/tickets/" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FRIDAY APR 10 ── -->
+  <section class="day-section" id="day-fri" data-day="fri">
+    <div class="day-header">
+      <span class="day-name">Friday</span>
+      <span class="day-date">April 10</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="event-card" data-category="sports" data-id="jays-twins-1"
+           data-title="Toronto Blue Jays vs Minnesota Twins (Game 1)" data-time="7:07 PM" data-venue="Rogers Centre">
+        <div class="card-top">
+          <div class="card-title">Toronto Blue Jays vs Minnesota Twins · Game 1</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">7:07 PM</span>
+          <span class="price-pill">From ~$20</span>
+        </div>
+        <div class="card-venue">Rogers Centre · 1 Blue Jays Way</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~3 hrs</span>
+          <span class="card-info-item"><span class="icon">⚾</span> MLB Regular Season</span>
+        </div>
+        <div class="card-description">Friday night opener of a three-game series vs the Twins. Three more games this weekend — Friday night baseball at the Rogers Centre is a Toronto institution.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-blue-jays-tickets/artist/806032" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="martin-lawrence"
+           data-title="Martin Lawrence – Y'All Still Know What Is! Tour" data-time="8:00 PM" data-venue="Massey Hall">
+        <div class="card-top">
+          <div class="card-title">Martin Lawrence · Y'All Still Know What Is! Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">From ~$85</span>
+        </div>
+        <div class="card-venue">Massey Hall · 178 Victoria St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~90 min</span>
+          <span class="card-info-item"><span class="icon">😂</span> Stand-Up Comedy</span>
+          <span class="card-info-item"><span class="icon">⭐</span> VIP Meet &amp; Greet ~$444</span>
+        </div>
+        <div class="card-description">The legendary comedian and actor returns to stand-up with a major headline tour. Personal stories, cultural observations, high energy. One of the biggest comedy names of the year.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.axs.com/events/1333333/martin-lawrence-tickets" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="odumodublvck"
+           data-title="ODUMODUBLVCK – The Industry Machine Tour" data-time="7:00 PM" data-venue="REBEL Entertainment Complex">
+        <div class="card-top">
+          <div class="card-title">ODUMODUBLVCK · The Industry Machine Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">7:00 PM</span>
+          <span class="price-pill">From ~$59</span>
+        </div>
+        <div class="card-venue">REBEL Entertainment Complex · 11 Polson St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2.5 hrs</span>
+          <span class="card-info-item"><span class="icon">🎶</span> Afrobeats / Rap</span>
+          <span class="card-info-item"><span class="icon">⭐</span> First-ever Toronto show</span>
+        </div>
+        <div class="card-description">Nigerian rapper and Afropunk heavyweight ODUMODUBLVCK makes his first-ever Toronto performance. High-energy show at REBEL — capacity 2,500. A must for fans of the Lagos scene.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://seatgeek.com/odumodublvck-tickets/toronto-canada-rebel-4-2026-04-10-7-pm/concert/18035732" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="madeleine-peyroux"
+           data-title="Madeleine Peyroux" data-time="7:00 PM" data-venue="Danforth Music Hall">
+        <div class="card-top">
+          <div class="card-title">Madeleine Peyroux</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">7:00 PM</span>
+          <span class="price-pill">From ~$45</span>
+        </div>
+        <div class="card-venue">Danforth Music Hall · 147 Danforth Ave</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">🎷</span> Jazz / Blues</span>
+        </div>
+        <div class="card-description">Beloved jazz and blues singer-songwriter with a smoky, Billie Holiday-influenced sound. Sophisticated and intimate — a perfect Friday night for music lovers who want something other than a crowd.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.thedanforth.com/shows" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="mason-collective"
+           data-title="Mason Collective" data-time="10:00 PM" data-venue="CODA">
+        <div class="card-top">
+          <div class="card-title">Mason Collective</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">10:00 PM</span>
+          <span class="price-pill">From ~$34</span>
+        </div>
+        <div class="card-venue">CODA · 794 Bathurst St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> Late night</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Tech-house</span>
+          <span class="card-info-item"><span class="icon">🔞</span> 19+</span>
+        </div>
+        <div class="card-description">Glaswegian duo Mason Collective bring their deep tech-house sound to CODA — Toronto's premier house/techno room. Tiered pricing; earlier tiers already sold out.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketweb.ca/event/mason-collective-coda-tickets/14758163?pl=CODA" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="peekaboo"
+           data-title="PEEKABOO – Are We Dreaming? Tour (360 Set)" data-time="10:30 PM" data-venue="DPRTMNT">
+        <div class="card-top">
+          <div class="card-title">PEEKABOO · Are We Dreaming? Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">10:30 PM</span>
+          <span class="price-pill">From ~$31</span>
+        </div>
+        <div class="card-venue">DPRTMNT · 473 Adelaide St W</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> Late night</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Bass / Dubstep</span>
+          <span class="card-info-item"><span class="icon">🔞</span> 19+</span>
+        </div>
+        <div class="card-description">Fully immersive 360° production from PEEKABOO — bass music, dubstep and experimental electronic in a wraparound visual environment. One of the more unique setups in the city this week.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketweb.ca/event/peekaboo-are-we-dprtmnt-tickets/13969444" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="khen"
+           data-title="Khen" data-time="10:00 PM" data-venue="Ozmozis">
+        <div class="card-top">
+          <div class="card-title">Khen</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">10:00 PM – 4:00 AM</span>
+          <span class="price-pill">From ~$39</span>
+        </div>
+        <div class="card-venue">Ozmozis · 10 Wellspring Lane (Bunker Back Entrance)</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> 6 hrs</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Melodic / Progressive House</span>
+          <span class="card-info-item"><span class="icon">🔊</span> Funktion-One sound</span>
+        </div>
+        <div class="card-description">Israeli melodic house producer Khen plays Ozmozis on a Funktion-One system. Underground warehouse energy — Tier 2 pricing, earlier tiers sold out.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketweb.ca/event/khen-ozmozis-tickets/14161544?pl=ozmozis" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="arts" data-id="jazz-ripleys"
+           data-title="Jazz Night at Ripley's Aquarium" data-time="7:00–11:00 PM" data-venue="Ripley's Aquarium of Canada">
+        <div class="card-top">
+          <div class="card-title">Jazz Night at Ripley's Aquarium</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-arts">Arts</span>
+          <span class="card-time">7:00–11:00 PM</span>
+          <span class="price-pill">~$35–45 est.</span>
+        </div>
+        <div class="card-venue">Ripley's Aquarium · 288 Bremner Blvd</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> 4 hrs</span>
+          <span class="card-info-item"><span class="icon">🦈</span> Live jazz under the sea</span>
+        </div>
+        <div class="card-description">Monthly jazz night (second Friday of each month). A live jazz band plays literally surrounded by sharks, rays, and glowing tanks. One of Toronto's most atmospheric and underrated nightlife experiences.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ripleys.com/attractions/ripleys-aquarium-of-canada/events/jazz-night" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="arts" data-id="bjm-dance-me-fri"
+           data-title="Ballets Jazz Montréal: Dance Me – Music by Leonard Cohen" data-time="8:00 PM" data-venue="Meridian Hall">
+        <div class="card-top">
+          <div class="card-title">Ballets Jazz Montréal · Dance Me</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-arts">Arts</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">$59.50–$139.50</span>
+        </div>
+        <div class="card-venue">Meridian Hall · 1 Front St E</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">💃</span> Contemporary Dance</span>
+          <span class="card-info-item"><span class="icon">🎵</span> Music by Leonard Cohen</span>
+        </div>
+        <div class="card-description">Ballets Jazz Montréal performs *Dance Me*, set entirely to Leonard Cohen's music. A stunning, emotionally rich contemporary dance show at the grand Meridian Hall. Also runs Saturday Apr 11.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://am.ticketmaster.com/tolive/danceme-2026" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SATURDAY APR 11 ── -->
+  <section class="day-section" id="day-sat" data-day="sat">
+    <div class="day-header">
+      <span class="day-name">Saturday</span>
+      <span class="day-date">April 11</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="event-card" data-category="sports" data-id="leafs-panthers"
+           data-title="Toronto Maple Leafs vs Florida Panthers" data-time="7:00 PM" data-venue="Scotiabank Arena">
+        <div class="card-top">
+          <div class="card-title">Toronto Maple Leafs vs Florida Panthers</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">7:00 PM</span>
+          <span class="price-pill">From ~$175</span>
+        </div>
+        <div class="card-venue">Scotiabank Arena · 40 Bay St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2.5 hrs</span>
+          <span class="card-info-item"><span class="icon">🏒</span> NHL — Huge Game</span>
+        </div>
+        <div class="card-description">Massive matchup — the Leafs vs defending champion Panthers, with potential first-round playoff seeding implications. One of the biggest Saturday night hockey games of the year at the ACC.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.com/toronto-maple-leafs-tickets/artist/806033" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="sports" data-id="tfc-cincinnati"
+           data-title="Toronto FC vs FC Cincinnati" data-time="1:00 PM" data-venue="BMO Field">
+        <div class="card-top">
+          <div class="card-title">Toronto FC vs FC Cincinnati</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">1:00 PM</span>
+          <span class="price-pill">From ~$11</span>
+        </div>
+        <div class="card-venue">BMO Field · 170 Princes Blvd</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">⚽</span> MLS Regular Season</span>
+          <span class="card-info-item"><span class="icon">📱</span> Mobile tickets only</span>
+        </div>
+        <div class="card-description">Saturday afternoon MLS kickoff on the lakefront. Great pregame options nearby — one of the most affordable pro sports experiences in the city. Ticket office opens 10AM at Gate 1.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.tickpick.com/buy-toronto-fc-vs-fc-cincinnati-tickets-bmo-field-4-11-26-1pm/7576968/" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="sports" data-id="jays-twins-2"
+           data-title="Toronto Blue Jays vs Minnesota Twins (Game 2)" data-time="3:07 PM" data-venue="Rogers Centre">
+        <div class="card-top">
+          <div class="card-title">Toronto Blue Jays vs Minnesota Twins · Game 2</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">3:07 PM</span>
+          <span class="price-pill">From ~$20</span>
+        </div>
+        <div class="card-venue">Rogers Centre · 1 Blue Jays Way</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~3 hrs</span>
+          <span class="card-info-item"><span class="icon">⚾</span> MLB Saturday Afternoon</span>
+        </div>
+        <div class="card-description">Saturday afternoon game — good option if you're not going to the Leafs/Panthers tonight. Could even do TFC at 1PM and catch part of this one.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-blue-jays-tickets/artist/806032" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="sam-roberts"
+           data-title="Sam Roberts Band" data-time="8:00 PM" data-venue="Massey Hall">
+        <div class="card-top">
+          <div class="card-title">Sam Roberts Band</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">From ~$55</span>
+        </div>
+        <div class="card-venue">Massey Hall · 178 Victoria St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">🎸</span> Canadian Rock</span>
+        </div>
+        <div class="card-description">Canadian rock legend Sam Roberts plays the hallowed Massey Hall stage — "Brother Down," "Where Have All the Good People Gone," and more. A proper Saturday night out.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://masseyhall.mhrth.com/tickets/" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="camelphat"
+           data-title="CamelPhat (19+)" data-time="8:00 PM" data-venue="HISTORY">
+        <div class="card-top">
+          <div class="card-title">CamelPhat (19+)</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">From ~$101</span>
+        </div>
+        <div class="card-venue">HISTORY · 1663 Queen St E</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~4 hrs</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Deep House / Techno</span>
+        </div>
+        <div class="card-description">Liverpool-based electronic duo and Mercury Prize nominees — deep house and techno festival-circuit headliners. One of the biggest club nights of the week. Avg resale ~$173.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.livenation.com/event/1A8ZkoaGketcE2Y/camelphat" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="bed-by-10"
+           data-title="Bed By 10 Festival" data-time="2:00–9:00 PM" data-venue="Rebel Entertainment Complex">
+        <div class="card-top">
+          <div class="card-title">Bed By 10 Festival</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">2:00–9:00 PM</span>
+          <span class="price-pill">$84–$130</span>
+        </div>
+        <div class="card-venue">Rebel Entertainment Complex · 11 Polson St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> 7 hrs (last entry 4 PM)</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Classic club anthems · 30+ crowd</span>
+        </div>
+        <div class="card-description">Daytime festival at Rebel for the 30+ crowd — classic 80s/90s/2000s club anthems with "legends from around the world." Done by 9 PM. GA Floor ~$84, VIP Mezzanine ~$130.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketweb.ca/event/bed-by-10-festival-rebel-tickets/14644303" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="lavern"
+           data-title="LAVERN" data-time="10:00 PM" data-venue="Rebel Entertainment Complex">
+        <div class="card-top">
+          <div class="card-title">LAVERN</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">10:00 PM</span>
+          <span class="price-pill">~$46–52</span>
+        </div>
+        <div class="card-venue">Rebel Entertainment Complex · 11 Polson St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> Late night</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Emotive / Stutter House</span>
+          <span class="card-info-item"><span class="icon">🔞</span> 19+</span>
+        </div>
+        <div class="card-description">Dutch producer LAVERN (Insomniac-affiliated) headlines Rebel's mainstage night after Bed By 10 clears out. Emotive house with a stutter-heavy signature sound.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketweb.ca/event/lavern-rebel-tickets/14744943" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="jkyl-hyde"
+           data-title="JKYL & Hyde – Second Self Tour" data-time="10:00 PM" data-venue="NOIR @ Rebel">
+        <div class="card-top">
+          <div class="card-title">JKYL &amp; Hyde · Second Self Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">10:00 PM</span>
+          <span class="price-pill">~$37–44</span>
+        </div>
+        <div class="card-venue">NOIR inside Rebel · 11 Polson St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> Late night</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Dubstep / Bass</span>
+          <span class="card-info-item"><span class="icon">🔞</span> 19+</span>
+        </div>
+        <div class="card-description">JKYL &amp; Hyde play the smaller NOIR room inside Rebel simultaneously with LAVERN on the mainstage — two rooms, two sounds, one building. Dubstep and bass music crowd.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketweb.ca/event/jkyl-hyde-noir-inside-rebel-tickets/14681613" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="domestic-coda"
+           data-title="Domestic – House & Techno Night at CODA" data-time="10:00 PM" data-venue="CODA">
+        <div class="card-top">
+          <div class="card-title">Domestic · CODA</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">10:00 PM</span>
+          <span class="price-pill">Free before 11 PM</span>
+        </div>
+        <div class="card-venue">CODA · 794 Bathurst St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> Late night</span>
+          <span class="card-info-item"><span class="icon">🎧</span> House / Techno</span>
+          <span class="card-info-item"><span class="icon">🎁</span> Win Electric Island passes</span>
+        </div>
+        <div class="card-description">CODA resident night — free on guestlist before 11 PM, ~$38 general after. Attend for a chance to win Electric Island festival passes. Great budget option if CamelPhat/LAVERN are sold out.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketweb.ca/event/guestlist-domestic-no-cover-coda-tickets/14809263?pl=CODA" target="_blank" rel="noopener">🎟 Guestlist (Free)</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="neo-rave"
+           data-title="Neo Rave Resurrections" data-time="9:00 PM – 2:30 AM" data-venue="Geary Ave Warehouse">
+        <div class="card-top">
+          <div class="card-title">Neo Rave Resurrections</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">9:00 PM – 2:30 AM</span>
+          <span class="price-pill">~$11</span>
+        </div>
+        <div class="card-venue">Geary Ave Warehouse · Toronto</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> 5.5 hrs</span>
+          <span class="card-info-item"><span class="icon">🎧</span> Hardbounce / Hard Electronic</span>
+          <span class="card-info-item"><span class="icon">🔞</span> 18+</span>
+        </div>
+        <div class="card-description">The cheapest ticket of the weekend at ~$11. Underground warehouse rave on Geary Ave — hardbounce and hard electronic. Follow @neorave.to for address confirmation closer to date.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://ra.co/events/2371278" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="arts" data-id="nagata-shachu"
+           data-title="Nagata Shachu x Ryunosuke Yamazumi – Rhythms in Flight" data-time="8:00 PM" data-venue="Harbourfront Centre">
+        <div class="card-top">
+          <div class="card-title">Nagata Shachu · Rhythms in Flight</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-arts">Arts</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">~$35–50 est.</span>
+        </div>
+        <div class="card-venue">Fleck Dance Theatre · Harbourfront Centre, 235 Queens Quay W</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~90 min</span>
+          <span class="card-info-item"><span class="icon">🥁</span> Taiko + Circus Arts</span>
+        </div>
+        <div class="card-description">Season finale for Nagata Shachu's 28th year. A spectacular fusion of Japanese taiko drumming and circus arts — Ryunosuke Yamazumi performs on a free-standing Chinese pole over 10 feet high while the ensemble plays two new original works. Extraordinary.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://harbourfrontcentre.com/" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="arts" data-id="bjm-dance-me-sat"
+           data-title="Ballets Jazz Montréal: Dance Me – Music by Leonard Cohen" data-time="8:00 PM" data-venue="Meridian Hall">
+        <div class="card-top">
+          <div class="card-title">Ballets Jazz Montréal · Dance Me <span style="font-weight:400;color:#666">(Night 2)</span></div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-arts">Arts</span>
+          <span class="card-time">8:00 PM</span>
+          <span class="price-pill">$59.50–$139.50</span>
+        </div>
+        <div class="card-venue">Meridian Hall · 1 Front St E</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">💃</span> Contemporary Dance</span>
+          <span class="card-info-item"><span class="icon">🎵</span> Music by Leonard Cohen</span>
+        </div>
+        <div class="card-description">Second night of Ballets Jazz Montréal's *Dance Me* at Meridian Hall. Leonard Cohen's music brought to life through world-class contemporary choreography. Missed Friday? This is your chance.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://am.ticketmaster.com/tolive/danceme-2026" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SUNDAY APR 12 ── -->
+  <section class="day-section" id="day-sun" data-day="sun">
+    <div class="day-header">
+      <span class="day-name">Sunday</span>
+      <span class="day-date">April 12</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="event-card" data-category="sports" data-id="raptors-nets"
+           data-title="Toronto Raptors vs Brooklyn Nets" data-time="6:00 PM" data-venue="Scotiabank Arena">
+        <div class="card-top">
+          <div class="card-title">Toronto Raptors vs Brooklyn Nets</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">6:00 PM</span>
+          <span class="price-pill">From ~$28</span>
+        </div>
+        <div class="card-venue">Scotiabank Arena · 40 Bay St</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2.5 hrs</span>
+          <span class="card-info-item"><span class="icon">🏀</span> NBA — Second-to-last home game</span>
+        </div>
+        <div class="card-description">Second-to-last Raptors home game of the regular season. One of the more affordable options to catch them at home before the playoff picture is set.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-raptors-tickets/artist/806034" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="sports" data-id="jays-twins-3"
+           data-title="Toronto Blue Jays vs Minnesota Twins (Game 3)" data-time="1:37 PM" data-venue="Rogers Centre">
+        <div class="card-top">
+          <div class="card-title">Toronto Blue Jays vs Minnesota Twins · Game 3</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-sports">Sports</span>
+          <span class="card-time">1:37 PM</span>
+          <span class="price-pill">From ~$20</span>
+        </div>
+        <div class="card-venue">Rogers Centre · 1 Blue Jays Way</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~3 hrs</span>
+          <span class="card-info-item"><span class="icon">⚾</span> Sunday afternoon</span>
+        </div>
+        <div class="card-description">Series finale against the Twins on a Sunday afternoon — perfect for a relaxed outing. Catch the Raptors game later the same day for a sports double-header.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/toronto-blue-jays-tickets/artist/806032" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="nightlife" data-id="microwave"
+           data-title="Microwave – Much Love 10th Anniversary Tour" data-time="6:00 PM" data-venue="Danforth Music Hall">
+        <div class="card-top">
+          <div class="card-title">Microwave · Much Love 10th Anniversary Tour</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-nightlife">Nightlife</span>
+          <span class="card-time">6:00 PM</span>
+          <span class="price-pill">From ~$30</span>
+        </div>
+        <div class="card-venue">Danforth Music Hall · 147 Danforth Ave</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">🎸</span> Indie Rock / Emo</span>
+        </div>
+        <div class="card-description">Atlanta indie-rock/emo band Microwave celebrates the 10th anniversary of their debut album *Much Love*. A passionate cult following and a proper Sunday show at the Danforth.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.thedanforth.com/shows" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card" data-category="arts" data-id="urgant-live"
+           data-title="Urgant Live – Ivan Urgant First North American Tour" data-time="7:00 PM" data-venue="Meridian Hall">
+        <div class="card-top">
+          <div class="card-title">Urgant Live · Ivan Urgant</div>
+          <button class="heart-btn" aria-label="Save event">🤍</button>
+        </div>
+        <div class="card-meta">
+          <span class="tag tag-arts">Arts</span>
+          <span class="card-time">7:00 PM</span>
+          <span class="price-pill">$62–$85+</span>
+        </div>
+        <div class="card-venue">Meridian Hall · 1 Front St E</div>
+        <div class="card-info-row">
+          <span class="card-info-item"><span class="icon">⏱</span> ~2 hrs</span>
+          <span class="card-info-item"><span class="icon">🎭</span> Live Entertainment</span>
+          <span class="card-info-item"><span class="icon">⭐</span> First North American tour</span>
+        </div>
+        <div class="card-description">Ivan Urgant — one of Russia's most beloved television personalities and entertainers — makes his first-ever North American tour stop in Toronto at Meridian Hall. A major draw for the Russian-speaking community and curious newcomers alike.</div>
+        <div class="card-bottom">
+          <div class="card-actions">
+            <a class="tickets-btn" href="https://www.ticketmaster.ca/meridian-hall-tickets-toronto/venue/131106" target="_blank" rel="noopener">🎟 Tickets</a>
+            <button class="bring-friends-btn">+ Bring Friends</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── NEW RESTAURANTS ── -->
+  <section class="day-section" id="day-restaurants" data-day="restaurants">
+    <div class="day-header">
+      <span class="day-name">New &amp; Worth Trying</span>
+      <span class="day-date">Open now</span>
+    </div>
+    <p class="section-label">New openings — go this week</p>
+    <div class="restaurant-grid" id="restaurant-grid">
+
+      <div class="restaurant-card" data-id="sammarco" data-title="Bisteccheria Sammarco" data-venue="4 Front St E">
+        <div class="restaurant-name">Bisteccheria Sammarco ⭐</div>
+        <div class="restaurant-location">📍 4 Front St E · St. Lawrence Market · Opened Apr 2026</div>
+        <div class="restaurant-desc">The most buzz-worthy Toronto opening of the spring. Italian steakhouse by chef Rob Rossi (Giulietta). Top 1% Canadian beef, dry-aged 45–55 days, cooked in an upright broiler. Tableside martini service. Already ranked #38 in North America on the World's 101 Best Steak Restaurants 2026. The reservation to get.</div>
+      </div>
+
+      <div class="restaurant-card" data-id="pasta-privato" data-title="Pasta Privato" data-venue="11 Church St">
+        <div class="restaurant-name">Pasta Privato</div>
+        <div class="restaurant-location">📍 11 Church St · Enter via Notte Ristorante · Opened Mar 27</div>
+        <div class="restaurant-desc">A pasta speakeasy — 30 seats hidden through Notte's entrance. Eight-course tasting menu at $125/person. Chef Michael Angeloni, housemade pasta, small plates, secondi. One of the most creative and intimate new openings in years.</div>
+      </div>
+
+      <div class="restaurant-card" data-id="notte-ristorante" data-title="Notte Ristorante" data-venue="9 Church St">
+        <div class="restaurant-name">Notte Ristorante</div>
+        <div class="restaurant-location">📍 9 Church St · Church &amp; Wellesley</div>
+        <div class="restaurant-desc">Modern Italian bar — aperitivo hour through late night. Right next to Pasta Privato's entrance; make a full night of the block.</div>
+      </div>
+
+      <div class="restaurant-card" data-id="hello-nori-yorkville" data-title="Hello Nori Yorkville" data-venue="Yorkville">
+        <div class="restaurant-name">Hello Nori — Yorkville</div>
+        <div class="restaurant-location">📍 Bay St · Yorkville · New location</div>
+        <div class="restaurant-desc">Third Toronto outpost of the popular handroll sushi bar. Signature hand rolls made to order at the counter, aburi oshi, premium sake. Walk-in format — no reservations.</div>
+      </div>
+
+      <div class="restaurant-card" data-id="bar-allegro" data-title="Bar Allegro" data-venue="Little Italy">
+        <div class="restaurant-name">Bar Allegro</div>
+        <div class="restaurant-location">📍 Little Italy · College St</div>
+        <div class="restaurant-desc">Casual wine &amp; cocktail bar — the relaxed late-night spot Little Italy needed. Good natural wine list, no fuss, good crowd.</div>
+      </div>
+
+      <div class="restaurant-card" data-id="cassette" data-title="Cassette" data-venue="Queen West (Gladstone House)">
+        <div class="restaurant-name">Cassette</div>
+        <div class="restaurant-location">📍 Queen West · Gladstone House</div>
+        <div class="restaurant-desc">Retro bar with drag shows, karaoke nights, and serious martinis. Weekend essential on Queen West — great pre or post CamelPhat stop on Saturday.</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- SHORTLIST -->
+<section class="shortlist-section" id="shortlist-section">
+  <div class="shortlist-header">
+    <span style="font-size:20px">❤️</span>
+    <h2>My Shortlist</h2>
+    <span class="shortlist-count" id="shortlist-count">0</span>
+  </div>
+  <div id="shortlist-empty" class="shortlist-empty">Tap 🤍 on any event to save it here.</div>
+  <div id="shortlist-cards"></div>
+</section>
+
+<!-- SOURCES -->
+<div class="sources-note">
+  <strong>Sources:</strong>
+  <a href="https://www.ticketmaster.ca/toronto-raptors-tickets/artist/806034" target="_blank" rel="noopener">Ticketmaster – Raptors</a> ·
+  <a href="https://www.ticketmaster.com/toronto-maple-leafs-tickets/artist/806033" target="_blank" rel="noopener">Ticketmaster – Maple Leafs</a> ·
+  <a href="https://www.ticketmaster.ca/toronto-blue-jays-tickets/artist/806032" target="_blank" rel="noopener">Ticketmaster – Blue Jays</a> ·
+  <a href="https://www.tickpick.com/buy-toronto-fc-vs-fc-cincinnati-tickets-bmo-field-4-11-26-1pm/7576968/" target="_blank" rel="noopener">TickPick – TFC vs Cincinnati</a> ·
+  <a href="https://masseyhall.mhrth.com/tickets/lily-allen/" target="_blank" rel="noopener">Massey Hall – Lily Allen</a> ·
+  <a href="https://www.axs.com/events/1333333/martin-lawrence-tickets" target="_blank" rel="noopener">AXS – Martin Lawrence</a> ·
+  <a href="https://www.livenation.com/event/1A8ZkoaGketcE2Y/camelphat" target="_blank" rel="noopener">Live Nation – CamelPhat</a> ·
+  <a href="https://www.tickpick.com/buy-raye-tickets-coca-cola-coliseum-4-13-26-8pm/7419301/" target="_blank" rel="noopener">TickPick – RAYE</a> ·
+  <a href="https://seatgeek.com/odumodublvck-tickets/toronto-canada-rebel-4-2026-04-10-7-pm/concert/18035732" target="_blank" rel="noopener">SeatGeek – ODUMODUBLVCK</a> ·
+  <a href="https://harbourfrontcentre.com/" target="_blank" rel="noopener">Harbourfront Centre – Nagata Shachu</a> ·
+  <a href="https://ago.ca/events/browse" target="_blank" rel="noopener">AGO – Open Door Free Evening</a> ·
+  <a href="https://www.ripleys.com/attractions/ripleys-aquarium-of-canada/events/jazz-night" target="_blank" rel="noopener">Ripley's Aquarium – Jazz Night</a> ·
+  <a href="https://www.thedanforth.com/shows" target="_blank" rel="noopener">Danforth Music Hall</a> ·
+  <a href="https://www.ticketmaster.ca/poison-the-well-tickets/artist/711033" target="_blank" rel="noopener">Ticketmaster – Poison the Well</a>
+</div>
+
+<footer class="footer">
+  Toronto Weekly Events · Apr 6 – 12, 2026 · Leafs Playoff Push Week ·
+  <a href="https://masseyhall.mhrth.com/tickets/" target="_blank" rel="noopener">Massey Hall</a> · <a href="https://www.scotiabankarena.com/events" target="_blank" rel="noopener">Scotiabank Arena</a>
+</footer>
+
+<script>
+  const STORAGE_KEY = 'toronto-shortlist-v2';
+  const CAT_COLORS = {
+    sports:      '#3b82f6',
+    nightlife:   '#a855f7',
+    holiday:     '#f97316',
+    arts:        '#14b8a6',
+    restaurants: '#22c55e',
+  };
+
+  let liked = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+  let activeFilter = 'all';
+
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify([...liked])); }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function renderShortlist() {
+    const container = document.getElementById('shortlist-cards');
+    const empty     = document.getElementById('shortlist-empty');
+    const count     = document.getElementById('shortlist-count');
+    container.innerHTML = '';
+    count.textContent = liked.size;
+    if (liked.size === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    liked.forEach(id => {
+      const card = document.querySelector(`.event-card[data-id="${id}"]`);
+      if (!card) return;
+      const color = CAT_COLORS[card.dataset.category] || '#888';
+      const item = document.createElement('div');
+      item.className = 'shortlist-item';
+      item.innerHTML = `
+        <div class="shortlist-dot" style="background:${color}"></div>
+        <div class="shortlist-info">
+          <div class="shortlist-title">${escHtml(card.dataset.title)}</div>
+          <div class="shortlist-meta">${escHtml(card.dataset.time)} · ${escHtml(card.dataset.venue)}</div>
+        </div>
+        <button class="shortlist-remove" data-remove="${escHtml(id)}">×</button>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  function syncHearts() {
+    document.querySelectorAll('.event-card').forEach(card => {
+      const btn = card.querySelector('.heart-btn');
+      if (!btn) return;
+      const isLiked = liked.has(card.dataset.id);
+      btn.textContent = isLiked ? '❤️' : '🤍';
+      btn.classList.toggle('liked', isLiked);
+    });
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('heart-btn')) {
+      const card = e.target.closest('.event-card');
+      if (!card) return;
+      const id = card.dataset.id;
+      liked.has(id) ? liked.delete(id) : liked.add(id);
+      save(); syncHearts(); renderShortlist();
+      return;
+    }
+    if (e.target.dataset.remove !== undefined) {
+      liked.delete(e.target.dataset.remove);
+      save(); syncHearts(); renderShortlist();
+      return;
+    }
+    if (e.target.classList.contains('bring-friends-btn')) {
+      const card  = e.target.closest('.event-card');
+      const title = card?.dataset.title || 'this event';
+      const time  = card?.dataset.time  || '';
+      const venue = card?.dataset.venue || '';
+      const msg   = `Hey! You should come to "${title}"${time ? ' at ' + time : ''}${venue ? ' @ ' + venue : ''}`;
+      if (navigator.share) {
+        navigator.share({ text: msg }).catch(() => {});
+      } else {
+        navigator.clipboard?.writeText(msg).then(() => {
+          const btn = e.target;
+          btn.textContent = '✓ Copied!';
+          setTimeout(() => { btn.textContent = '+ Bring Friends'; }, 1800);
+        }).catch(() => alert(msg));
+      }
+    }
+  });
+
+  document.getElementById('filter-bar').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter();
+  });
+
+  function applyFilter() {
+    const isAll         = activeFilter === 'all';
+    const isRestaurants = activeFilter === 'restaurants';
+    document.getElementById('day-restaurants').classList.toggle('hidden', !isAll && !isRestaurants);
+    document.querySelectorAll('.event-card').forEach(card => {
+      card.dataset.hidden = (isAll || card.dataset.category === activeFilter) ? 'false' : 'true';
+    });
+    document.querySelectorAll('.day-section:not(#day-restaurants)').forEach(section => {
+      const visible = section.querySelectorAll('.event-card:not([data-hidden="true"])');
+      section.classList.toggle('hidden', visible.length === 0);
+    });
+  }
+
+  syncHearts();
+  renderShortlist();
+</script>
+</body>
+</html>

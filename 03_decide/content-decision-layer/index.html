@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Decision Layer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ============================================
+       HEADER
+       ============================================ -->
+  <header class="app-header">
+    <h1>Content Decision Layer</h1>
+    <div class="subtitle">Life inputs &rarr; Brand filter &rarr; Opportunity scoring &rarr; Recommended posts</div>
+  </header>
+
+
+  <!-- ============================================
+       1. EXECUTIVE SUMMARY
+       ============================================ -->
+  <div class="executive-summary" id="executive-summary">
+    <!-- Rendered by JS -->
+  </div>
+
+
+  <!-- ============================================
+       2. WEEKLY INPUTS
+       ============================================ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Weekly Inputs</span>
+      <span class="section-toggle">&#9662;</span>
+    </div>
+    <div class="section-content">
+
+      <div class="form-grid" style="margin-bottom: var(--space-lg);">
+        <div class="form-group">
+          <label class="form-label" for="week-label">Week Label</label>
+          <input type="text" id="week-label" class="form-input" placeholder="e.g. Mexico City Week">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="week-city">City / Location</label>
+          <input type="text" id="week-city" class="form-input" placeholder="e.g. Mexico City">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="week-target">Target Posts</label>
+          <input type="number" id="week-target" class="form-input" min="1" max="10" value="3">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Energy This Week</label>
+          <div class="pill-group" id="energy-pills">
+            <span class="pill" data-value="low">Low</span>
+            <span class="pill" data-value="medium">Medium</span>
+            <span class="pill" data-value="high">High</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Content Effort</label>
+          <div class="pill-group" id="effort-pills">
+            <span class="pill" data-value="light">Light</span>
+            <span class="pill" data-value="balanced">Balanced</span>
+            <span class="pill" data-value="ambitious">Ambitious</span>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label" for="week-notes">Context / Notes</label>
+          <textarea id="week-notes" class="form-textarea" placeholder="What's happening this week? General context, mood, plans..."></textarea>
+        </div>
+      </div>
+
+      <!-- Activities sub-section -->
+      <div style="margin-top: var(--space-lg);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md);">
+          <span class="form-label" style="margin-bottom: 0;">Likely Activities This Week</span>
+          <button class="btn" id="btn-add-activity">+ Add Activity</button>
+        </div>
+
+        <div class="activity-header">
+          <span>Activity</span>
+          <span>Freq</span>
+          <span>Tags</span>
+          <span style="text-align:center">Visual</span>
+          <span style="text-align:center">Insight</span>
+          <span style="text-align:center">Ease</span>
+          <span></span>
+        </div>
+        <div class="activity-list" id="activity-list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       3. BRAND GUIDELINES
+       ============================================ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Brand Profile</span>
+      <span class="section-toggle collapsed">&#9662;</span>
+    </div>
+    <div class="section-content collapsed">
+
+      <div class="brand-grid">
+        <div class="brand-field">
+          <div class="brand-field-label">Brand Pillars</div>
+          <textarea id="brand-pillars" placeholder="One per line..."></textarea>
+        </div>
+        <div class="brand-field">
+          <div class="brand-field-label">Tone Descriptors</div>
+          <textarea id="brand-tone" placeholder="One per line..."></textarea>
+        </div>
+        <div class="brand-field">
+          <div class="brand-field-label">Avoid / Anti-Pillars</div>
+          <textarea id="brand-avoid" placeholder="One per line..."></textarea>
+        </div>
+        <div class="brand-field">
+          <div class="brand-field-label">Target Audience</div>
+          <textarea id="brand-audience" placeholder="One per line..."></textarea>
+        </div>
+        <div class="brand-field">
+          <div class="brand-field-label">Desired Reputation</div>
+          <textarea id="brand-reputation" placeholder="One per line..."></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       4. OPPORTUNITY ENGINE
+       ============================================ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Opportunity Engine</span>
+      <span class="section-toggle">&#9662;</span>
+    </div>
+    <div class="section-content">
+      <div class="card-grid" id="opportunity-list">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       5. DECISION BOARD
+       ============================================ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Decision Board</span>
+      <span class="section-toggle">&#9662;</span>
+    </div>
+    <div class="section-content">
+
+      <div class="decision-board">
+        <div class="board-column post">
+          <div class="board-column-header">
+            Post This Week <span class="count">0</span>
+          </div>
+          <div id="board-post"></div>
+        </div>
+        <div class="board-column capture">
+          <div class="board-column-header">
+            Capture Only <span class="count">0</span>
+          </div>
+          <div id="board-capture"></div>
+        </div>
+        <div class="board-column skip">
+          <div class="board-column-header">
+            Skip for Now <span class="count">0</span>
+          </div>
+          <div id="board-skip"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       6. WEEKLY RECOMMENDATIONS
+       ============================================ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Recommendations</span>
+      <span class="section-toggle">&#9662;</span>
+    </div>
+    <div class="section-content">
+
+      <div style="margin-bottom: var(--space-lg);">
+        <div class="form-label" style="margin-bottom: var(--space-md);">Top Recommended Posts</div>
+        <div class="rec-grid" id="rec-posts">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <div style="margin-bottom: var(--space-lg);">
+        <div class="form-label" style="margin-bottom: var(--space-md);">Best Capture Moments</div>
+        <div class="rec-grid" id="rec-captures">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <div>
+        <div class="form-label" style="margin-bottom: var(--space-md);">Recommended Content Balance</div>
+        <div id="rec-balance">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       7. HISTORY
+       ============================================ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Week History</span>
+      <span class="section-toggle collapsed">&#9662;</span>
+    </div>
+    <div class="section-content collapsed">
+      <div class="history-list" id="history-list">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================
+       ACTIONS
+       ============================================ -->
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-xl) 0; border-top: 1px solid var(--border-light); margin-top: var(--space-xl);">
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-save-week">Save This Week</button>
+      <button class="btn" id="btn-reset">Reset to Defaults</button>
+    </div>
+    <div style="font-size: var(--text-xs); color: var(--text-tertiary); letter-spacing: var(--tracking-wide);">
+      Data saved to localStorage automatically
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

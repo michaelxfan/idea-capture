@@ -31,6 +31,8 @@ interface DbRow {
   clickup_url: string | null;
   image_url: string | null;
   email_context: EmailContext | null;
+  steps: string[] | null;
+  completed_at: string | null;
 }
 
 function rowToTask(row: DbRow): Task {
@@ -54,6 +56,8 @@ function rowToTask(row: DbRow): Task {
     clickupUrl: row.clickup_url ?? undefined,
     imageUrl: row.image_url ?? undefined,
     emailContext: row.email_context ?? undefined,
+    steps: row.steps ?? undefined,
+    completedAt: row.completed_at ?? undefined,
   };
 }
 
@@ -78,6 +82,8 @@ function taskToRow(task: Task): DbRow {
     clickup_url: task.clickupUrl ?? null,
     image_url: task.imageUrl ?? null,
     email_context: task.emailContext ?? null,
+    steps: task.steps ?? null,
+    completed_at: task.completedAt ?? null,
   };
 }
 
@@ -138,6 +144,44 @@ export async function deleteTask(id: string): Promise<void> {
   if (error) {
     console.error("Supabase delete task error:", error);
   }
+}
+
+/**
+ * Subscribe to realtime changes on the tasks table.
+ * Returns an unsubscribe function. No-op if Supabase isn't configured.
+ */
+export function subscribeToTasks(handlers: {
+  onInsert?: (task: Task) => void;
+  onUpdate?: (task: Task) => void;
+  onDelete?: (id: string) => void;
+}): () => void {
+  if (!supabase) return () => {};
+
+  const channel = supabase
+    .channel("tasks-changes")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "tasks" },
+      (payload) => handlers.onInsert?.(rowToTask(payload.new as DbRow))
+    )
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "tasks" },
+      (payload) => handlers.onUpdate?.(rowToTask(payload.new as DbRow))
+    )
+    .on(
+      "postgres_changes",
+      { event: "DELETE", schema: "public", table: "tasks" },
+      (payload) => {
+        const id = (payload.old as { id?: string })?.id;
+        if (id) handlers.onDelete?.(id);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
 export async function deleteAllTasks(): Promise<void> {

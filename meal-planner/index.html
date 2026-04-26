@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Meal Plan</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f4f0; --surface: #fff; --border: #e5e0d8;
+  --text: #1a1714; --muted: #6b6460;
+  --accent: #2d6a4f; --accent-light: #d8f3dc; --accent-dim: #74c69d;
+  --eat-bg: #fffbeb; --eat-bd: #fcd34d; --eat-tx: #92400e;
+  --hdr: #1a1714; --hdr-tx: #f7f4f0;
+  --chicken: #15803d; --chicken-bg: #dcfce7;
+  --beef:    #b91c1c; --beef-bg:    #fee2e2;
+  --salmon:  #c2410c; --salmon-bg:  #ffedd5;
+  --egg:     #a16207; --egg-bg:     #fef9c3;
+  --yogurt:  #7c3aed; --yogurt-bg:  #ede9fe;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; }
+
+/* ── Header ── */
+header { background: var(--hdr); color: var(--hdr-tx); padding: 13px 22px;
+  position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.logo { font-size: 16px; font-weight: 700; letter-spacing: -.3px; white-space: nowrap; }
+.logo em { font-style: normal; color: var(--accent-dim); }
+.modes { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
+.mode-btn { padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18);
+  background: transparent; color: rgba(255,255,255,.65); font-size: 11.5px; cursor: pointer; transition: all .15s; white-space: nowrap; }
+.mode-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mode-btn:hover:not(.active) { border-color: rgba(255,255,255,.45); color: #fff; }
+.regen-btn { padding: 6px 15px; background: #fff; color: var(--hdr); border: none;
+  border-radius: 6px; font-weight: 700; font-size: 12.5px; cursor: pointer; white-space: nowrap; transition: opacity .15s; }
+.regen-btn:hover { opacity: .82; }
+
+/* ── Tabs ── */
+.tabs { background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; padding: 0 22px; position: sticky; top: 51px; z-index: 99; }
+.tab { padding: 12px 18px; font-size: 13px; font-weight: 500; color: var(--muted);
+  cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* ── Content ── */
+.content { max-width: 1020px; margin: 0 auto; padding: 28px 22px 80px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Executive summary ── */
+.exec-summary { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 24px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.exec-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: #faf8f6; }
+.exec-eyebrow { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .13em;
+  color: var(--muted); margin-bottom: 14px; }
+.exec-stats { display: flex; gap: 0; }
+.exec-stat { display: flex; flex-direction: column; gap: 2px; padding-right: 24px;
+  margin-right: 24px; border-right: 1px solid var(--border); }
+.exec-stat:last-child { border-right: none; margin-right: 0; }
+.exec-stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--muted); }
+.exec-stat-value { font-size: 24px; font-weight: 800; letter-spacing: -.5px; color: var(--text); }
+.exec-stat-value em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+.exec-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+/* ── Week calendar grid ── */
+.week-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.week-grid { display: grid; grid-template-columns: repeat(7, minmax(118px, 1fr)); min-width: 700px; }
+.week-col { padding: 12px 13px 14px; border-right: 1px solid var(--border); }
+.week-col:last-child { border-right: none; }
+.week-col-name { font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--text); margin-bottom: 9px; }
+.week-meal-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: flex-start; }
+.week-slot { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); flex-shrink: 0; padding-top: 1px; width: 10px; }
+.week-meal-name { font-size: 11.5px; line-height: 1.35; color: var(--text);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.week-day-total { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--border);
+  font-size: 10px; color: var(--muted); line-height: 1.5; }
+.week-day-total strong { color: var(--text); font-weight: 700; }
+
+/* ── Day card ── */
+.day-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
+  margin-bottom: 18px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.day-header { padding: 12px 18px; border-bottom: 1px solid var(--border); background: #faf8f6;
+  display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.day-left { display: flex; align-items: baseline; gap: 9px; }
+.day-num { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.day-label { font-size: 15px; font-weight: 700; }
+.day-sub { font-size: 11.5px; font-weight: 400; color: var(--muted); }
+.day-nutrition { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.4; }
+.day-nutrition strong { color: var(--text); font-size: 13px; }
+
+/* ── 3-col meal grid ── */
+.meals-row { display: grid; grid-template-columns: repeat(3, 1fr); }
+.meal-slot { padding: 16px 18px; border-right: 1px solid var(--border); }
+.meal-slot:last-child { border-right: none; }
+
+/* ── Meal card internals ── */
+.slot-header { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+.slot-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.protein-badge { padding: 1.5px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+.protein-chicken { background: var(--chicken-bg); color: var(--chicken); }
+.protein-beef    { background: var(--beef-bg);    color: var(--beef); }
+.protein-salmon  { background: var(--salmon-bg);  color: var(--salmon); }
+.protein-egg     { background: var(--egg-bg);     color: var(--egg); }
+.protein-yogurt  { background: var(--yogurt-bg);  color: var(--yogurt); }
+
+.meal-name { font-size: 14px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+
+.meal-nutrition { display: flex; gap: 6px; margin-bottom: 11px; }
+.mn-badge { background: var(--bg); border: 1px solid var(--border); border-radius: 5px;
+  padding: 2px 8px; font-size: 11px; font-weight: 600; color: var(--text); }
+.mn-badge.protein { background: var(--accent-light); border-color: var(--accent-dim); color: var(--accent); }
+
+.ing-label, .steps-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--muted); margin-bottom: 5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 12px; }
+.chip { background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+  padding: 2px 7px; font-size: 11px; }
+.chip small { color: var(--muted); margin-left: 2px; }
+
+.steps ol { padding-left: 15px; font-size: 12px; line-height: 1.65; color: var(--text); }
+.steps li { margin-bottom: 2px; }
+
+.meal-note { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--muted); font-style: italic; }
+
+/* ── Eat-out banner ── */
+.eat-out-banner { padding: 10px 18px; background: var(--eat-bg); border-top: 1px solid var(--eat-bd);
+  font-size: 12.5px; color: var(--eat-tx); line-height: 1.5; }
+
+/* ── Grocery ── */
+.grocery-hint { font-size: 12px; color: var(--muted); margin-bottom: 22px; }
+.grocery-section { margin-bottom: 28px; }
+.grocery-section h2 { font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--muted); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.grocery-item { display: flex; align-items: center; gap: 10px; padding: 9px 4px;
+  border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.grocery-item:last-child { border-bottom: none; }
+.g-check { width: 18px; height: 18px; flex-shrink: 0; border: 2px solid #ccc;
+  border-radius: 4px; position: relative; transition: all .12s; }
+.grocery-item.done .g-check { background: var(--accent); border-color: var(--accent); }
+.grocery-item.done .g-check::after { content: ''; position: absolute; top: 3px; left: 5px;
+  width: 5px; height: 8px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg); }
+.grocery-item.done .g-name { text-decoration: line-through; color: var(--muted); }
+.g-name { font-size: 13px; }
+.g-qty { font-size: 12px; color: var(--muted); margin-left: auto; white-space: nowrap; padding-left: 10px; }
+
+/* ── Prep ── */
+.prep-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.prep-title { background: var(--hdr); color: var(--hdr-tx); padding: 12px 18px; font-size: 13px; font-weight: 700; }
+.prep-body { padding: 18px; display: flex; flex-direction: column; gap: 13px; }
+.prep-item { display: flex; gap: 12px; align-items: flex-start; }
+.prep-icon { font-size: 19px; flex-shrink: 0; line-height: 1; margin-top: 1px; }
+.prep-text { font-size: 13px; line-height: 1.6; }
+.prep-text strong { font-weight: 700; }
+
+.reuse-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.reuse-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.reuse-card h4 { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 4px; }
+.reuse-card p { font-size: 12px; line-height: 1.5; }
+
+.why-block { background: var(--accent-light); border: 1px solid var(--accent-dim); border-radius: 12px; padding: 18px 22px; margin-top: 18px; }
+.why-block h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: 10px; }
+.why-block ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.why-block li { font-size: 13px; line-height: 1.55; padding-left: 18px; position: relative; }
+.why-block li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+/* ── Responsive ── */
+@media (max-width: 800px) {
+  .meals-row { grid-template-columns: 1fr 1fr; }
+  .meal-slot:nth-child(2) { border-right: none; }
+  .meal-slot:nth-child(3) { border-top: 1px solid var(--border); grid-column: 1 / -1; border-right: none; }
+  .reuse-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .meals-row { grid-template-columns: 1fr; }
+  .meal-slot { border-right: none !important; border-top: 1px solid var(--border); }
+  .meal-slot:first-child { border-top: none; }
+  .reuse-grid { grid-template-columns: 1fr; }
+  .modes { display: none; }
+  .content { padding: 18px 14px 80px; }
+  .wb-divider { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Weekly <em>Meals</em></div>
+  <div class="modes" id="modes"></div>
+  <button class="regen-btn" onclick="regenerate()">↻ New Plan</button>
+</header>
+<nav class="tabs">
+  <div class="tab active" onclick="switchTab('plan',this)">Meal Plan</div>
+  <div class="tab" onclick="switchTab('grocery',this)">Grocery List</div>
+  <div class="tab" onclick="switchTab('prep',this)">Prep Strategy</div>
+</nav>
+<div class="content">
+  <div class="tab-panel active" id="panel-plan"></div>
+  <div class="tab-panel" id="panel-grocery"></div>
+  <div class="tab-panel" id="panel-prep"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const CFG = { mode: 'balanced', planIndex: 0 };
+
+const MODES = [
+  { id: 'balanced',    label: 'Balanced'     },
+  { id: 'more-protein',label: 'More Protein' },
+  { id: 'lower-carb',  label: 'Lower Carb'   },
+  { id: 'cheaper',     label: 'Budget'        },
+  { id: 'more-variety',label: 'More Variety'  },
+];
+
+// ═══════════════════════════════════════════
+// MEAL LIBRARY  (calories / proteinG = per serving = 1 person)
+// quantities in ingredients = for 2 people
+// ═══════════════════════════════════════════
+const MEALS = [
+
+  /* ─── BREAKFASTS ─── */
+  {
+    id: 'scrambled-eggs-toast', name: 'Scrambled eggs with spinach & toast',
+    slot: 'breakfast', protein: 'egg', calories: 520, proteinG: 33,
+    ingredients: [
+      { id:'eggs',               name:'Eggs',                qty:'8',               category:'Protein' },
+      { id:'whole-wheat-bread',  name:'Whole wheat bread',   qty:'4 slices',        category:'Carbs'   },
+      { id:'spinach',            name:'Spinach',             qty:'2 cups (60 g)',   category:'Produce' },
+      { id:'butter',             name:'Butter',              qty:'1 tbsp',          category:'Pantry'  },
+    ],
+    steps:[
+      'Beat eggs with salt & pepper.',
+      'Melt butter over medium heat, add spinach and wilt 30 sec.',
+      'Add eggs, stir gently until just set. Remove from heat while still slightly soft.',
+      'Serve alongside toasted bread.',
+    ],
+    note:'Fast, reliable. Toast while eggs cook — 8 min total.',
+  },
+  {
+    id: 'egg-potato-hash', name: 'Egg & potato hash',
+    slot: 'breakfast', protein: 'egg', calories: 600, proteinG: 31,
+    ingredients: [
+      { id:'eggs',         name:'Eggs',              qty:'8',               category:'Protein' },
+      { id:'baby-potato',  name:'Baby potatoes',     qty:'400 g, halved',   category:'Produce' },
+      { id:'bell-pepper',  name:'Bell pepper',       qty:'½, diced',        category:'Produce' },
+      { id:'onion',        name:'Onion',             qty:'½, diced',        category:'Produce' },
+      { id:'olive-oil',    name:'Olive oil',         qty:'1 tbsp',          category:'Pantry'  },
+    ],
+    steps:[
+      'Microwave potatoes 5 min, then pan-fry cut-side down in olive oil 6–8 min until crisp.',
+      'Add onion and pepper at the 4-min mark.',
+      'Push veg to side, crack eggs in, fry to your preference.',
+      'Season well.',
+    ],
+    note:'Weekend-energy breakfast. Same potatoes as the skillet dinner.',
+  },
+  {
+    id: 'greek-yogurt-bowl', name: 'Greek yogurt power bowl',
+    slot: 'breakfast', protein: 'yogurt', calories: 490, proteinG: 33,
+    ingredients: [
+      { id:'greek-yogurt',   name:'Plain Greek yogurt (2%)', qty:'600 g total', category:'Protein' },
+      { id:'rolled-oats',    name:'Rolled oats',             qty:'100 g dry',   category:'Carbs'   },
+      { id:'frozen-berries', name:'Frozen mixed berries',    qty:'150 g',       category:'Produce' },
+      { id:'honey',          name:'Honey',                   qty:'1 tbsp',      category:'Pantry'  },
+    ],
+    steps:[
+      'Microwave oats with ½ cup water for 90 sec, or soak overnight.',
+      'Divide yogurt between 2 bowls, top with oats and berries.',
+      'Drizzle honey.',
+    ],
+    note:'No-heat option if oats soaked overnight. Great gut-health start.',
+  },
+  {
+    id: 'egg-scramble-wrap-b', name: 'Egg scramble breakfast wrap',
+    slot: 'breakfast', protein: 'egg', calories: 710, proteinG: 37,
+    ingredients: [
+      { id:'eggs',             name:'Eggs',              qty:'8',               category:'Protein' },
+      { id:'whole-wheat-wrap', name:'Whole wheat wraps', qty:'4',               category:'Carbs'   },
+      { id:'spinach',          name:'Spinach',           qty:'1 cup (30 g)',    category:'Produce' },
+      { id:'bell-pepper',      name:'Bell pepper',       qty:'½, diced',        category:'Produce' },
+      { id:'butter',           name:'Butter',            qty:'1 tbsp',          category:'Pantry'  },
+    ],
+    steps:[
+      'Melt butter, soften pepper 1 min, add spinach and wilt.',
+      'Beat eggs, pour in, stir gently until just set.',
+      'Warm wraps 20 sec in microwave.',
+      'Divide scramble between wraps, fold burrito-style.',
+    ],
+    note:'Highest protein breakfast. Good on training days.',
+  },
+  {
+    id: 'protein-oats-egg', name: 'Savoury oats with fried eggs',
+    slot: 'breakfast', protein: 'egg', calories: 640, proteinG: 38,
+    ingredients: [
+      { id:'rolled-oats', name:'Rolled oats',  qty:'150 g dry (~1.5 cups)', category:'Carbs'   },
+      { id:'eggs',        name:'Eggs',         qty:'4 (2 each)',             category:'Protein' },
+      { id:'butter',      name:'Butter',       qty:'1 tsp',                 category:'Pantry'  },
+      { id:'soy-sauce',   name:'Soy sauce',    qty:'1 tbsp (in oats)',      category:'Pantry'  },
+    ],
+    steps:[
+      'Simmer oats in 2.5 cups water 5 min, finish with a splash of soy sauce instead of salt.',
+      'Fry eggs in butter while oats cook.',
+      'Bowl the oats, top with fried eggs.',
+    ],
+    note:'Savoury oats are a sleeper hit — way more satisfying than sweet versions.',
+  },
+
+  /* ─── LUNCHES ─── */
+  {
+    id: 'chicken-wraps-l', name: 'Garlic-soy chicken wraps',
+    slot: 'lunch', protein: 'chicken', calories: 720, proteinG: 53,
+    ingredients: [
+      { id:'chicken-thigh', name:'Cooked chicken thigh, sliced', qty:'300 g',      category:'Protein', leftover:true },
+      { id:'whole-wheat-wrap', name:'Whole wheat wraps',         qty:'4',           category:'Carbs'   },
+      { id:'spinach',          name:'Spinach',                   qty:'2 cups (60g)',category:'Produce' },
+      { id:'bell-pepper',      name:'Bell pepper',               qty:'1, sliced',   category:'Produce' },
+      { id:'soy-sauce',        name:'Soy sauce',                 qty:'1 tbsp',      category:'Pantry'  },
+    ],
+    steps:[
+      'Warm wraps 15 sec in microwave.',
+      'Layer spinach, sliced pepper, and chicken.',
+      'Drizzle soy sauce, roll tight, slice in half.',
+    ],
+    note:'Uses batch chicken from Sunday. 5-min assembly.',
+  },
+  {
+    id: 'beef-rice-bowl-l', name: 'Leftover beef & rice bowl',
+    slot: 'lunch', protein: 'beef', calories: 750, proteinG: 60,
+    ingredients: [
+      { id:'ground-beef',   name:'Leftover beef skillet', qty:'~400 g', category:'Protein', leftover:true },
+      { id:'jasmine-rice',  name:'Jasmine rice (dry)',    qty:'150 g dry → ~2.5 cups cooked', category:'Carbs' },
+      { id:'spinach',       name:'Spinach',               qty:'2 cups (60 g)', category:'Produce' },
+      { id:'soy-sauce',     name:'Soy sauce',             qty:'1 tbsp',        category:'Pantry'  },
+    ],
+    steps:[
+      'Reheat beef skillet in pan with a splash of water to loosen.',
+      'Wilt spinach in at the end.',
+      'Serve over warm rice, soy sauce to finish.',
+    ],
+    note:'Zero-effort Monday leftover remix. Done in 5 min.',
+  },
+  {
+    id: 'loaded-scramble-wrap-l', name: 'Loaded egg scramble wrap',
+    slot: 'lunch', protein: 'egg', calories: 740, proteinG: 38,
+    ingredients: [
+      { id:'eggs',             name:'Eggs',              qty:'8',               category:'Protein' },
+      { id:'whole-wheat-wrap', name:'Whole wheat wraps', qty:'4',               category:'Carbs'   },
+      { id:'spinach',          name:'Spinach',           qty:'1.5 cups (45 g)', category:'Produce' },
+      { id:'bell-pepper',      name:'Bell pepper',       qty:'1, diced',        category:'Produce' },
+      { id:'butter',           name:'Butter',            qty:'1 tbsp',          category:'Pantry'  },
+    ],
+    steps:[
+      'Scramble eggs with pepper and spinach in butter until just set.',
+      'Warm wraps, divide scramble between them, roll burrito-style.',
+    ],
+    note:'Protein-dense portable lunch. Great for a desk day.',
+  },
+  {
+    id: 'chicken-rice-bowl-l', name: 'Chicken & rice power bowl',
+    slot: 'lunch', protein: 'chicken', calories: 820, proteinG: 61,
+    ingredients: [
+      { id:'chicken-thigh', name:'Cooked chicken thigh', qty:'400 g',       category:'Protein', leftover:true },
+      { id:'jasmine-rice',  name:'Jasmine rice (dry)',   qty:'150 g dry → ~2.5 cups cooked', category:'Carbs' },
+      { id:'broccoli',      name:'Broccoli, florets',    qty:'1 small head', category:'Produce' },
+      { id:'soy-sauce',     name:'Soy sauce',            qty:'2 tbsp',       category:'Pantry'  },
+      { id:'olive-oil',     name:'Olive oil',            qty:'1 tbsp',       category:'Pantry'  },
+    ],
+    steps:[
+      'Warm rice and sliced chicken in a pan together.',
+      'Microwave or steam broccoli 3 min.',
+      'Bowl everything, drizzle with soy sauce and olive oil.',
+    ],
+    note:'High-protein midday anchor. Batch chicken + rice ready in minutes.',
+  },
+  {
+    id: 'salmon-wrap-l', name: 'Salmon & spinach wrap',
+    slot: 'lunch', protein: 'salmon', calories: 750, proteinG: 50,
+    ingredients: [
+      { id:'salmon',           name:'Cooked salmon, flaked', qty:'300 g',          category:'Protein', leftover:true },
+      { id:'whole-wheat-wrap', name:'Whole wheat wraps',     qty:'4',              category:'Carbs'   },
+      { id:'spinach',          name:'Spinach',               qty:'2 cups (60 g)',  category:'Produce' },
+      { id:'lemon',            name:'Lemon',                 qty:'½',              category:'Produce' },
+      { id:'soy-sauce',        name:'Soy sauce',             qty:'1 tbsp',         category:'Pantry'  },
+    ],
+    steps:[
+      'Warm wraps. Flake cooked salmon into chunks.',
+      'Layer spinach and salmon. Squeeze lemon, drizzle soy sauce.',
+      'Roll tight and serve.',
+    ],
+    note:'Uses leftover Tuesday dinner salmon. Omega-3 twice this week.',
+  },
+
+  /* ─── DINNERS ─── */
+  {
+    id: 'garlic-soy-chicken-bowl', name: 'Garlic soy chicken rice bowl',
+    slot: 'dinner', protein: 'chicken', calories: 840, proteinG: 63,
+    ingredients: [
+      { id:'chicken-thigh', name:'Chicken thighs, boneless', qty:'500 g',  category:'Protein' },
+      { id:'jasmine-rice',  name:'Jasmine rice (dry)',        qty:'180 g dry → ~3 cups cooked', category:'Carbs' },
+      { id:'broccoli',      name:'Broccoli, florets',         qty:'1 head', category:'Produce' },
+      { id:'garlic',        name:'Garlic, minced',            qty:'4 cloves', category:'Produce' },
+      { id:'soy-sauce',     name:'Soy sauce',                 qty:'3 tbsp', category:'Pantry'  },
+      { id:'olive-oil',     name:'Olive oil',                 qty:'1 tbsp', category:'Pantry'  },
+    ],
+    steps:[
+      'Cube chicken, season with salt & pepper.',
+      'Sear in olive oil 4–5 min until golden, add garlic + soy sauce, toss 1 min.',
+      'Steam or microwave broccoli 3 min.',
+      'Serve over warm rice, spoon pan sauce over top.',
+    ],
+    note:'Backbone dinner. On Day 1 cook 700 g — 200 g extra for Day 2 wraps.',
+  },
+  {
+    id: 'beef-potato-skillet', name: 'Ground beef & potato skillet',
+    slot: 'dinner', protein: 'beef', calories: 850, proteinG: 72,
+    ingredients: [
+      { id:'ground-beef', name:'Lean ground beef',    qty:'600 g (extra for Day 3 remixes)', category:'Protein' },
+      { id:'baby-potato', name:'Baby potatoes, halved', qty:'600 g',    category:'Produce' },
+      { id:'onion',       name:'Onion, diced',          qty:'1',        category:'Produce' },
+      { id:'bell-pepper', name:'Bell pepper, diced',    qty:'1',        category:'Produce' },
+      { id:'garlic',      name:'Garlic, minced',        qty:'3 cloves', category:'Produce' },
+      { id:'olive-oil',   name:'Olive oil',             qty:'1 tbsp',   category:'Pantry'  },
+    ],
+    steps:[
+      'Microwave potatoes 6 min to soften, then crisp in skillet with olive oil 6–8 min.',
+      'Push to side; brown beef with onion, pepper, garlic, salt & pepper.',
+      'Combine, cook 2 more min. Squeeze lemon to finish if you like.',
+    ],
+    note:'Cook 600 g beef — saves ~200 g for Tuesday lunch bowl.',
+  },
+  {
+    id: 'salmon-spinach-rice', name: 'Pan-seared salmon with spinach & rice',
+    slot: 'dinner', protein: 'salmon', calories: 750, proteinG: 45,
+    ingredients: [
+      { id:'salmon',       name:'Salmon fillets',       qty:'2 × 220 g (+ save 300g for Sat wraps)', category:'Protein' },
+      { id:'jasmine-rice', name:'Jasmine rice (dry)',   qty:'150 g dry → ~2.5 cups cooked', category:'Carbs' },
+      { id:'spinach',      name:'Spinach',              qty:'200 g',     category:'Produce' },
+      { id:'garlic',       name:'Garlic, sliced',       qty:'2 cloves',  category:'Produce' },
+      { id:'butter',       name:'Butter',               qty:'1 tbsp',    category:'Pantry'  },
+      { id:'lemon',        name:'Lemon',                qty:'½',         category:'Produce' },
+    ],
+    steps:[
+      'Pat salmon dry, season. Sear skin-down 4 min, flip 2–3 min.',
+      'Remove. In same pan melt butter, sauté garlic + spinach until wilted.',
+      'Plate over rice, squeeze lemon on salmon.',
+    ],
+    note:'Buy 3 fillets — cook 2 for dinner, save 1 for Saturday lunch wraps.',
+  },
+  {
+    id: 'chicken-veg-stirfry', name: 'Chicken & veggie stir-fry',
+    slot: 'dinner', protein: 'chicken', calories: 790, proteinG: 61,
+    ingredients: [
+      { id:'chicken-thigh', name:'Chicken thighs, boneless', qty:'400 g',   category:'Protein' },
+      { id:'jasmine-rice',  name:'Jasmine rice (dry)',        qty:'120 g dry → ~2 cups cooked', category:'Carbs' },
+      { id:'broccoli',      name:'Broccoli, florets',         qty:'1 head', category:'Produce' },
+      { id:'bell-pepper',   name:'Bell pepper, sliced',       qty:'1',      category:'Produce' },
+      { id:'garlic',        name:'Garlic, minced',            qty:'3 cloves', category:'Produce' },
+      { id:'soy-sauce',     name:'Soy sauce',                 qty:'3 tbsp', category:'Pantry'  },
+      { id:'olive-oil',     name:'Olive oil',                 qty:'1 tbsp', category:'Pantry'  },
+    ],
+    steps:[
+      'Slice chicken thin. Stir-fry in hot olive oil 4 min, set aside.',
+      'In same pan, stir-fry broccoli and pepper 3 min; add garlic 30 sec.',
+      'Return chicken, add soy sauce, toss 1 min. Serve over rice.',
+    ],
+    note:'Variation on the chicken bowl — more veg, different texture.',
+  },
+  {
+    id: 'beef-wrap-skillet', name: 'Seasoned beef & pepper wrap',
+    slot: 'dinner', protein: 'beef', calories: 820, proteinG: 72,
+    ingredients: [
+      { id:'ground-beef', name:'Lean ground beef',  qty:'500 g',    category:'Protein' },
+      { id:'whole-wheat-wrap', name:'Whole wheat wraps (1 each)', qty:'2', category:'Carbs' },
+      { id:'onion',       name:'Onion, diced',      qty:'1',        category:'Produce' },
+      { id:'bell-pepper', name:'Bell pepper, diced',qty:'1',        category:'Produce' },
+      { id:'garlic',      name:'Garlic, minced',    qty:'3 cloves', category:'Produce' },
+      { id:'soy-sauce',   name:'Soy sauce',         qty:'2 tbsp',   category:'Pantry'  },
+      { id:'olive-oil',   name:'Olive oil',         qty:'1 tbsp',   category:'Pantry'  },
+    ],
+    steps:[
+      'Brown beef with onion, pepper, and garlic in olive oil. Season well.',
+      'Add soy sauce, toss to coat and caramelise slightly.',
+      'Warm wraps, fill generously, fold and serve.',
+    ],
+    note:'Friday-night easy. Same skills as Monday but wrapped — feels totally different.',
+  },
+];
+
+// ═══════════════════════════════════════════
+// GROCERY SPECS  (canonical weekly quantities — what to actually buy)
+// ═══════════════════════════════════════════
+const GROCERY_SPECS = {
+  'eggs':             { name:'Eggs',                              qty:'5 dozen (60)',          category:'Protein' },
+  'chicken-thigh':    { name:'Chicken thighs, boneless skinless', qty:'1.5 kg (~3.3 lb)',      category:'Protein' },
+  'ground-beef':      { name:'Lean ground beef',                 qty:'1.1 kg (~2.4 lb)',       category:'Protein' },
+  'salmon':           { name:'Salmon fillets (skin on)',          qty:'3 × 200 g (600 g total)',category:'Protein' },
+  'greek-yogurt':     { name:'Plain Greek yogurt — Liberte or Olympia 2%', qty:'2 × 500 g tubs', category:'Protein' },
+  'rolled-oats':      { name:'Large flake rolled oats',          qty:'500 g bag',              category:'Carbs'   },
+  'whole-wheat-bread':{ name:'Whole wheat bread',                qty:'1 loaf',                 category:'Carbs'   },
+  'whole-wheat-wrap': { name:'Whole wheat wraps (10")',          qty:'1 pack — 8 count',       category:'Carbs'   },
+  'jasmine-rice':     { name:'Jasmine rice',                     qty:'1 kg bag',               category:'Carbs'   },
+  'baby-potato':      { name:'Baby potatoes',                    qty:'1.5 kg bag',             category:'Produce' },
+  'broccoli':         { name:'Broccoli',                         qty:'4 heads',                category:'Produce' },
+  'spinach':          { name:'Fresh spinach',                    qty:'1 large bag (~500 g)',   category:'Produce' },
+  'bell-pepper':      { name:'Bell peppers (mixed)',             qty:'6',                      category:'Produce' },
+  'onion':            { name:'Onions',                           qty:'3',                      category:'Produce' },
+  'garlic':           { name:'Garlic',                           qty:'1 full head',            category:'Produce' },
+  'lemon':            { name:'Lemons',                           qty:'2',                      category:'Produce' },
+  'frozen-berries':   { name:'Frozen mixed berries',            qty:'1 bag (500 g)',           category:'Produce' },
+  'butter':           { name:'Butter',                           qty:'1 block (250 g)',        category:'Pantry'  },
+  'olive-oil':        { name:'Olive oil',                        qty:'1 bottle — restock if under 250 ml', category:'Pantry' },
+  'soy-sauce':        { name:'Soy sauce, low sodium',            qty:'1 bottle',               category:'Pantry'  },
+  'honey':            { name:'Honey',                            qty:'1 small jar',            category:'Pantry'  },
+};
+
+// ═══════════════════════════════════════════
+// PLAN SPINE  — locked for quality + reuse
+// ═══════════════════════════════════════════
+// 3 plan variants; "New Plan" cycles through them
+const SPINES = [
+  [// VARIANT A — default balanced
+    { b:'egg-scramble-wrap-b',  l:'loaded-scramble-wrap-l',  d:'garlic-soy-chicken-bowl', eatOut:false },
+    { b:'scrambled-eggs-toast', l:'chicken-wraps-l',          d:'beef-potato-skillet',     eatOut:false },
+    { b:'greek-yogurt-bowl',    l:'beef-rice-bowl-l',         d:'salmon-spinach-rice',     eatOut:false },
+    { b:'egg-scramble-wrap-b',  l:'chicken-rice-bowl-l',      d:'chicken-veg-stirfry',     eatOut:true  },
+    { b:'protein-oats-egg',     l:'loaded-scramble-wrap-l',  d:'garlic-soy-chicken-bowl', eatOut:false },
+    { b:'scrambled-eggs-toast', l:'chicken-wraps-l',          d:'beef-wrap-skillet',       eatOut:false },
+    { b:'egg-potato-hash',      l:'salmon-wrap-l',            d:'beef-potato-skillet',     eatOut:false },
+  ],
+  [// VARIANT B — slightly shifted variety
+    { b:'scrambled-eggs-toast', l:'loaded-scramble-wrap-l',  d:'garlic-soy-chicken-bowl', eatOut:false },
+    { b:'egg-scramble-wrap-b',  l:'chicken-wraps-l',          d:'beef-potato-skillet',     eatOut:false },
+    { b:'protein-oats-egg',     l:'beef-rice-bowl-l',         d:'salmon-spinach-rice',     eatOut:false },
+    { b:'greek-yogurt-bowl',    l:'chicken-rice-bowl-l',      d:'chicken-veg-stirfry',     eatOut:true  },
+    { b:'egg-scramble-wrap-b',  l:'loaded-scramble-wrap-l',  d:'beef-wrap-skillet',        eatOut:false },
+    { b:'scrambled-eggs-toast', l:'salmon-wrap-l',            d:'garlic-soy-chicken-bowl', eatOut:false },
+    { b:'egg-potato-hash',      l:'chicken-wraps-l',          d:'beef-potato-skillet',     eatOut:false },
+  ],
+  [// VARIANT C — more protein front-loaded
+    { b:'egg-scramble-wrap-b',  l:'chicken-rice-bowl-l',      d:'garlic-soy-chicken-bowl', eatOut:false },
+    { b:'protein-oats-egg',     l:'chicken-wraps-l',           d:'beef-potato-skillet',     eatOut:false },
+    { b:'scrambled-eggs-toast', l:'beef-rice-bowl-l',          d:'salmon-spinach-rice',     eatOut:false },
+    { b:'greek-yogurt-bowl',    l:'loaded-scramble-wrap-l',   d:'chicken-veg-stirfry',     eatOut:true  },
+    { b:'egg-scramble-wrap-b',  l:'chicken-wraps-l',           d:'garlic-soy-chicken-bowl', eatOut:false },
+    { b:'egg-potato-hash',      l:'loaded-scramble-wrap-l',   d:'beef-wrap-skillet',        eatOut:false },
+    { b:'scrambled-eggs-toast', l:'salmon-wrap-l',             d:'beef-potato-skillet',     eatOut:false },
+  ],
+];
+
+const DAY_LABELS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_SUBS   = ['Prep day','','','','','','Weekend'];
+
+// ═══════════════════════════════════════════
+// GENERATOR
+// ═══════════════════════════════════════════
+function buildPlan(cfg) {
+  const byId = Object.fromEntries(MEALS.map(m => [m.id, m]));
+  const spine = SPINES[cfg.planIndex % SPINES.length];
+
+  return spine.map((s, i) => {
+    let { b, l, d, eatOut } = s;
+
+    // Mode overrides
+    if (cfg.mode === 'cheaper') {
+      if (d === 'salmon-spinach-rice') d = 'beef-potato-skillet';
+      if (l === 'salmon-wrap-l')       l = 'chicken-wraps-l';
+    }
+    if (cfg.mode === 'lower-carb') {
+      if (b === 'greek-yogurt-bowl')  b = 'scrambled-eggs-toast';
+      if (b === 'protein-oats-egg')   b = 'egg-scramble-wrap-b';
+    }
+    if (cfg.mode === 'more-protein') {
+      if (b === 'greek-yogurt-bowl')  b = 'egg-scramble-wrap-b';
+      if (b === 'protein-oats-egg')   b = 'egg-scramble-wrap-b';
+    }
+    if (cfg.mode === 'more-variety' && i === 6 && d === 'beef-potato-skillet') d = 'beef-wrap-skillet';
+
+    return {
+      day: i + 1, label: DAY_LABELS[i], sublabel: DAY_SUBS[i], eatOut,
+      breakfast: byId[b], lunch: byId[l], dinner: byId[d],
+    };
+  });
+}
+
+function dayNutrition(day) {
+  return ['breakfast','lunch','dinner'].reduce((acc, slot) => {
+    const m = day[slot];
+    return m ? { cal: acc.cal + m.calories, pro: acc.pro + m.proteinG } : acc;
+  }, { cal: 0, pro: 0 });
+}
+
+function weeklySummary(plan) {
+  const days = plan.map(dayNutrition);
+  const avgCal = Math.round(days.reduce((s, d) => s + d.cal, 0) / days.length);
+  const avgPro = Math.round(days.reduce((s, d) => s + d.pro, 0) / days.length);
+  const ids = new Set();
+  plan.forEach(day => ['breakfast','lunch','dinner'].forEach(slot => {
+    day[slot]?.ingredients.forEach(i => ids.add(i.id));
+  }));
+  return { avgCal, avgPro, ingredientCount: ids.size };
+}
+
+// ═══════════════════════════════════════════
+// GROCERY BUILDER
+// ═══════════════════════════════════════════
+function buildGrocery(plan) {
+  // Collect unique ingredient IDs from non-leftover uses
+  const used = new Set();
+  plan.forEach(day => ['breakfast','lunch','dinner'].forEach(slot => {
+    day[slot]?.ingredients.forEach(i => { if (!i.leftover) used.add(i.id); });
+  }));
+
+  const categories = {};
+  used.forEach(id => {
+    const spec = GROCERY_SPECS[id];
+    if (!spec) return;
+    if (!categories[spec.category]) categories[spec.category] = [];
+    categories[spec.category].push({ id, name: spec.name, qty: spec.qty });
+  });
+  return categories;
+}
+
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// RENDERERS
+// ═══════════════════════════════════════════
+function renderExecutiveSummary(plan) {
+  const ws = weeklySummary(plan);
+
+  const stats = `
+    <div class="exec-stats">
+      <div class="exec-stat">
+        <span class="exec-stat-label">Avg daily calories</span>
+        <span class="exec-stat-value">${ws.avgCal.toLocaleString()}<em>kcal</em></span>
+      </div>
+      <div class="exec-stat">
+        <span class="exec-stat-label">Avg daily protein</span>
+        <span class="exec-stat-value">${ws.avgPro}<em>g</em></span>
+      </div>
+      <div class="exec-stat">
+        <span class="exec-stat-label">Core ingredients</span>
+        <span class="exec-stat-value">${ws.ingredientCount}<em>items</em></span>
+      </div>
+    </div>
+    <div class="exec-note">Per person &nbsp;·&nbsp; 2 active adult males ~170 lb &nbsp;·&nbsp; target 150 g protein/day &nbsp;·&nbsp; ~2,200 kcal/day</div>
+  `;
+
+  const cols = plan.map(day => {
+    const n = dayNutrition(day);
+    const rows = [
+      { lbl: 'B', meal: day.breakfast },
+      { lbl: 'L', meal: day.lunch    },
+      { lbl: 'D', meal: day.dinner   },
+    ].map(({ lbl, meal }) => `
+      <div class="week-meal-row">
+        <span class="week-slot">${lbl}</span>
+        <span class="week-meal-name">${meal ? meal.name : '—'}</span>
+      </div>
+    `).join('');
+    return `
+      <div class="week-col">
+        <div class="week-col-name">${day.label.slice(0, 3)}</div>
+        ${rows}
+        <div class="week-day-total"><strong>${n.cal.toLocaleString()}</strong> cal &nbsp;·&nbsp; <strong>${n.pro}g</strong> pro</div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="exec-summary">
+      <div class="exec-header">
+        <div class="exec-eyebrow">Week at a Glance</div>
+        ${stats}
+      </div>
+      <div class="week-grid-wrap">
+        <div class="week-grid">${cols}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPlan(plan) {
+  return renderExecutiveSummary(plan) + plan.map(renderDay).join('');
+}
+
+function renderDay(day) {
+  const n = dayNutrition(day);
+  return `
+    <div class="day-card">
+      <div class="day-header">
+        <div class="day-left">
+          <span class="day-num">Day ${day.day}</span>
+          <span class="day-label">${day.label}${day.sublabel ? `<span class="day-sub"> — ${day.sublabel}</span>` : ''}</span>
+        </div>
+        <div class="day-nutrition"><strong>${n.cal.toLocaleString()} cal</strong> &nbsp;·&nbsp; <strong>${n.pro}g protein</strong> <span style="font-size:10px;color:var(--muted)">/ person</span></div>
+      </div>
+      <div class="meals-row">
+        ${renderSlot('Breakfast', day.breakfast)}
+        ${renderSlot('Lunch',     day.lunch)}
+        ${renderSlot('Dinner',    day.dinner)}
+      </div>
+      ${day.eatOut ? `<div class="eat-out-banner">🍜 <strong>Eat-out swap (Wed dinner):</strong> If the week is hectic, hit a sit-down instead — aim for grilled protein + veg (ramen, rotisserie, poke, Mediterranean bowl).</div>` : ''}
+    </div>
+  `;
+}
+
+function renderSlot(label, meal) {
+  if (!meal) return `<div class="meal-slot"><div class="slot-label">${label}</div><div style="color:var(--muted);font-size:12px">—</div></div>`;
+  const chips = meal.ingredients.map(i =>
+    `<span class="chip">${i.name}${i.leftover ? ' <small>★ leftover</small>' : ''}<small> — ${i.qty}</small></span>`
+  ).join('');
+  const steps = meal.steps.map(s => `<li>${s}</li>`).join('');
+  return `
+    <div class="meal-slot">
+      <div class="slot-header">
+        <span class="slot-label">${label}</span>
+        <span class="protein-badge protein-${meal.protein}">${meal.protein}</span>
+      </div>
+      <div class="meal-name">${meal.name}</div>
+      <div class="meal-nutrition">
+        <span class="mn-badge">${meal.calories} cal</span>
+        <span class="mn-badge protein">${meal.proteinG}g protein</span>
+      </div>
+      <div class="ing-label">Ingredients — serves 2</div>
+      <div class="chips">${chips}</div>
+      <div class="steps-label">Steps</div>
+      <div class="steps"><ol>${steps}</ol></div>
+      <div class="meal-note">${meal.note}</div>
+    </div>
+  `;
+}
+
+function renderGrocery(plan) {
+  const cats = buildGrocery(plan);
+  const catOrder = ['Protein','Produce','Carbs','Pantry'];
+  const sections = catOrder.map(cat => {
+    const items = cats[cat];
+    if (!items || !items.length) return '';
+    const rows = items.map(item => `
+      <div class="grocery-item" onclick="this.classList.toggle('done')">
+        <div class="g-check"></div>
+        <div class="g-name">${item.name}</div>
+        <div class="g-qty">${item.qty}</div>
+      </div>
+    `).join('');
+    return `<div class="grocery-section"><h2>${cat}</h2>${rows}</div>`;
+  }).join('');
+  return `
+    <p class="grocery-hint">Tap any item to check it off as you shop. Quantities cover the full 7-day plan for 2 people.</p>
+    ${sections}
+  `;
+}
+
+function renderPrep(plan) {
+  // Find which ingredients are reused most (appear in 3+ meals)
+  const counts = {};
+  plan.forEach(day => ['breakfast','lunch','dinner'].forEach(slot => {
+    day[slot]?.ingredients.forEach(i => {
+      counts[i.id] = (counts[i.id] || 0) + 1;
+    });
+  }));
+  const topReused = Object.entries(counts)
+    .filter(([, c]) => c >= 3)
+    .map(([id, c]) => {
+      const spec = GROCERY_SPECS[id];
+      return spec ? `<strong>${spec.name}</strong> (${c} meals)` : null;
+    }).filter(Boolean).join(', ');
+
+  // Find leftover meals
+  const leftoverMeals = [];
+  plan.forEach(day => ['breakfast','lunch','dinner'].forEach(slot => {
+    const m = day[slot];
+    if (m?.ingredients.some(i => i.leftover)) leftoverMeals.push(`Day ${day.day} ${slot} — ${m.name}`);
+  }));
+
+  // Eat-out days
+  const eatOutDays = plan.filter(d => d.eatOut).map(d => `Day ${d.day} (${d.label})`).join(', ');
+
+  return `
+    <div class="prep-block">
+      <div class="prep-title">Sunday Batch Cook — ~50 min active, done once</div>
+      <div class="prep-body">
+        <div class="prep-item"><div class="prep-icon">🍚</div>
+          <div class="prep-text"><strong>Rice:</strong> Cook 3 cups dry jasmine rice → ~9 cups cooked. Portion into 3 airtight containers. Stays good 5 days refrigerated. Feeds 5+ rice-based meals.</div></div>
+        <div class="prep-item"><div class="prep-icon">🍗</div>
+          <div class="prep-text"><strong>Chicken (big batch):</strong> Season 700 g thighs (salt, pepper, splash of soy + olive oil). Bake 400°F / 205°C, 22–25 min. Slice 200 g thin for wraps, leave rest in chunks. Covers Day 1 dinner + Day 2 lunch.</div></div>
+        <div class="prep-item"><div class="prep-icon">🥦</div>
+          <div class="prep-text"><strong>Veg prep:</strong> Wash and bag spinach. Slice 2 bell peppers. Dice 1 onion. Mince 4–5 garlic cloves. Store in separate containers. Saves 5–8 min every weeknight.</div></div>
+        <div class="prep-item"><div class="prep-icon">🥔</div>
+          <div class="prep-text"><strong>Potatoes (par-cook):</strong> Halve 600 g baby potatoes. Microwave 5 min to soften. Ready to crisp in the pan any night — no waiting.</div></div>
+        <div class="prep-item"><div class="prep-icon">✅</div>
+          <div class="prep-text"><strong>The result:</strong> 4 dinners and 5 lunches come together in under 15 min each. You will never cook from scratch at 8 PM on a Tuesday.</div></div>
+      </div>
+    </div>
+
+    <div class="prep-block">
+      <div class="prep-title">Intentional Ingredient Reuse</div>
+      <div class="prep-body">
+        <div class="reuse-grid">
+          <div class="reuse-card"><h4>Cooked rice</h4><p>Appears across all rice-bowl and stir-fry meals. Cook once Sunday, heat as needed.</p></div>
+          <div class="reuse-card"><h4>Batch chicken</h4><p>Sunday batch: feeds Day 1 dinner + Day 2 lunch. Thursday cook: feeds Day 5 dinner + Day 6 lunch.</p></div>
+          <div class="reuse-card"><h4>Beef leftovers</h4><p>Monday skillet dinner → Tuesday lunch bowl. Cook 600 g to ensure enough for both.</p></div>
+          <div class="reuse-card"><h4>Salmon leftovers</h4><p>Tuesday dinner → Saturday lunch wraps. Buy 3 fillets; cook 2 for dinner, save 1 cold.</p></div>
+          <div class="reuse-card"><h4>Spinach + peppers</h4><p>Appear in breakfast wraps, lunch wraps, dinner bowls. One bag covers the week.</p></div>
+          <div class="reuse-card"><h4>Garlic + soy sauce</h4><p>Shared flavour across 5+ meals. Ties the whole week together without extra shopping.</p></div>
+        </div>
+        ${topReused ? `<div class="prep-text" style="margin-top:12px;font-size:12.5px;color:var(--muted)"><strong>Most-used this week:</strong> ${topReused}</div>` : ''}
+      </div>
+    </div>
+
+    ${leftoverMeals.length ? `
+    <div class="prep-block">
+      <div class="prep-title">Leftover Remixes (no cooking required)</div>
+      <div class="prep-body">
+        ${leftoverMeals.map(m => `<div class="prep-item"><div class="prep-icon">♻️</div><div class="prep-text">${m}</div></div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${eatOutDays ? `
+    <div class="prep-block">
+      <div class="prep-title">Eat-Out Suggestion</div>
+      <div class="prep-body">
+        <div class="prep-item"><div class="prep-icon">🍜</div>
+          <div class="prep-text">${eatOutDays} dinner is flagged as a good eat-out swap when the week is hectic.
+          Aim for: grilled protein + rice or noodles + veg. Good options: ramen, rotisserie chicken, poke bowl, Mediterranean grill. Budget ~$20–30 CAD per person.</div></div>
+      </div>
+    </div>` : ''}
+
+    <div class="why-block">
+      <h2>Why this plan works</h2>
+      <ul>
+        <li><strong>~150 g protein/day per person.</strong> Without tracking — it's built into the portions.</li>
+        <li><strong>~2,150–2,400 cal/day per person.</strong> Appropriate for two active 170 lb males.</li>
+        <li><strong>7 core ingredients, reusable every week.</strong> You'll memorize this shopping list within a month.</li>
+        <li><strong>Leftovers are planned in, not an accident.</strong> Monday dinner is literally Tuesday lunch.</li>
+        <li><strong>One eat-out valve</strong> so the week never feels like a diet.</li>
+        <li><strong>Estimated spend: ~$120–145 CAD/week</strong> for 2 people, all groceries included.</li>
+      </ul>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════
+function renderAll() {
+  const plan = buildPlan(CFG);
+  document.getElementById('panel-plan').innerHTML    = renderPlan(plan);
+  document.getElementById('panel-grocery').innerHTML = renderGrocery(plan);
+  document.getElementById('panel-prep').innerHTML    = renderPrep(plan);
+}
+
+function initModes() {
+  document.getElementById('modes').innerHTML = MODES.map(m =>
+    `<button class="mode-btn ${CFG.mode === m.id ? 'active' : ''}" onclick="setMode('${m.id}')">${m.label}</button>`
+  ).join('');
+}
+
+function setMode(id) { CFG.mode = id; CFG.planIndex = 0; initModes(); renderAll(); }
+
+function regenerate() { CFG.planIndex = (CFG.planIndex + 1) % SPINES.length; renderAll(); }
+
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+// Boot
+initModes();
+renderAll();
+</script>
+</body>
+</html>

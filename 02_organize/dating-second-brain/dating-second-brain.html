@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dating Reflection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF8F5;
+    --surface: #FFFFFF;
+    --surface-warm: #F5F0EB;
+    --surface-blush: #FBF5F3;
+    --border: #E8E0D8;
+    --border-light: #F0EBE5;
+    --text: #2D2A26;
+    --text-secondary: #6B6560;
+    --text-muted: #9B9490;
+    --accent: #8B7355;
+    --accent-light: #B8A68E;
+    --rose: #C4908A;
+    --rose-light: #F2E0DD;
+    --rose-bg: #FDF7F6;
+    --sage: #7A9B8A;
+    --sage-light: #E0ECE5;
+    --sage-bg: #F5FAF7;
+    --plum: #9B7DA0;
+    --plum-light: #E8DDE9;
+    --plum-bg: #FAF5FA;
+    --gold: #C4A55A;
+    --gold-light: #F5EDD4;
+    --warm-gray: #A89E96;
+    --shadow: 0 1px 3px rgba(45,42,38,0.04), 0 4px 12px rgba(45,42,38,0.03);
+    --shadow-hover: 0 2px 8px rgba(45,42,38,0.06), 0 8px 24px rgba(45,42,38,0.05);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: 'DM Serif Display', Georgia, serif; }
+
+  .app {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 420px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .header-meta {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--warm-gray);
+  }
+
+  .header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 40px;
+  }
+
+  .tab {
+    padding: 9px 22px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    border-radius: 24px;
+    transition: all 0.25s ease;
+    letter-spacing: 0.01em;
+  }
+
+  .tab:hover { color: var(--text-secondary); background: var(--surface-warm); }
+  .tab.active {
+    background: var(--text);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.25s ease;
+  }
+
+  .card:hover { box-shadow: var(--shadow-hover); }
+
+  .card-title {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .card-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--warm-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    margin-top: 28px;
+  }
+
+  .section-label:first-child { margin-top: 0; }
+
+  /* Candidate selector */
+  .candidate-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .candidate-tab {
+    padding: 10px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: var(--shadow);
+  }
+
+  .candidate-tab:hover { border-color: var(--accent-light); }
+  .candidate-tab.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  /* Pills / Tags */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    margin: 3px 3px;
+    letter-spacing: 0.01em;
+  }
+
+  .pill-sage { background: var(--sage-light); color: #4A7A5E; }
+  .pill-rose { background: var(--rose-light); color: #9B6860; }
+  .pill-plum { background: var(--plum-light); color: #7A5E80; }
+  .pill-gold { background: var(--gold-light); color: #8B7830; }
+  .pill-warm { background: var(--surface-warm); color: var(--text-secondary); }
+
+  /* Recommendation badges */
+  .rec-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .rec-proceed { background: var(--sage-light); color: #4A7A5E; }
+  .rec-caution { background: var(--gold-light); color: #8B7830; }
+  .rec-explore { background: var(--plum-light); color: #7A5E80; }
+  .rec-data { background: var(--surface-warm); color: var(--accent); }
+
+  /* Rating dots */
+  .rating-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .rating-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+
+  .rating-dot.filled { background: var(--accent); }
+
+  /* Trait rows */
+  .trait-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+
+  .trait-row:last-child { border-bottom: none; }
+
+  .trait-name {
+    width: 180px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    font-weight: 400;
+  }
+
+  .trait-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--surface-warm);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .trait-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  .trait-bar.high { background: var(--sage); }
+  .trait-bar.mid { background: var(--accent-light); }
+  .trait-bar.low { background: var(--rose); }
+
+  .trait-score {
+    width: 32px;
+    text-align: right;
+    font-weight: 500;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  .trait-confidence {
+    width: 50px;
+    text-align: right;
+    color: var(--text-muted);
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  /* Mode score cards */
+  .mode-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .mode-card {
+    background: var(--surface-warm);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+  }
+
+  .mode-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .mode-value {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 28px;
+    color: var(--text);
+  }
+
+  /* Reflective notes */
+  .note {
+    padding: 18px 20px;
+    border-radius: 12px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .note-sage { background: var(--sage-bg); border-left: 3px solid var(--sage); }
+  .note-rose { background: var(--rose-bg); border-left: 3px solid var(--rose); }
+  .note-plum { background: var(--plum-bg); border-left: 3px solid var(--plum); }
+  .note-warm { background: var(--surface-warm); border-left: 3px solid var(--accent-light); }
+
+  .note strong { color: var(--text); font-weight: 600; }
+
+  /* Evidence items */
+  .evidence-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .evidence-tag {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 2px;
+    height: fit-content;
+  }
+
+  .evidence-tag.fact { background: var(--sage-light); color: #4A7A5E; }
+  .evidence-tag.interp { background: var(--gold-light); color: #8B7830; }
+  .evidence-tag.read { background: var(--plum-light); color: #7A5E80; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* Snapshot header */
+  .snapshot-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .snapshot-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .snapshot-summary {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 680px;
+  }
+
+  /* Compare view */
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .compare-name {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .compare-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .compare-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+
+  .compare-stat:last-child { border-bottom: none; }
+  .compare-stat-label { color: var(--text-muted); }
+  .compare-stat-value { font-weight: 500; }
+  .compare-stat-value.best { color: var(--sage); font-weight: 600; }
+
+  .compare-insight {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  /* Blind spots */
+  .blindspot-item {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .blindspot-item:last-child { border-bottom: none; }
+
+  .blindspot-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .blindspot-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .blindspot-level {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .level-dot {
+    width: 24px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+  }
+
+  .level-dot.active { background: var(--rose); }
+  .level-dot.moderate { background: var(--gold); }
+
+  /* Timeline */
+  .timeline-item {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+  }
+
+  .timeline-item:last-child { border-bottom: none; }
+
+  .timeline-date {
+    width: 100px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .timeline-body { color: var(--text-secondary); }
+
+  /* Pattern entries */
+  .pattern-entry {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .pattern-entry:last-child { border-bottom: none; }
+
+  .pattern-heading {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .pattern-body {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* Next steps */
+  .next-step {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .next-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface-warm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .mode-scores { grid-template-columns: 1fr; }
+    .trait-name { width: 140px; font-size: 12px; }
+    .snapshot-header { flex-direction: column; }
+    .app { padding: 24px 16px 60px; }
+    header h1 { font-size: 24px; }
+    .compare-columns { grid-template-columns: 1fr; }
+  }
+
+  .compare-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* Preference table */
+  .pref-table {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+  }
+
+  .pref-table th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pref-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-secondary);
+  }
+
+  .pref-table tr:last-child td { border-bottom: none; }
+
+  .divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 28px 0;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>Dating Reflection</h1>
+    <p>A reflective system for noticing compatibility, attraction, and patterns over time</p>
+    <div class="header-meta">
+      <span>3 candidates</span>
+      <span>7 dates logged</span>
+      <span>Updated Apr 5, 2026</span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('notes')">Candidate Notes</button>
+    <button class="tab" onclick="switchTab('compare')">Compare</button>
+    <button class="tab" onclick="switchTab('blindspots')">Blind Spots</button>
+    <button class="tab" onclick="switchTab('patterns')">Patterns</button>
+  </div>
+
+  <!-- ==================== CANDIDATE NOTES ==================== -->
+  <div id="panel-notes" class="panel active">
+
+    <div class="candidate-tabs">
+      <button class="candidate-tab active" onclick="switchCandidate('a')">Li Ming</button>
+      <button class="candidate-tab" onclick="switchCandidate('b')">Mia</button>
+      <button class="candidate-tab" onclick="switchCandidate('c')">Jess</button>
+    </div>
+
+    <!-- ===== LI MING ===== -->
+    <div id="candidate-a" class="candidate-panel" style="display:block">
+
+      <!-- Snapshot -->
+      <div class="card">
+        <div class="snapshot-header">
+          <div>
+            <div class="card-title">Li Ming, 26</div>
+            <div class="card-subtitle">Rotman, finance/sales &middot; Met through friends &middot; 1 date</div>
+          </div>
+          <div class="snapshot-meta">
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Overall impression</div>
+              <div class="rating-dots">
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot"></div>
+                <div class="rating-dot"></div>
+              </div>
+            </div>
+            <span class="rec-badge rec-data">Collect more data</span>
+          </div>
+        </div>
+        <div class="snapshot-summary">
+          Strong baseline compatibility on paper: shared cultural background, Rotman connection, adjacent worldview. She feels one bubble away from a clear fit. The main questions are around lifestyle alignment, openness to novelty, and whether moderate attraction has room to grow. Not a pass, not a strong pursue. Worth more signal.
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- What Feels Aligned -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">What Feels Aligned</div>
+          <div>
+            <span class="pill pill-sage">Cultural/educational overlap</span>
+            <span class="pill pill-sage">Intellectually engaged</span>
+            <span class="pill pill-sage">Caring through actions</span>
+            <span class="pill pill-sage">Responsive communicator</span>
+            <span class="pill pill-sage">Family-oriented values</span>
+          </div>
+          <div class="note note-sage" style="margin-top:16px">
+            The Rotman and Chinese background create a shared foundation of references, humor, and values that doesn't need to be built from scratch. Her action-oriented care style feels culturally familiar and genuinely aligned with how you receive affection.
+          </div>
+        </div>
+
+        <!-- What Feels Unclear -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">What Feels Unclear</div>
+          <div>
+            <span class="pill pill-gold">Openness to new experiences</span>
+            <span class="pill pill-gold">Lifestyle gap (drinking, social)</span>
+            <span class="pill pill-gold">Complaint vs context?</span>
+            <span class="pill pill-gold">Apartment churn pattern</span>
+            <span class="pill pill-gold">"Chill" vs actual rigidity</span>
+            <span class="pill pill-gold">Attraction trajectory</span>
+          </div>
+          <div class="note note-warm" style="margin-top:16px">
+            <strong>Important tension:</strong> She describes herself as "chill" and prefers the other person to lead, but the apartment moves and food preferences suggest a more particular inner landscape. This isn't a red flag on its own, but it's worth noticing whether this gap widens.
+          </div>
+        </div>
+      </div>
+
+      <!-- Evidence -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">Reflective Notes</div>
+
+        <div class="section-label">What happened</div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Met a few times through friends before the formal date</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Dinner at Miku, then drinks after. She ordered a mocktail.</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Texting is responsive and shows interest; she follows up</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Has moved apartments 4 times recently (view, noise, HVAC issues)</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Described conflict with her mom during recent travel</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Avoids ikura, tuna, mackerel; conservative style</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Comes across more Western than expected given her background</span></div>
+
+        <div class="section-label">What I'm reading into it</div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>Meaningful baseline similarity, adjacent worldview, shared humor</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>She feels "one bubble away" from a clear fit, close but not quite there yet</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>She may show care through concern for health and actions, which feels familiar</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>Possible lifestyle mismatch since she doesn't really drink and may be less exploratory</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>Complaint framing may be situational; her last month sounded genuinely hard</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>Physical attraction is moderate, not especially high</span></div>
+
+        <div class="section-label">System perspective</div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>Cultural and value alignment is a structural positive that compounds over time</span></div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>Main risks center on lifestyle gap, openness, and whether the complaint framing is a trait or a season</span></div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>Attraction at 6 is not low enough to rule out, but needs monitoring over 2-3 more interactions</span></div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>She belongs in a "collect more data" category. Neither pass nor pursue hard.</span></div>
+      </div>
+
+      <!-- Compatibility Dimensions -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:20px">Compatibility Dimensions</div>
+
+        <div class="trait-row">
+          <span class="trait-name">Attraction</span>
+          <div class="trait-bar-bg"><div class="trait-bar mid" style="width:60%"></div></div>
+          <span class="trait-score">6.0</span>
+          <span class="trait-confidence">2 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Kindness</span>
+          <div class="trait-bar-bg"><div class="trait-bar high" style="width:75%"></div></div>
+          <span class="trait-score">7.5</span>
+          <span class="trait-confidence">3 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Capability</span>
+          <div class="trait-bar-bg"><div class="trait-bar mid" style="width:70%"></div></div>
+          <span class="trait-score">7.0</span>
+          <span class="trait-confidence">3 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Grounded & Self-Sufficient</span>
+          <div class="trait-bar-bg"><div class="trait-bar mid" style="width:65%"></div></div>
+          <span class="trait-score">6.5</span>
+          <span class="trait-confidence">2 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Curiosity & Openness</span>
+          <div class="trait-bar-bg"><div class="trait-bar low" style="width:55%"></div></div>
+          <span class="trait-score">5.5</span>
+          <span class="trait-confidence">2 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Lifestyle Compatibility</span>
+          <div class="trait-bar-bg"><div class="trait-bar mid" style="width:60%"></div></div>
+          <span class="trait-score">6.0</span>
+          <span class="trait-confidence">2 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Positive Energy</span>
+          <div class="trait-bar-bg"><div class="trait-bar low" style="width:55%"></div></div>
+          <span class="trait-score">5.5</span>
+          <span class="trait-confidence">2 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Social Intelligence</span>
+          <div class="trait-bar-bg"><div class="trait-bar mid" style="width:65%"></div></div>
+          <span class="trait-score">6.5</span>
+          <span class="trait-confidence">2 of 5</span>
+        </div>
+        <div class="trait-row">
+          <span class="trait-name">Communicative</span>
+          <div class="trait-bar-bg"><div class="trait-bar mid" style="width:65%"></div></div>
+          <span class="trait-score">6.5</span>
+          <span class="trait-confidence">2 of 5</span>
+        </div>
+
+        <div class="mode-scores">
+          <div class="mode-card">
+            <div class="mode-label">Operator</div>
+            <div class="mode-value">6.8</div>
+          </div>
+          <div class="mode-card">
+            <div class="mode-label">Explorer</div>
+            <div class="mode-value">5.9</div>
+          </div>
+          <div class="mode-card">
+            <div class="mode-label">Combined</div>
+            <div class="mode-value">6.4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Steps -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">What Would Help Clarify This?</div>
+        <div class="next-step"><div class="next-step-num">1</div><span>Test openness: suggest a slightly novel experience and notice how she responds to the unfamiliar</span></div>
+        <div class="next-step"><div class="next-step-num">2</div><span>Test energy in a lower-stress setting: was the complaint tone situational, or is it her resting register?</span></div>
+        <div class="next-step"><div class="next-step-num">3</div><span>Test lifestyle compatibility in a daytime or social-group context</span></div>
+        <div class="next-step"><div class="next-step-num">4</div><span>Monitor attraction trajectory: does familiarity build warmth, or does it flatten?</span></div>
+      </div>
+
+      <!-- Self-insight -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">What This Reveals About Me</div>
+        <div class="note note-plum">
+          Li Ming is a test of whether I genuinely value cultural alignment and quiet stability, or whether I only value those things in theory. If I lose interest because she's not immediately electric, that's worth noticing. It would suggest I weight the feeling of excitement more than the architecture of compatibility.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MIA ===== -->
+    <div id="candidate-b" class="candidate-panel" style="display:none">
+
+      <div class="card">
+        <div class="snapshot-header">
+          <div>
+            <div class="card-title">Mia, 26</div>
+            <div class="card-subtitle">Freelance photographer &middot; Met at a bar &middot; 2 dates</div>
+          </div>
+          <div class="snapshot-meta">
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Overall impression</div>
+              <div class="rating-dots">
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot"></div>
+                <div class="rating-dot"></div>
+              </div>
+            </div>
+            <span class="rec-badge rec-caution">High chemistry, uncertain fit</span>
+          </div>
+        </div>
+        <div class="snapshot-summary">
+          The strongest initial pull of any current candidate. Magnetic energy, genuine curiosity, strong social presence. But the structural signals around stability, lifestyle, and communication raise real questions about whether this would work in ordinary life. This resembles a pattern where initial excitement may outpace long-term compatibility.
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">What Feels Aligned</div>
+          <div>
+            <span class="pill pill-sage">Genuine curiosity</span>
+            <span class="pill pill-sage">Magnetic presence</span>
+            <span class="pill pill-sage">Creative and interesting world</span>
+            <span class="pill pill-sage">Strong social fluency</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">What Feels Unclear</div>
+          <div>
+            <span class="pill pill-gold">Inconsistent communication</span>
+            <span class="pill pill-gold">"Hates routines"</span>
+            <span class="pill pill-gold">Frequent moves, variable income</span>
+            <span class="pill pill-gold">Cancelled once on short notice</span>
+            <span class="pill pill-rose">I may already be compensating</span>
+          </div>
+          <div class="note note-rose" style="margin-top:16px">
+            <strong>Important tension:</strong> The gap between Explorer fit (8.9) and Operator fit (4.8) is the widest of any candidate. This often means someone feels wonderful on adventures and difficult on ordinary Tuesdays. Worth testing before investing further.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">Reflective Notes</div>
+
+        <div class="section-label">What happened</div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Met at a rooftop bar through mutual friends</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>2 dates: cocktail bar, then her gallery show</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Texting is sporadic; sometimes fast, sometimes 8+ hours</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Cancelled once, rescheduled same day</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Freelance photographer, income appears variable</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Said she "hates routines" and moves apartments often</span></div>
+
+        <div class="section-label">What I'm reading into it</div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>Strongest attraction of the three by a clear margin</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>The inconsistency feels like "artist energy," not a real problem</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>I feel like I can manage the unstructured parts</span></div>
+
+        <div class="section-label">System perspective</div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>"I can manage this" is a thought pattern worth examining. It often signals absorbing cost rather than finding ease.</span></div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>Both dates were Explorer-coded environments. You haven't seen Operator-mode Mia yet.</span></div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>This resembles a pattern where initial excitement may outpace long-term compatibility. That doesn't mean it's wrong, but it means the evidence bar should be higher before investing.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:20px">Compatibility Dimensions</div>
+        <div class="trait-row"><span class="trait-name">Attraction</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:95%"></div></div><span class="trait-score">9.5</span><span class="trait-confidence">5 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Kindness</span><div class="trait-bar-bg"><div class="trait-bar mid" style="width:65%"></div></div><span class="trait-score">6.5</span><span class="trait-confidence">2 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Capability</span><div class="trait-bar-bg"><div class="trait-bar low" style="width:45%"></div></div><span class="trait-score">4.5</span><span class="trait-confidence">2 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Grounded & Self-Sufficient</span><div class="trait-bar-bg"><div class="trait-bar low" style="width:35%"></div></div><span class="trait-score">3.5</span><span class="trait-confidence">3 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Curiosity & Openness</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:85%"></div></div><span class="trait-score">8.5</span><span class="trait-confidence">4 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Lifestyle Compatibility</span><div class="trait-bar-bg"><div class="trait-bar low" style="width:35%"></div></div><span class="trait-score">3.5</span><span class="trait-confidence">3 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Positive Energy</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:90%"></div></div><span class="trait-score">9.0</span><span class="trait-confidence">4 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Social Intelligence</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:85%"></div></div><span class="trait-score">8.5</span><span class="trait-confidence">4 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Communicative</span><div class="trait-bar-bg"><div class="trait-bar low" style="width:40%"></div></div><span class="trait-score">4.0</span><span class="trait-confidence">3 of 5</span></div>
+
+        <div class="mode-scores">
+          <div class="mode-card"><div class="mode-label">Operator</div><div class="mode-value">4.8</div></div>
+          <div class="mode-card"><div class="mode-label">Explorer</div><div class="mode-value">8.9</div></div>
+          <div class="mode-card"><div class="mode-label">Combined</div><div class="mode-value">6.2</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">What Would Help Clarify This?</div>
+        <div class="next-step"><div class="next-step-num">1</div><span>An Operator-coded date: quiet dinner, routine evening, no alcohol. See who she is on a Tuesday at 7pm.</span></div>
+        <div class="next-step"><div class="next-step-num">2</div><span>Observe communication patterns over the next week without initiating. Does consistency improve?</span></div>
+        <div class="next-step"><div class="next-step-num">3</div><span>Notice whether you're doing the planning and emotional structuring. If so, that's a data point about long-term load.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">What This Reveals About Me</div>
+        <div class="note note-plum">
+          Mia is the candidate I'm most drawn to and the one the system is most cautious about. That dissonance is itself informative. It suggests that what I feel most strongly may not always be what works best. This isn't about ignoring attraction, but about making sure I don't let it override the other eight dimensions before I've tested them.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== JESS ===== -->
+    <div id="candidate-c" class="candidate-panel" style="display:none">
+
+      <div class="card">
+        <div class="snapshot-header">
+          <div>
+            <div class="card-title">Jess, 29</div>
+            <div class="card-subtitle">Software engineer &middot; Hinge &middot; 2 dates</div>
+          </div>
+          <div class="snapshot-meta">
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Overall impression</div>
+              <div class="rating-dots">
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot filled"></div>
+                <div class="rating-dot"></div>
+              </div>
+            </div>
+            <span class="rec-badge rec-explore">Worth exploring further</span>
+          </div>
+        </div>
+        <div class="snapshot-summary">
+          Quietly impressive. Strong Operator-mode signals across capability, groundedness, and intellectual depth. The concern is that both dates were in low-energy environments, so the question isn't whether she's interesting, but whether she can also be fun. Worth testing in an Explorer context before making a judgment.
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">What Feels Aligned</div>
+          <div>
+            <span class="pill pill-sage">Intellectually stimulating</span>
+            <span class="pill pill-sage">Highly capable</span>
+            <span class="pill pill-sage">Self-sufficient</span>
+            <span class="pill pill-sage">Active lifestyle (half-marathons)</span>
+            <span class="pill pill-sage">Thoughtful communicator</span>
+            <span class="pill pill-sage">Long-term planner</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px">What Feels Unclear</div>
+          <div>
+            <span class="pill pill-gold">Energy level in social settings</span>
+            <span class="pill pill-gold">Lightness and playfulness</span>
+            <span class="pill pill-gold">Explorer-mode chemistry</span>
+            <span class="pill pill-gold">Only tested in calm environments</span>
+          </div>
+          <div class="note note-warm" style="margin-top:16px">
+            Calling someone "flat" after coffee and a museum is making a judgment from Operator-coded data only. It's possible she has a gear you haven't seen. It's also possible this is the ceiling. One more date in a different setting would answer the question.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">Reflective Notes</div>
+        <div class="section-label">What happened</div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>2 dates: coffee (90 min), then museum + dinner</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Software engineer at a FAANG, 4 years in</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Runs half-marathons, reads nonfiction regularly</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Texting is once daily but substantive</span></div>
+        <div class="evidence-item"><span class="evidence-tag fact">Fact</span><span>Has a 5-year plan for finances and career</span></div>
+
+        <div class="section-label">What I'm reading into it</div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>Smart and impressive, but something felt "flat"</span></div>
+        <div class="evidence-item"><span class="evidence-tag interp">Feeling</span><span>Not sure the energy would translate to a trip or night out</span></div>
+
+        <div class="section-label">System perspective</div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>"Flat" after two calm dates is a premature conclusion. You haven't tested her range.</span></div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>A 5-year plan is a Capability and Groundedness signal, not a personality limitation.</span></div>
+        <div class="evidence-item"><span class="evidence-tag read">Read</span><span>I may be underweighting a stable, less immediately electric candidate. That's a known pattern.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:20px">Compatibility Dimensions</div>
+        <div class="trait-row"><span class="trait-name">Attraction</span><div class="trait-bar-bg"><div class="trait-bar mid" style="width:60%"></div></div><span class="trait-score">6.0</span><span class="trait-confidence">2 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Kindness</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:75%"></div></div><span class="trait-score">7.5</span><span class="trait-confidence">3 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Capability</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:90%"></div></div><span class="trait-score">9.0</span><span class="trait-confidence">4 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Grounded & Self-Sufficient</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:90%"></div></div><span class="trait-score">9.0</span><span class="trait-confidence">4 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Curiosity & Openness</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:80%"></div></div><span class="trait-score">8.0</span><span class="trait-confidence">3 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Lifestyle Compatibility</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:80%"></div></div><span class="trait-score">8.0</span><span class="trait-confidence">3 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Positive Energy</span><div class="trait-bar-bg"><div class="trait-bar low" style="width:55%"></div></div><span class="trait-score">5.5</span><span class="trait-confidence">2 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Social Intelligence</span><div class="trait-bar-bg"><div class="trait-bar mid" style="width:65%"></div></div><span class="trait-score">6.5</span><span class="trait-confidence">2 of 5</span></div>
+        <div class="trait-row"><span class="trait-name">Communicative</span><div class="trait-bar-bg"><div class="trait-bar high" style="width:75%"></div></div><span class="trait-score">7.5</span><span class="trait-confidence">3 of 5</span></div>
+
+        <div class="mode-scores">
+          <div class="mode-card"><div class="mode-label">Operator</div><div class="mode-value">8.2</div></div>
+          <div class="mode-card"><div class="mode-label">Explorer</div><div class="mode-value">6.3</div></div>
+          <div class="mode-card"><div class="mode-label">Combined</div><div class="mode-value">7.5</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">What Would Help Clarify This?</div>
+        <div class="next-step"><div class="next-step-num">1</div><span>An Explorer-coded date: concert, group dinner, or a weekend farmers market with drinks</span></div>
+        <div class="next-step"><div class="next-step-num">2</div><span>See if there's a playful, lighter register that the first two settings didn't draw out</span></div>
+        <div class="next-step"><div class="next-step-num">3</div><span>Notice whether the "flat" impression shifts with a context change, or if it holds</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">What This Reveals About Me</div>
+        <div class="note note-plum">
+          Jess and Li Ming score within range of each other on combined fit. But if I'm naturally more drawn to Mia despite her lower combined score, that reveals a preference gap: I may value the feeling of aliveness over the architecture of compatibility. That's not wrong, but it's important to see clearly.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== COMPARE ==================== -->
+  <div id="panel-compare" class="panel">
+
+    <div class="compare-columns">
+      <!-- Li Ming -->
+      <div class="compare-card">
+        <div class="compare-name">Li Ming</div>
+        <div class="compare-sub">26 &middot; Finance/sales &middot; 1 date</div>
+        <div class="compare-stat"><span class="compare-stat-label">Attraction</span><span class="compare-stat-value">6.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Kindness</span><span class="compare-stat-value">7.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Capability</span><span class="compare-stat-value">7.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Grounded</span><span class="compare-stat-value">6.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Curiosity</span><span class="compare-stat-value">5.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Lifestyle</span><span class="compare-stat-value">6.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Energy</span><span class="compare-stat-value">5.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Social Intel.</span><span class="compare-stat-value">6.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Communication</span><span class="compare-stat-value">6.5</span></div>
+        <div class="divider"></div>
+        <div class="compare-stat"><span class="compare-stat-label">Operator</span><span class="compare-stat-value">6.8</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Explorer</span><span class="compare-stat-value">5.9</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Combined</span><span class="compare-stat-value" style="font-size:15px;">6.4</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Mode gap</span><span class="compare-stat-value">0.9</span></div>
+        <div style="margin-top:12px;"><span class="pill pill-warm">Collect more data</span></div>
+        <div class="compare-insight">Best cultural alignment. Narrowest mode gap. Least data. Needs more signal before a real verdict.</div>
+      </div>
+
+      <!-- Mia -->
+      <div class="compare-card">
+        <div class="compare-name">Mia</div>
+        <div class="compare-sub">26 &middot; Photographer &middot; 2 dates</div>
+        <div class="compare-stat"><span class="compare-stat-label">Attraction</span><span class="compare-stat-value best">9.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Kindness</span><span class="compare-stat-value">6.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Capability</span><span class="compare-stat-value">4.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Grounded</span><span class="compare-stat-value">3.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Curiosity</span><span class="compare-stat-value best">8.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Lifestyle</span><span class="compare-stat-value">3.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Energy</span><span class="compare-stat-value best">9.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Social Intel.</span><span class="compare-stat-value best">8.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Communication</span><span class="compare-stat-value">4.0</span></div>
+        <div class="divider"></div>
+        <div class="compare-stat"><span class="compare-stat-label">Operator</span><span class="compare-stat-value">4.8</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Explorer</span><span class="compare-stat-value best">8.9</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Combined</span><span class="compare-stat-value" style="font-size:15px;">6.2</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Mode gap</span><span class="compare-stat-value" style="color:var(--rose);">4.1</span></div>
+        <div style="margin-top:12px;"><span class="pill pill-gold">High chemistry, uncertain fit</span></div>
+        <div class="compare-insight">Highest attraction and energy. Also the widest mode gap and weakest stability signals. The pull is real; the question is whether the structure is.</div>
+      </div>
+
+      <!-- Jess -->
+      <div class="compare-card">
+        <div class="compare-name">Jess</div>
+        <div class="compare-sub">29 &middot; Software eng. &middot; 2 dates</div>
+        <div class="compare-stat"><span class="compare-stat-label">Attraction</span><span class="compare-stat-value">6.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Kindness</span><span class="compare-stat-value">7.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Capability</span><span class="compare-stat-value best">9.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Grounded</span><span class="compare-stat-value best">9.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Curiosity</span><span class="compare-stat-value">8.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Lifestyle</span><span class="compare-stat-value best">8.0</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Energy</span><span class="compare-stat-value">5.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Social Intel.</span><span class="compare-stat-value">6.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Communication</span><span class="compare-stat-value best">7.5</span></div>
+        <div class="divider"></div>
+        <div class="compare-stat"><span class="compare-stat-label">Operator</span><span class="compare-stat-value best">8.2</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Explorer</span><span class="compare-stat-value">6.3</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Combined</span><span class="compare-stat-value" style="font-size:15px;">7.5</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Mode gap</span><span class="compare-stat-value">1.9</span></div>
+        <div style="margin-top:12px;"><span class="pill pill-sage">Worth exploring further</span></div>
+        <div class="compare-insight">Strongest long-term stability profile. Highest combined score. If Explorer data improves even slightly, she becomes the strongest overall candidate.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title" style="margin-bottom:16px">Reading the Comparison</div>
+      <div class="note note-warm">
+        <strong>Highest floor:</strong> Jess. Lowest variance, strongest Operator profile, fewest structural risks. If her Explorer scores improve with better testing, she could be the most balanced candidate overall.
+      </div>
+      <div class="note note-plum">
+        <strong>Most uncertain:</strong> Li Ming. Narrowest mode gap and best cultural alignment, but the least data. Her trajectory could go either direction with 1-2 more interactions.
+      </div>
+      <div class="note note-rose">
+        <strong>Highest pull, hardest fit:</strong> Mia. The chemistry is real. The question is whether the rest of the picture can support it. A 4.1-point mode gap rarely closes on its own.
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== BLIND SPOTS ==================== -->
+  <div id="panel-blindspots" class="panel">
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">Where I May Not Be Seeing Clearly</div>
+      <div class="card-subtitle" style="margin-bottom:24px">These are recurring patterns in how I evaluate candidates. Not failures, just tendencies to watch.</div>
+
+      <div class="blindspot-item">
+        <div class="blindspot-title">I may place extra weight on early chemistry and intensity</div>
+        <div class="blindspot-desc">After high-energy dates, I tend to feel more excited about a candidate than their overall compatibility warrants. The feeling is real, but it can crowd out quieter, more structural signals. Right now, this may be influencing how I see Mia relative to the others.</div>
+        <div class="blindspot-level"><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot moderate"></div><div class="level-dot"></div></div>
+      </div>
+
+      <div class="blindspot-item">
+        <div class="blindspot-title">I may underrate how much day-to-day friction matters</div>
+        <div class="blindspot-desc">Stability, routine compatibility, and communication quality don't create excitement on a first date, but they're what makes month 6 work. I've historically undercounted these in early evaluation.</div>
+        <div class="blindspot-level"><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot"></div><div class="level-dot"></div></div>
+      </div>
+
+      <div class="blindspot-item">
+        <div class="blindspot-title">I may overestimate my ability to absorb structural gaps</div>
+        <div class="blindspot-desc">"I can manage this" often means I'm willing to carry the load, not that it's actually manageable. When I find myself thinking this about someone, it's worth asking what I'd be carrying and for how long. This pattern is currently active with Mia.</div>
+        <div class="blindspot-level"><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot"></div></div>
+      </div>
+
+      <div class="blindspot-item">
+        <div class="blindspot-title">I may mistake social polish for deeper substance</div>
+        <div class="blindspot-desc">Charisma, curiosity, and vibe make someone compelling to be around. But they're not the same as capability, groundedness, or communication quality. I should be careful not to let surface magnetism fill in the blanks where evidence is thin.</div>
+        <div class="blindspot-level"><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot"></div><div class="level-dot"></div></div>
+      </div>
+
+      <div class="blindspot-item">
+        <div class="blindspot-title">I may explain away friction when someone is exciting</div>
+        <div class="blindspot-desc">When attraction is high, inconsistency becomes "just her vibe" and instability becomes "artist energy." The rationalizing language is worth noticing. It usually means I'm already invested and constructing a story that supports continuing.</div>
+        <div class="blindspot-level"><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot moderate"></div><div class="level-dot"></div></div>
+      </div>
+
+      <div class="blindspot-item">
+        <div class="blindspot-title">I may undervalue people who don't create immediate spark</div>
+        <div class="blindspot-desc">Stable, kind, capable candidates can feel "fine" early and "right" later. I've called Li Ming "one bubble away" and Jess "flat" based on very early data. Worth checking whether that's signal or just the absence of a dopamine spike.</div>
+        <div class="blindspot-level"><div class="level-dot active"></div><div class="level-dot active"></div><div class="level-dot moderate"></div><div class="level-dot"></div><div class="level-dot"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">A Grounding Exercise</div>
+      <div class="note note-plum">
+        <strong>If I removed Attraction, Positive Energy, and Social Intelligence from the equation, who would I still want to spend time with?</strong><br><br>
+        That answer matters. It points to who I respect, feel comfortable with, and trust. Chemistry matters, but it shouldn't be the only vote in the room.
+      </div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-top:16px;line-height:1.7;">
+        <strong>A suggested protocol for the next two weeks:</strong> Give each remaining candidate one date in the mode you haven't tested them in. Mia gets an Operator date. Jess and Li Ming get Explorer dates. Then re-evaluate with balanced data.
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PATTERNS ==================== -->
+  <div id="panel-patterns" class="panel">
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px">What I'm Learning Over Time</div>
+      <div class="card-subtitle" style="margin-bottom:24px">Observations from the pattern of who I pursue, how I evaluate, and what actually works</div>
+
+      <div class="pattern-entry">
+        <div class="pattern-heading">I tend to invest fastest in whoever feels most alive</div>
+        <div class="pattern-body">Across recent dating, my strongest initial excitement consistently tracks with high Attraction, Positive Energy, and Social Intelligence. These are Explorer-weighted traits. The candidates who feel most alive in unstructured settings get my attention first, even when their Operator fit is weaker.</div>
+      </div>
+
+      <div class="pattern-entry">
+        <div class="pattern-heading">Stability signals are invisible early</div>
+        <div class="pattern-body">Groundedness, Capability, and Communication don't create chemistry on date 1-3. They create relief on month 3-6. Historically, I underweight these in the first 30 days and then wish I hadn't.</div>
+      </div>
+
+      <div class="pattern-entry">
+        <div class="pattern-heading">"I can manage it" is usually a warning, not a strength</div>
+        <div class="pattern-body">When I think I can absorb someone's instability or fill in the structural gaps, the relationship tends to add cognitive load rather than reduce it. This thought pattern feels like confidence but functions as cost absorption.</div>
+      </div>
+
+      <div class="pattern-entry">
+        <div class="pattern-heading">My date environments are biased toward Explorer settings</div>
+        <div class="pattern-body">Bars, events, and socially rich environments naturally favor high-energy, socially fluent candidates. Calmer, more grounded people may not shine in those contexts. If I only test in Explorer mode, my results will be skewed toward Explorer-fit candidates.</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">Stated vs Revealed Preferences</div>
+        <table class="pref-table">
+          <tr><th>What I say I value</th><th>What I actually pursue</th></tr>
+          <tr><td>Groundedness</td><td>Attraction</td></tr>
+          <tr><td>Capability</td><td>Positive Energy</td></tr>
+          <tr><td>Kindness</td><td>Social Intelligence</td></tr>
+          <tr><td>Lifestyle Compatibility</td><td>Curiosity</td></tr>
+        </table>
+        <div class="note note-warm" style="margin-top:16px">
+          This gap isn't about failure. It's about awareness. I can value both, but I should notice when the pursuing self overrides the planning self.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">Date Timeline</div>
+        <div class="timeline-item"><div class="timeline-date">Mar 15</div><div class="timeline-body">Mia, Date 1. Rooftop bar. High energy, immediate pull. Explorer-coded.</div></div>
+        <div class="timeline-item"><div class="timeline-date">Mar 19</div><div class="timeline-body">Jess, Date 1. Coffee, 90 min. Intellectual, calm. Operator-coded.</div></div>
+        <div class="timeline-item"><div class="timeline-date">Mar 22</div><div class="timeline-body">Li Ming, Date 1. Miku dinner + drinks. Mixed signals. Both modes.</div></div>
+        <div class="timeline-item"><div class="timeline-date">Mar 25</div><div class="timeline-body">Mia, Date 2. Gallery show. Social, high-energy. Explorer-coded.</div></div>
+        <div class="timeline-item"><div class="timeline-date">Mar 28</div><div class="timeline-body">Jess, Date 2. Museum + dinner. Deep conversation. Operator-coded.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px">Emerging Archetypes</div>
+      <div class="grid-2" style="margin-top:8px">
+        <div>
+          <div class="section-label">Best-fit archetype</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <strong style="color:var(--sage)">The Capable Warm One:</strong> High groundedness, capability, and kindness, with enough curiosity and energy to not feel flat. Scores 7+ in both modes. Doesn't spike emotions immediately, but ages well. Jess is the closest current example.
+          </div>
+        </div>
+        <div>
+          <div class="section-label">Pattern to watch</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+            <strong style="color:var(--rose)">The Magnetic Chaotic One:</strong> High attraction, energy, and social fluency, but low groundedness and communication. They feel alive and exciting. They also tend to create the kind of friction I later regret. Mia fits this pattern. The draw is understandable; the risk is real.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchCandidate(id) {
+  document.querySelectorAll('.candidate-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.candidate-panel').forEach(p => p.style.display = 'none');
+  event.currentTarget.classList.add('active');
+  document.getElementById('candidate-' + id).style.display = 'block';
+}
+</script>
+</body>
+</html>

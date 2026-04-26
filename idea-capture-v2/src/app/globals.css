@@ -70,6 +70,13 @@ input, textarea, select {
   max-width: 100%;
 }
 
+/* Prevent iOS Safari zoom-on-focus (triggered when font-size < 16px) */
+@media (max-width: 600px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
 textarea:focus,
 input:focus,
 select:focus {
@@ -106,6 +113,68 @@ textarea::placeholder {
   gap: 10px;
 }
 
+/* Input footer */
+.input-footer {
+  border-top: 1px solid var(--border-light);
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-footer-word-count {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-body);
+  flex: 1;
+  min-width: 0;
+}
+
+.input-footer-btn {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.input-footer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.input-footer-btn-dictate-active {
+  background: #fde8e4;
+  color: #b3301a;
+  border-color: #f5c4bb;
+}
+
+.input-footer-btn-primary {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: none;
+  letter-spacing: 0.02em;
+  min-height: 34px;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* Mobile responsive */
 @media (max-width: 600px) {
   html {
@@ -118,5 +187,26 @@ textarea::placeholder {
 
   .hide-mobile {
     display: none !important;
+  }
+
+  .input-footer {
+    padding: 6px 10px;
+    gap: 4px;
+  }
+
+  .input-footer-btn {
+    font-size: 0.68rem;
+    padding: 5px 7px;
+    min-height: 28px;
+  }
+
+  .input-footer-btn-primary {
+    font-size: 0.68rem;
+    padding: 5px 10px;
+    min-height: 28px;
+  }
+
+  .input-footer-word-count {
+    font-size: 0.62rem;
   }
 }

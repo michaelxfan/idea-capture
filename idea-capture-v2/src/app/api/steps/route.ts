@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
-export const maxDuration = 30;
+export const maxDuration = 15;
 
 const STEPS_PROMPT = `You are a productivity coach. Given a task, generate clear step-by-step instructions to complete it.
 
@@ -42,10 +42,11 @@ Raw input: ${task.rawInput}
 Generate step-by-step instructions to complete this task.`;
 
   let lastError: Error | null = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // Single attempt with Haiku — steps are simple and Haiku is much faster
+  for (let attempt = 0; attempt < 1; attempt++) {
     try {
       const response = await anthropic.messages.create({
-        model: attempt < 2 ? "claude-sonnet-4-20250514" : "claude-haiku-4-5-20251001",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 512,
         temperature: 0.3,
         system: STEPS_PROMPT,

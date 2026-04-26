@@ -89,6 +89,8 @@ export default function Home() {
   const [isDictating, setIsDictating] = useState(false);
   const recognitionRef = useRef<any>(null);
   const dictationBaseRef = useRef<string>("");
+  const lastInterimRef = useRef<string>("");
+  const isDictatingRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -109,19 +111,39 @@ export default function Home() {
         else interimText += r[0].transcript;
       }
       if (finalText) {
-        dictationBaseRef.current =
-          (dictationBaseRef.current + (dictationBaseRef.current && !dictationBaseRef.current.endsWith(" ") ? " " : "") + finalText).trimStart();
+        const sep = dictationBaseRef.current && !dictationBaseRef.current.endsWith(" ") ? " " : "";
+        dictationBaseRef.current = (dictationBaseRef.current + sep + finalText).trimStart();
+        lastInterimRef.current = "";
         setInput(dictationBaseRef.current);
       } else if (interimText) {
+        lastInterimRef.current = interimText;
         const base = dictationBaseRef.current;
         setInput((base ? base + " " : "") + interimText);
       }
     };
-    recog.onend = () => setIsDictating(false);
-    recog.onerror = () => setIsDictating(false);
+    const commitInterim = () => {
+      const interim = lastInterimRef.current;
+      if (interim) {
+        const sep = dictationBaseRef.current && !dictationBaseRef.current.endsWith(" ") ? " " : "";
+        dictationBaseRef.current = (dictationBaseRef.current + sep + interim).trimStart();
+        lastInterimRef.current = "";
+        setInput(dictationBaseRef.current);
+      }
+    };
+    recog.onend = () => {
+      commitInterim();
+      isDictatingRef.current = false;
+      setIsDictating(false);
+    };
+    recog.onerror = (e: any) => {
+      console.error("[dictation] error:", e?.error, e?.message);
+      commitInterim();
+      isDictatingRef.current = false;
+      setIsDictating(false);
+    };
     recognitionRef.current = recog;
     return () => {
-      try { recog.stop(); } catch {}
+      try { recog.abort(); } catch {}
     };
   }, []);
 
@@ -131,15 +153,30 @@ export default function Home() {
       alert("Dictation is not supported in this browser. Try Chrome or Safari.");
       return;
     }
-    if (isDictating) {
-      try { recog.stop(); } catch {}
+    if (isDictatingRef.current) {
+      // Commit any pending interim text immediately so it isn't lost.
+      const interim = lastInterimRef.current;
+      if (interim) {
+        const sep = dictationBaseRef.current && !dictationBaseRef.current.endsWith(" ") ? " " : "";
+        dictationBaseRef.current = (dictationBaseRef.current + sep + interim).trimStart();
+        lastInterimRef.current = "";
+        setInput(dictationBaseRef.current);
+      }
+      isDictatingRef.current = false;
       setIsDictating(false);
+      try { recog.stop(); } catch {}
+      // Fallback: some browsers don't fire onend reliably from stop().
+      try { recog.abort(); } catch {}
     } else {
       dictationBaseRef.current = input;
+      lastInterimRef.current = "";
       try {
         recog.start();
+        isDictatingRef.current = true;
         setIsDictating(true);
-      } catch {
+      } catch (err) {
+        console.error("[dictation] start failed:", err);
+        isDictatingRef.current = false;
         setIsDictating(false);
       }
     }

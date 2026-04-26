@@ -36,6 +36,7 @@ interface DestinationSectionProps {
   onUpdateTask: (updated: Task) => void;
   onDeleteTask: (id: string) => void;
   onCompleteTask: (id: string) => void;
+  onDuplicateTask?: (task: Task) => void;
 }
 
 export default function DestinationSection({
@@ -44,6 +45,7 @@ export default function DestinationSection({
   onUpdateTask,
   onDeleteTask,
   onCompleteTask,
+  onDuplicateTask,
 }: DestinationSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
   const meta = DEST_META[destination];
@@ -105,7 +107,7 @@ export default function DestinationSection({
   };
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 14 }}>
       {/* Header toggle */}
       <div onClick={() => setCollapsed(!collapsed)} style={headerStyle}>
         <span style={arrowStyle}>&#9660;</span>
@@ -120,7 +122,7 @@ export default function DestinationSection({
       {/* Collapsible content */}
       <div style={containerStyle}>
         {tasks.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {tasks.map((task) => (
               <TaskCard
                 key={task.id}
@@ -128,6 +130,7 @@ export default function DestinationSection({
                 onUpdate={onUpdateTask}
                 onDelete={onDeleteTask}
                 onComplete={onCompleteTask}
+                onDuplicate={onDuplicateTask}
               />
             ))}
           </div>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Big Rock Ideas: Q2 — Greenhouse</title>
+<style>
+  :root {
+    --green-dark: #1a3c2a;
+    --green-mid: #2d6a4f;
+    --green-light: #40916c;
+    --green-accent: #52b788;
+    --green-pale: #b7e4c7;
+    --beige: #f5f0e8;
+    --beige-warm: #ede7da;
+    --beige-deep: #e2d9c8;
+    --bg: #faf8f4;
+    --text-primary: #1a1a1a;
+    --text-secondary: #5a5a5a;
+    --text-muted: #9a9a9a;
+    --gray-light: #d4d0c8;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 40px 48px 32px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    color: var(--green-dark);
+    margin-bottom: 6px;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 4px;
+  }
+  .header .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* ── Strategy Band ── */
+  .strategy-band {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    background: var(--green-dark);
+    color: var(--white);
+    border-radius: 12px;
+    padding: 18px 36px;
+    margin-bottom: 32px;
+  }
+  .band-stat {
+    text-align: center;
+  }
+  .band-stat .value {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .band-stat .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .band-divider {
+    width: 1px;
+    height: 36px;
+    background: rgba(255,255,255,0.18);
+  }
+  .band-phrase {
+    font-size: 13px;
+    opacity: 0.85;
+    max-width: 380px;
+    text-align: center;
+    line-height: 1.45;
+  }
+
+  /* ── Cards Grid ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--beige);
+    border-radius: 14px;
+    padding: 28px 26px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+  }
+  .card-header {
+    background: var(--green-dark);
+    color: var(--white);
+    margin: -28px -26px 20px;
+    padding: 20px 24px 16px;
+    border-radius: 14px 14px 0 0;
+  }
+  .card-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  .card-header .desc {
+    font-size: 12px;
+    opacity: 0.72;
+    font-weight: 400;
+  }
+
+  /* Channel targets (inline bullet list) */
+  .channel-targets {
+    list-style: none;
+    margin-bottom: 16px;
+  }
+  .channel-targets li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 3px 0;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.4;
+  }
+  .channel-targets li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--green-light);
+    opacity: 0.6;
+  }
+  .channel-targets .ct-value {
+    font-weight: 600;
+    color: var(--green-dark);
+  }
+
+  /* Band channel stats */
+  .band-channels {
+    display: flex;
+    gap: 32px;
+  }
+  .band-channel {
+    text-align: center;
+  }
+  .band-channel .value {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .band-channel .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  /* Tactics */
+  .tactics-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .tactics {
+    list-style: none;
+    margin-bottom: 20px;
+  }
+  .tactics li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.4;
+  }
+  .tactics li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-accent);
+  }
+
+  /* Progress */
+  .progress-section {
+    margin-top: auto;
+  }
+  .progress-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .progress-label-row .pl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .progress-label-row .pv {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green-dark);
+  }
+  .progress-track {
+    height: 8px;
+    background: var(--beige-deep);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-accent));
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  /* Milestones */
+  .milestones-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .milestone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+  }
+  .ms-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .ms-dot.completed {
+    background: var(--green-accent);
+  }
+  .ms-dot.in-progress {
+    background: transparent;
+    border: 2.5px solid var(--green-accent);
+  }
+  .ms-dot.upcoming {
+    background: var(--gray-light);
+  }
+  .ms-name {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    flex: 1;
+  }
+  .ms-date {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding-top: 4px;
+  }
+  .footer p {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .page { padding: 32px 24px 24px; }
+    .cards { gap: 16px; }
+  }
+  @media (max-width: 900px) {
+    .cards { grid-template-columns: 1fr; max-width: 520px; margin-left: auto; margin-right: auto; }
+    .strategy-band { flex-wrap: wrap; gap: 20px; padding: 16px 24px; }
+    .band-divider { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page" id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  EDIT YOUR DATA HERE
+// ═══════════════════════════════════════════════════════════════
+
+const DATA = {
+  title: "2026 BIG ROCK IDEAS: Q2",
+  subtitle: "Quarterly strategy dashboard for high-level focus, milestones, and execution alignment",
+  note: "This dashboard visualizes the core strategic bets for Q2. Detailed execution lives in ClickUp.",
+  band: {
+    revenue: "$1.94M",
+    channels: [
+      { label: "TikTok", value: "$547K" },
+      { label: "Amazon (CA & US)", value: "$923K" },
+      { label: "D2C (GG & HD)", value: "$473K" }
+    ],
+    phrase: "Scalable channels and infrastructure for long-term ecommerce growth."
+  },
+  footer: "Detailed task execution and day-to-day prioritization live outside this dashboard. This layer is for quarterly strategic alignment and milestone tracking.",
+  rocks: [
+    {
+      title: "Drive Revenue to $1.94M",
+      description: "Deliver quarterly revenue across the highest-priority channels.",
+      channelTargets: [
+        { label: "TikTok", value: "$547K" },
+        { label: "Amazon (CA & US)", value: "$923K" },
+        { label: "D2C (GG & HD)", value: "$473K" }
+      ],
+      tactics: [
+        "Maximize revenue across core ecommerce channels",
+        "Maintain clear channel-level ownership and targets",
+        "Keep the quarter anchored to revenue delivery",
+        "Focus execution on the highest-leverage growth drivers"
+      ],
+      progress: 35,
+      milestones: [
+        { name: "Channel targets finalized", date: "Apr 10", status: "completed" },
+        { name: "Monthly pacing model locked", date: "Apr 15", status: "in-progress" },
+        { name: "Mid-quarter revenue checkpoint", date: "May 15", status: "upcoming" },
+        { name: "Final channel push plan", date: "Jun 10", status: "upcoming" }
+      ]
+    },
+    {
+      title: "Achieve TikTok Break-even at 2.0 ROI",
+      description: "Prioritize halo effect in US while improving TikTok efficiency.",
+      tactics: [
+        "Scale experimentation to improve efficiency",
+        "Expand top-of-funnel in partnership with Fiena",
+        "Launch and scale a second SKU, possibly Detox",
+        "Improve consistency in performance management"
+      ],
+      progress: 42,
+      milestones: [
+        { name: "Testing roadmap approved", date: "Apr 12", status: "completed" },
+        { name: "TOF expansion live", date: "Apr 25", status: "in-progress" },
+        { name: "Second SKU launched", date: "May 20", status: "upcoming" },
+        { name: "Break-even performance sustained", date: "Jun 12", status: "upcoming" }
+      ]
+    },
+    {
+      title: "Strengthen eCommerce Infrastructure",
+      description: "Build the operational and technical foundation needed for scale.",
+      tactics: [
+        "Maintain >45 days of inventory coverage for hero SKUs",
+        "Execute the full website rebuild",
+        "Complete Amazon US migration to Ginger Defence",
+        "Scale adoption of Claude Code across workflows"
+      ],
+      progress: 28,
+      milestones: [
+        { name: "Inventory coverage plan locked", date: "Apr 8", status: "completed" },
+        { name: "Website rebuild phase 1 complete", date: "May 5", status: "in-progress" },
+        { name: "Amazon US migration complete", date: "May 30", status: "upcoming" },
+        { name: "Claude workflow adoption checkpoint", date: "Jun 15", status: "upcoming" }
+      ]
+    }
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════════
+
+function renderChannelTargets(targets) {
+  if (!targets || !targets.length) return '';
+  return `<ul class="channel-targets">${targets.map(t =>
+    `<li>${t.label}: <span class="ct-value">${t.value}</span></li>`
+  ).join('')}</ul>`;
+}
+
+function renderCard(rock) {
+  return `
+    <div class="card">
+      <div class="card-header">
+        <h2>${rock.title}</h2>
+        <div class="desc">${rock.description}</div>
+      </div>
+      ${renderChannelTargets(rock.channelTargets)}
+      <div class="tactics-title">Major Tactics</div>
+      <ul class="tactics">${rock.tactics.map(t => `<li>${t}</li>`).join('')}</ul>
+      <div class="progress-section">
+        <div class="progress-label-row">
+          <span class="pl">Progress</span>
+          <span class="pv">${rock.progress}%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${rock.progress}%"></div></div>
+        <div class="milestones-title">Key Milestones</div>
+        ${rock.milestones.map(m => `
+          <div class="milestone">
+            <span class="ms-dot ${m.status}"></span>
+            <span class="ms-name">${m.name}</span>
+            <span class="ms-date">${m.date}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+document.getElementById('app').innerHTML = `
+  <div class="header">
+    <h1>${DATA.title}</h1>
+    <div class="subtitle">${DATA.subtitle}</div>
+    <div class="note">${DATA.note}</div>
+  </div>
+  <div class="strategy-band">
+    <div class="band-stat"><div class="value">${DATA.band.revenue}</div><div class="label">Q2 Revenue Target</div></div>
+    <div class="band-divider"></div>
+    <div class="band-channels">${DATA.band.channels.map(c =>
+      `<div class="band-channel"><div class="value">${c.value}</div><div class="label">${c.label}</div></div>`
+    ).join('')}</div>
+    <div class="band-divider"></div>
+    <div class="band-phrase">${DATA.band.phrase}</div>
+  </div>
+  <div class="cards">${DATA.rocks.map(renderCard).join('')}</div>
+  <div class="footer"><p>${DATA.footer}</p></div>
+`;
+</script>
+</body>
+</html>

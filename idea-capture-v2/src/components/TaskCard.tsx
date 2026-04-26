@@ -15,6 +15,7 @@ interface TaskCardProps {
   onUpdate: (updated: Task) => void;
   onDelete: (id: string) => void;
   onComplete?: (id: string) => void;
+  onDuplicate?: (task: Task) => void;
 }
 
 /* ── V1-inspired style helpers ── */
@@ -34,7 +35,7 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    padding: "12px 14px 10px",
+    padding: "8px 12px 6px",
     gap: 6,
     flexWrap: "wrap",
   } as CSSProperties,
@@ -62,13 +63,13 @@ const styles = {
   } as CSSProperties,
 
   cardBody: {
-    padding: "0 14px 14px",
+    padding: "0 12px 8px",
   } as CSSProperties,
 
   fieldGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr 1fr",
-    gap: 10,
+    gap: 6,
   } as CSSProperties,
 
   fieldRow: {
@@ -168,7 +169,7 @@ function Field({
 
 /* ── Main component ── */
 
-export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskCardProps) {
+export default function TaskCard({ task, onUpdate, onDelete, onComplete, onDuplicate }: TaskCardProps) {
   const [emailDraft, setEmailDraft] = useState<string | null>(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -187,8 +188,8 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
   const [originalOpen, setOriginalOpen] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
 
-  // Steps state
-  const [steps, setSteps] = useState<string[] | null>(null);
+  // Steps state — seeded from persisted task.steps so they survive reloads
+  const [steps, setSteps] = useState<string[] | null>(task.steps ?? null);
   const [stepsOpen, setStepsOpen] = useState(false);
   const [stepsLoading, setStepsLoading] = useState(false);
   const [stepsError, setStepsError] = useState<string | null>(null);
@@ -198,6 +199,9 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
   const [clickupSending, setClickupSending] = useState(false);
   const [clickupError, setClickupError] = useState<string | null>(null);
   const clickupRef = useRef<HTMLDivElement>(null);
+  // Pre-fetch promise: kicked off when the ClickUp dropdown opens so steps are
+  // usually ready by the time the user picks a list
+  const stepsPrefetchRef = useRef<Promise<string[] | null> | null>(null);
 
   // Close ClickUp dropdown on outside click
   useEffect(() => {
@@ -211,6 +215,32 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
     return () => document.removeEventListener("mousedown", handleClick);
   }, [clickupDropdownOpen]);
 
+  // Pre-fetch steps as soon as the ClickUp dropdown opens (if not already cached)
+  useEffect(() => {
+    if (!clickupDropdownOpen) return;
+    if (steps && steps.length > 0) return; // already loaded
+    if (stepsPrefetchRef.current) return; // already in flight
+    stepsPrefetchRef.current = (async () => {
+      try {
+        const res = await fetch("/api/steps", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task }),
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (Array.isArray(data.steps) && data.steps.length > 0) {
+          setSteps(data.steps);
+          update({ steps: data.steps }); // persist
+          return data.steps as string[];
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    })();
+  }, [clickupDropdownOpen, steps, task]);
+
   function update(fields: Partial<Task>) {
     onUpdate({ ...task, ...fields });
   }
@@ -220,8 +250,22 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
     setClickupError(null);
     setClickupDropdownOpen(false);
     try {
+      // Use steps if available, OR briefly wait for the prefetch promise that started
+      // when the dropdown opened. If steps aren't ready in time, send without them.
+      let stepsForClickup: string[] | null = steps && steps.length > 0 ? steps : null;
+      if (!stepsForClickup && stepsPrefetchRef.current) {
+        stepsForClickup = await Promise.race<string[] | null>([
+          stepsPrefetchRef.current.catch(() => null),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+        ]);
+      }
+
       const emailBlock = task.emailContext
         ? `## Attached Email\n${task.emailContext.subject ? `**Subject:** ${task.emailContext.subject}\n` : ""}${task.emailContext.from ? `**From:** ${task.emailContext.from}\n` : ""}${task.emailContext.to ? `**To:** ${task.emailContext.to}\n` : ""}${task.emailContext.date ? `**Date:** ${task.emailContext.date}\n` : ""}\n${task.emailContext.body}\n`
+        : "";
+
+      const stepsBlock = stepsForClickup && stepsForClickup.length > 0
+        ? `## How to complete\n${stepsForClickup.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n`
         : "";
 
       const description = [
@@ -229,6 +273,7 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
         task.rawInput ? `## User instruction\n${task.rawInput}\n` : "",
         task.how ? `**Next action:** ${task.how}` : "",
         task.whyRouted ? `**Why routed:** ${task.whyRouted}` : "",
+        stepsBlock,
         `**Duration:** ${task.duration}`,
         `**Urgency:** ${task.urgency} | **Importance:** ${task.importance}`,
         task.dueDate ? `**Due:** ${task.dueDate}` : "",
@@ -319,6 +364,10 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setSteps(data.steps);
+      // Persist so steps survive reloads and skip the slow /api/steps call next time
+      if (Array.isArray(data.steps) && data.steps.length > 0) {
+        update({ steps: data.steps });
+      }
     } catch (err) {
       setStepsError(err instanceof Error ? err.message : "Failed to load steps");
     } finally {
@@ -365,7 +414,7 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
       subject,
       body,
     });
-    window.location.href = link;
+    window.open(link, "_blank", "noopener");
   }
 
   const focusBorder = {
@@ -1175,6 +1224,24 @@ export default function TaskCard({ task, onUpdate, onDelete, onComplete }: TaskC
           </span>
         )}
 
+        {onDuplicate && (
+          <button
+            onClick={() => onDuplicate(task)}
+            title="Use as template — pre-fills the input box"
+            style={{
+              fontSize: "0.68rem",
+              color: "var(--text-tertiary)",
+              fontFamily: "var(--font-body)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "4px 0",
+              letterSpacing: "0.02em",
+            }}
+          >
+            template
+          </button>
+        )}
         <button
           onClick={() => {
             if (confirm(`Delete "${task.taskName}"?`)) {

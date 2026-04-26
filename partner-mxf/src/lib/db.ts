@@ -4,6 +4,7 @@ import type {
   RepairOutcome,
   AnalyzeConversation,
   AnalyzeMessage,
+  AnalyzeOutcome,
   DriftLevel,
 } from "./types";
 import { MOCK_LOGS, MOCK_PROFILE, MOCK_OUTCOMES, MOCK_CONVERSATIONS } from "./mock-data";
@@ -69,10 +70,9 @@ export async function fetchRecentLogs(limit = 14): Promise<DailyLog[]> {
       .order("log_date", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    if (!data || data.length === 0) return MOCK_LOGS.slice(0, limit);
-    return data as DailyLog[];
+    return (data ?? []) as DailyLog[];
   } catch {
-    return MOCK_LOGS.slice(0, limit);
+    return [];
   }
 }
 
@@ -121,10 +121,9 @@ export async function fetchOutcomes(limit = 20): Promise<RepairOutcome[]> {
       .order("log_date", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    if (!data || data.length === 0) return MOCK_OUTCOMES;
-    return data as RepairOutcome[];
+    return (data ?? []) as RepairOutcome[];
   } catch {
-    return MOCK_OUTCOMES;
+    return [];
   }
 }
 
@@ -253,4 +252,53 @@ export async function fetchRecentConversationSummaries(
   } catch {
     return [];
   }
+}
+
+// ── Analyze Outcomes ──────────────────────────────────────────────────────────
+
+export async function insertAnalyzeOutcome(
+  outcome: Omit<AnalyzeOutcome, "id" | "created_at">
+): Promise<AnalyzeOutcome | null> {
+  try {
+    const db = await getSupabase();
+    if (!db) return null;
+    const { data, error } = await db
+      .from("analyze_outcomes")
+      .insert(outcome)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as AnalyzeOutcome;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchAnalyzeOutcomes(limit = 20): Promise<AnalyzeOutcome[]> {
+  try {
+    const db = await getSupabase();
+    if (!db) return [];
+    const { data, error } = await db
+      .from("analyze_outcomes")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data ?? []) as AnalyzeOutcome[];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchOutcomePatterns(): Promise<{
+  helped: AnalyzeOutcome[];
+  madeWorse: AnalyzeOutcome[];
+  total: number;
+}> {
+  const outcomes = await fetchAnalyzeOutcomes(50);
+  return {
+    helped: outcomes.filter((o) => o.outcome === "helped" && o.followed !== "no"),
+    madeWorse: outcomes.filter((o) => o.outcome === "made-worse"),
+    total: outcomes.length,
+  };
 }

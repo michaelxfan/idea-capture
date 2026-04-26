@@ -348,32 +348,6 @@ header p{color:var(--text-t);font-size:.78rem;letter-spacing:.05em;text-transfor
     <p>Capture &middot; Route &middot; Execute</p>
   </header>
 
-  <!-- Controls -->
-  <div class="ctrl">
-    <div class="ctrl-g"><span class="ctrl-l">Mode</span>
-      <div class="pills" id="mode-p">
-        <button class="pill on" onclick="setMode('standard')">Standard</button>
-        <button class="pill" onclick="setMode('quick')">Quick</button>
-      </div>
-    </div>
-    <div class="ctrl-g"><span class="ctrl-l">Context</span>
-      <div class="pills" id="ctx-p">
-        <button class="pill on" onclick="setCtx('uber')">Uber</button>
-        <button class="pill" onclick="setCtx('walking')">Walking</button>
-        <button class="pill" onclick="setCtx('waiting')">Waiting</button>
-        <button class="pill" onclick="setCtx('laptop')">Laptop</button>
-      </div>
-    </div>
-    <div class="ctrl-g"><span class="ctrl-l">Time</span>
-      <div class="pills" id="time-p">
-        <button class="pill" onclick="setTime(2)">2m</button>
-        <button class="pill on" onclick="setTime(5)">5m</button>
-        <button class="pill" onclick="setTime(10)">10m</button>
-        <button class="pill" onclick="setTime(20)">20m</button>
-        <button class="pill" onclick="setTime(30)">30+</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Throughput -->
   <div class="tp hidden" id="tp-bar"></div>

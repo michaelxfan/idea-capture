@@ -1,0 +1,514 @@
+{
+  "meals": [
+    {
+      "id": "morning-supplements",
+      "name": "Morning Supplements",
+      "category": "breakfast",
+      "cuisine": "Wellness",
+      "date_logged": "2026-03-31",
+      "serving_note": "daily morning stack",
+      "good": {
+        "ingredients": [
+          "Fiery ginger shot",
+          "Omega-3 fish oil capsule",
+          "Vitamin D3 + K2",
+          "Creatine monohydrate 5g",
+          "Vitamin C 1000mg",
+          "NAC (N-Acetyl Cysteine)"
+        ],
+        "method": "Take all supplements together in the morning.",
+        "nutrition": {
+          "calories": 30,
+          "protein_g": 0,
+          "carbs_g": 7,
+          "fat_g": 0,
+          "fiber_g": 0
+        }
+      },
+      "best": {
+        "ingredients": [
+          "Fiery ginger shot (fresh-pressed if possible, or Zing / Trader Joe's brand)",
+          "Omega-3 — triglyceride-form fish oil, 2–3g EPA+DHA (e.g. Nordic Naturals Ultimate Omega)",
+          "Vitamin D3 5000 IU + K2 MK-7 100–200mcg (combined capsule)",
+          "Creatine monohydrate 5g (Creapure-certified)",
+          "Vitamin C 1000mg — buffered (calcium ascorbate) or liposomal form",
+          "NAC 600mg",
+          "300–400ml water to take with the stack"
+        ],
+        "method": "Take the ginger shot first on an empty stomach — bioavailability is highest before food. Follow with a large glass of water. Take Omega-3, D3+K2, and NAC with your first meal or with a small amount of fat (a teaspoon of nut butter works) — they are fat-soluble or fat-aided. Take Creatine and Vitamin C anytime with water; timing is flexible for both. Ideally space NAC and Vitamin C by 30+ min — take NAC first, then Vitamin C with food.",
+        "nutrition": {
+          "calories": 30,
+          "protein_g": 0,
+          "carbs_g": 7,
+          "fat_g": 0,
+          "fiber_g": 0
+        },
+        "why_better": [
+          "Omega-3, D3, and K2 are fat-soluble — bile release triggered by dietary fat is required for proper absorption; taking them fasted with water alone can reduce bioavailability by 30–50%, so pairing with even a small fat source is meaningfully more effective",
+          "Triglyceride-form Omega-3 (vs. the cheaper ethyl ester form in most budget supplements) absorbs roughly 70% better gram-for-gram — you actually deliver the EPA+DHA dose on the label rather than losing most of it during digestion",
+          "NAC and Vitamin C are synergistic antioxidants but partially compete for the same oxidation-reduction pathways when taken simultaneously — spacing them or taking NAC first lets each compound work more effectively in its own role: NAC replenishing glutathione, Vitamin C scavenging extracellular free radicals"
+        ]
+      }
+    },
+    {
+      "id": "greenhouse-protein-shake",
+      "name": "Greenhouse Protein Shake",
+      "category": "breakfast",
+      "cuisine": "Wellness",
+      "date_logged": "2026-03-31",
+      "serving_note": "900mL bottle",
+      "good": {
+        "ingredients": [
+          "Greenhouse 900mL protein shake"
+        ],
+        "method": "Drink as breakfast.",
+        "nutrition": {
+          "calories": 360,
+          "protein_g": 36,
+          "carbs_g": 38,
+          "fat_g": 7,
+          "fiber_g": 2
+        }
+      },
+      "best": {
+        "ingredients": [
+          "1–2 scoops whey isolate or plant-based protein (25–50g protein total)",
+          "400ml unsweetened oat milk or whole milk",
+          "1 frozen banana (adds creaminess and natural sweetness)",
+          "1 tbsp almond or peanut butter (fat to slow absorption)",
+          "1 tbsp ground flaxseed (omega-3s and soluble fibre)",
+          "handful of frozen spinach (virtually tasteless, adds micronutrients)",
+          "ice, to blend"
+        ],
+        "method": "Blend all ingredients until smooth. Drink within 30 min of making — protein oxidises and separation begins quickly. Consume within 30–60 min of waking to break the overnight fast and halt muscle protein breakdown. If training in the morning, drink immediately post-workout to maximise muscle protein synthesis.",
+        "nutrition": {
+          "calories": 670,
+          "protein_g": 63,
+          "carbs_g": 65,
+          "fat_g": 17,
+          "fiber_g": 9
+        },
+        "why_better": [
+          "A pre-made bottled shake is convenient but typically uses cheaper protein concentrate (vs. isolate), contains stabilisers and added sugars, and has fixed macros you can't adjust — a homemade shake lets you dial in exact protein, fat, and carb ratios for your body weight and activity level",
+          "Adding fat (nut butter) and fibre (flaxseed) to a protein shake slows gastric emptying, blunting the insulin spike from fast-absorbing whey and sustaining amino acid delivery to muscle over 2–3 hours rather than a sharp 45-min peak",
+          "Frozen spinach adds folate, iron, and magnesium with zero flavour impact — these are micronutrients commonly under-consumed at breakfast, and the blending breaks down the cell walls enough to meaningfully improve bioavailability vs. raw spinach"
+        ]
+      }
+    },
+    {
+      "id": "morning-coffee",
+      "name": "Morning Coffee",
+      "category": "breakfast",
+      "cuisine": "Wellness",
+      "date_logged": "2026-03-31",
+      "serving_note": "1 cup, morning",
+      "good": {
+        "ingredients": [
+          "Coffee"
+        ],
+        "method": "Brew and drink in the morning.",
+        "nutrition": {
+          "calories": 5,
+          "protein_g": 0,
+          "carbs_g": 1,
+          "fat_g": 0,
+          "fiber_g": 0
+        }
+      },
+      "best": {
+        "ingredients": [
+          "freshly ground single-origin beans (medium roast — preserves chlorogenic acids better than dark)",
+          "filtered water at 93°C / 199°F (just off the boil)",
+          "French press, pour-over, or AeroPress"
+        ],
+        "method": "Grind beans immediately before brewing — pre-ground coffee loses 60% of its aromatic volatile compounds within 15 min of grinding. Use a ratio of 1:15 coffee to water by weight (e.g. 20g coffee to 300ml water). Brew at 93°C — boiling water (100°C) scorches the grounds and produces harsh, bitter compounds. Wait 90 min after waking before your first cup — cortisol peaks in the first 30–90 min after waking, and caffeine during that window adds little stimulant effect while building tolerance faster.",
+        "nutrition": {
+          "calories": 5,
+          "protein_g": 0,
+          "carbs_g": 1,
+          "fat_g": 0,
+          "fiber_g": 0
+        },
+        "why_better": [
+          "Grinding fresh preserves volatile aromatics and slows oxidation of oils — stale pre-ground coffee has measurably lower antioxidant content and a flat, woody flavour that no brewing method can fix",
+          "Delaying coffee 90 min post-waking aligns caffeine with the natural cortisol dip rather than stacking it on top of your cortisol peak — you get a stronger stimulant effect from the same amount of caffeine and reduce afternoon energy crashes",
+          "Brewing temperature matters: above 96°C over-extracts bitter chlorogenic acid degradation products; below 88°C under-extracts and leaves the cup sour and thin — 93°C hits the extraction sweet spot for both flavour and bioactive compound preservation"
+        ]
+      }
+    },
+    {
+      "id": "psyllium-husk",
+      "name": "Psyllium Husk",
+      "category": "snack",
+      "cuisine": "Wellness",
+      "date_logged": "2026-03-31",
+      "serving_note": "with lunch and dinner",
+      "good": {
+        "ingredients": [
+          "Psyllium husk"
+        ],
+        "method": "Take with lunch and dinner.",
+        "nutrition": {
+          "calories": 20,
+          "protein_g": 0,
+          "carbs_g": 5,
+          "fat_g": 0,
+          "fiber_g": 4
+        }
+      },
+      "best": {
+        "ingredients": [
+          "psyllium husk powder 5g per dose (not whole husks — powder disperses more evenly)",
+          "250–300ml water per dose, taken immediately after mixing",
+          "extra 1–2 glasses of water throughout the meal"
+        ],
+        "method": "Mix psyllium husk powder into a full glass of water immediately before meals — it gels quickly, so drink within 30–60 seconds of mixing. Take right before or at the start of the meal, not mid-meal. Drink an additional glass of water with each dose. Take with both lunch and dinner, not just once daily — the gel matrix it forms in the gut blunts glucose and cholesterol absorption most effectively when present during digestion.",
+        "nutrition": {
+          "calories": 20,
+          "protein_g": 0,
+          "carbs_g": 5,
+          "fat_g": 0,
+          "fiber_g": 4
+        },
+        "why_better": [
+          "Psyllium forms a viscous gel in the gut that physically slows gastric emptying and traps glucose and bile acids — but only if taken with adequate water; without enough water it can slow transit too aggressively or, in rare cases, cause esophageal blockage",
+          "Timing before the meal (rather than after or mid-meal) means the gel layer is already forming in the stomach when food arrives — this is when it most effectively flattens the postprandial glucose curve, an effect that largely disappears if taken after eating",
+          "Twice-daily dosing (lunch and dinner) sustains the cholesterol-lowering effect more consistently than a single dose: psyllium binds bile acids during digestion, forcing the liver to convert more cholesterol into new bile acids — repeated twice daily, this creates a meaningful and sustained LDL-lowering effect"
+        ]
+      }
+    },
+    {
+      "id": "steamed-egg",
+      "name": "Steamed Egg",
+      "category": "snack",
+      "cuisine": "Chinese",
+      "date_logged": "2026-03-31",
+      "serving_note": "per serving (2 eggs)",
+      "good": {
+        "ingredients": [
+          "2 eggs",
+          "hot water",
+          "sesame oil",
+          "soy sauce"
+        ],
+        "method": "Beat eggs, add hot water, steam, finish with sesame oil and soy sauce.",
+        "nutrition": {
+          "calories": 190,
+          "protein_g": 13,
+          "carbs_g": 2,
+          "fat_g": 15,
+          "fiber_g": 0
+        }
+      },
+      "best": {
+        "ingredients": [
+          "2 fresh eggs, room temperature",
+          "warm water (not boiling) — 1.5× the volume of beaten egg, around 80°C",
+          "pinch of salt",
+          "½ tsp light soy sauce, to finish",
+          "½ tsp toasted sesame oil, to finish",
+          "optional: few drops of dark soy sauce for colour",
+          "optional: thinly sliced scallion to garnish"
+        ],
+        "method": "Beat eggs gently — do not whisk vigorously, you want minimal air bubbles. Strain through a fine-mesh sieve into the steaming bowl (this removes the chalazae and any foam, giving a silky surface). Mix in warm water at roughly 80°C in a 1:1.5 egg-to-water ratio by volume; add a pinch of salt. Cover the bowl tightly with cling wrap or a plate — this prevents condensation drips from pitting the surface. Steam over medium-low heat (not a rolling boil) for 8–10 min until just set with a slight jiggle in the centre. Remove cover, drizzle soy sauce and sesame oil over the surface, garnish with scallion.",
+        "nutrition": {
+          "calories": 190,
+          "protein_g": 13,
+          "carbs_g": 2,
+          "fat_g": 15,
+          "fiber_g": 0
+        },
+        "why_better": [
+          "Straining the beaten egg removes foam and the chalazae — both create bubbles and an uneven, pitted surface; strained egg steams into the smooth, custard-like texture (嫩滑) that defines a well-made zhēng dàn",
+          "Water temperature matters: boiling water raises the egg-to-water ratio too fast and creates a rubbery, overcooked texture with a curdled surface — 80°C water (just off a simmer) blends into the egg without beginning to cook it, so the whole mixture sets evenly under gentle steam",
+          "Covering the bowl blocks condensation drips from the lid, which are the most common cause of craters on the surface; medium-low steam (not a vigorous boil) prevents the egg from puffing up and collapsing, keeping the custard flat, dense, and silky"
+        ]
+      }
+    },
+    {
+      "id": "fruit",
+      "name": "Fruit",
+      "category": "snack",
+      "cuisine": "Wellness",
+      "date_logged": "2026-03-31",
+      "serving_note": "strawberries / blueberries / honeydew",
+      "good": {
+        "ingredients": [
+          "Strawberries, or blueberries, or honeydew"
+        ],
+        "method": "Eat as a snack.",
+        "nutrition": {
+          "calories": 60,
+          "protein_g": 1,
+          "carbs_g": 15,
+          "fat_g": 0,
+          "fiber_g": 3
+        }
+      },
+      "best": {
+        "ingredients": [
+          "strawberries — hull and halve, room temperature (not straight from fridge)",
+          "or blueberries — rinse and dry, room temperature",
+          "or honeydew — cut into cubes, slightly chilled",
+          "optional: squeeze of lime juice + pinch of flaky salt",
+          "optional: few leaves of fresh mint"
+        ],
+        "method": "Let refrigerated fruit come to room temperature for 10–15 min before eating — cold suppresses volatile aromatic compounds and makes fruit taste flat. For strawberries and honeydew, a light squeeze of lime and a pinch of flaky salt amplifies sweetness through contrast. Eat in the mid-morning or mid-afternoon window, not immediately before a large meal — fruit digests fastest on a relatively empty stomach.",
+        "nutrition": {
+          "calories": 65,
+          "protein_g": 1,
+          "carbs_g": 16,
+          "fat_g": 0,
+          "fiber_g": 3
+        },
+        "why_better": [
+          "Temperature dramatically affects perceived flavour — fruit at room temperature releases far more aromatic esters than cold fruit; this is why a warm strawberry from the garden tastes nothing like a cold one from the fridge",
+          "A pinch of salt on sweet fruit is a well-documented flavour contrast effect: sodium suppresses bitterness receptors and amplifies sweetness perception, making the fruit taste richer without adding sugar",
+          "Blueberries have the highest antioxidant density of the three (anthocyanins in the skin) — if the goal is micronutrient return per calorie, they are the strongest choice; strawberries are highest in Vitamin C; honeydew is highest in potassium and hydration (90% water)"
+        ]
+      }
+    },
+    {
+      "id": "oatmeal",
+      "name": "Oatmeal",
+      "category": "snack",
+      "cuisine": "Homestyle",
+      "date_logged": "2026-03-31",
+      "serving_note": "per serving (1 packet / 1 cup cooked)",
+      "good": {
+        "ingredients": [
+          "1 packet instant oatmeal",
+          "hot water"
+        ],
+        "method": "Add hot water and serve.",
+        "nutrition": {
+          "calories": 130,
+          "protein_g": 4,
+          "carbs_g": 27,
+          "fat_g": 2,
+          "fiber_g": 2
+        }
+      },
+      "best": {
+        "ingredients": [
+          "½ cup rolled oats (not instant)",
+          "1 cup whole milk or oat milk",
+          "pinch of salt",
+          "1 tsp honey or maple syrup",
+          "½ tsp cinnamon",
+          "1 tbsp nut butter (almond or peanut)",
+          "fresh or frozen berries, to top"
+        ],
+        "method": "Combine oats, milk, salt, and cinnamon in a small saucepan over medium heat. Cook, stirring occasionally, until oats are creamy and have absorbed most of the liquid, about 5 min. Remove from heat — it will thicken further as it sits. Stir in nut butter off heat. Transfer to a bowl, drizzle with honey, top with berries.",
+        "nutrition": {
+          "calories": 370,
+          "protein_g": 12,
+          "carbs_g": 48,
+          "fat_g": 13,
+          "fiber_g": 6
+        },
+        "why_better": [
+          "Rolled oats are less processed than instant — they have a lower glycemic index (GI ~55 vs ~83 for instant), meaning glucose enters the bloodstream more slowly, giving you sustained energy rather than a spike and crash",
+          "Cooking in milk instead of water adds protein, calcium, and fat that further blunt the glycemic response and make the bowl genuinely filling — water-cooked instant oats digest in under an hour",
+          "Nut butter stirred in off the heat adds another 4g protein and healthy fat, and the berries contribute antioxidants and fibre — together they turn a carb-only meal into a nutritionally complete breakfast"
+        ]
+      }
+    },
+    {
+      "id": "carrot-snack",
+      "name": "Carrot Snack",
+      "category": "snack",
+      "cuisine": "Homestyle",
+      "date_logged": "2026-03-31",
+      "serving_note": "per serving (~1 cup / 85g)",
+      "good": {
+        "ingredients": [
+          "raw baby carrots"
+        ],
+        "method": "Eat straight from the bag.",
+        "nutrition": {
+          "calories": 35,
+          "protein_g": 1,
+          "carbs_g": 8,
+          "fat_g": 0,
+          "fiber_g": 2
+        }
+      },
+      "best": {
+        "ingredients": [
+          "whole carrots, peeled and cut into sticks",
+          "2 tbsp hummus (store-bought or homemade)",
+          "flaky sea salt",
+          "pinch of smoked paprika",
+          "squeeze of lemon juice"
+        ],
+        "method": "Cut whole carrots into batons slightly thicker than a pencil — not too thin or they lose their snap. Season lightly with flaky salt. Serve alongside hummus dusted with smoked paprika and a squeeze of lemon.",
+        "nutrition": {
+          "calories": 95,
+          "protein_g": 4,
+          "carbs_g": 14,
+          "fat_g": 5,
+          "fiber_g": 5
+        },
+        "why_better": [
+          "Whole carrots cut fresh have significantly more moisture and a crisper snap than pre-packaged baby carrots, which are mechanically shaped off-cuts that have been sitting in chlorinated water — the difference in texture is immediately noticeable",
+          "Hummus adds protein, fat, and fibre that slow glucose absorption, turning a pure-carb snack into something with sustained satiety — the fat also aids absorption of beta-carotene, a fat-soluble nutrient that carrots are rich in",
+          "Smoked paprika and lemon on the hummus add contrast — the acid brightens the earthy chickpea paste and the smokiness amplifies the natural sweetness of the carrot without adding any calories worth mentioning"
+        ]
+      }
+    },
+    {
+      "id": "steamed-mussels",
+      "name": "Steamed Mussels",
+      "category": "dinner",
+      "cuisine": "French",
+      "date_logged": "2026-03-31",
+      "serving_note": "per serving (serves 2)",
+      "good": {
+        "ingredients": [
+          "2 lb mussels",
+          "water"
+        ],
+        "method": "Steam until mussels open.",
+        "nutrition": {
+          "calories": 215,
+          "protein_g": 28,
+          "carbs_g": 9,
+          "fat_g": 6,
+          "fiber_g": 0
+        }
+      },
+      "best": {
+        "ingredients": [
+          "2 lb live mussels, scrubbed and debearded",
+          "1 cup dry white wine (Muscadet or Pinot Grigio)",
+          "3 shallots, thinly sliced",
+          "4 cloves garlic, thinly sliced",
+          "2 tbsp unsalted butter, plus a knob to finish",
+          "1 small bunch flat-leaf parsley, stems separated, leaves roughly chopped",
+          "1 bay leaf",
+          "crusty bread, to serve"
+        ],
+        "method": "In a wide, heavy pot over medium heat, melt butter and sweat shallots until soft and translucent, about 3 min. Add garlic and parsley stems, cook 1 min. Pour in white wine, add bay leaf, bring to a boil. Add mussels, cover tightly, and steam 3–4 min — shake the pot once halfway through. Pull mussels out as they open rather than waiting for all to open at once. Discard any that remain shut after 5 min. Swirl a knob of cold butter into the broth off the heat. Pour broth over mussels, scatter parsley leaves on top, serve immediately with crusty bread.",
+        "nutrition": {
+          "calories": 295,
+          "protein_g": 28,
+          "carbs_g": 12,
+          "fat_g": 15,
+          "fiber_g": 1
+        },
+        "why_better": [
+          "White wine and shallots build a classic moules marinière broth — the wine's acidity brightens the briny mussel liquor while the shallots add sweetness; water produces a flat, grey steaming liquid with no flavour of its own",
+          "Pulling mussels as they open prevents overcooking — mussels go from tender to rubbery in under a minute, and cooking lid-on until 'all open' guarantees the early openers are tough and chalky by the time the last ones pop",
+          "Swirling cold butter into the broth off the heat emulsifies the pan juices into a silky, restaurant-quality sauce — this is the moules frites trick that makes the broth worth drinking"
+        ]
+      }
+    },
+    {
+      "id": "chicken-soup",
+      "name": "Chicken Soup",
+      "category": "dinner",
+      "cuisine": "Homestyle",
+      "date_logged": "2026-03-30",
+      "serving_note": "per ~1.5 cup serving (serves 4)",
+      "good": {
+        "ingredients": [
+          "yellow free range chicken",
+          "onions",
+          "garlic"
+        ],
+        "method": "Everything in the Instant Pot for 15 minutes.",
+        "nutrition": {
+          "calories": 220,
+          "protein_g": 25,
+          "carbs_g": 5,
+          "fat_g": 11,
+          "fiber_g": 1
+        }
+      },
+      "best": {
+        "ingredients": [
+          "1 whole yellow free-range chicken, broken down into bone-in pieces",
+          "2 yellow onions, halved (unpeeled for colour and depth)",
+          "1 head of garlic, halved crosswise (unpeeled)",
+          "3 celery stalks with leaves",
+          "2 carrots, roughly chopped",
+          "1 small bunch flat-leaf parsley (stems included)",
+          "1 tsp whole black peppercorns",
+          "2 bay leaves",
+          "cold filtered water, to cover"
+        ],
+        "method": "Season chicken pieces well with salt at least 30 min ahead. In the Instant Pot on Sauté, brown the chicken pieces skin-side down in batches until golden — don't rush this. Remove chicken. Add onions and garlic cut-side down; let them char slightly (2–3 min) — don't stir. Deglaze with a splash of water, scraping up the fond. Return chicken, add remaining veg, peppercorns, bay leaves, parsley stems, and enough cold water to cover. Pressure cook 25 min on High. Natural release 15 min, then quick release. Strain through a fine-mesh sieve, pressing the solids gently. Skim the fat (or refrigerate overnight — the fat sets solid and lifts off cleanly, leaving pure golden stock). Shred the breast meat back in. Finish with fresh parsley leaves and adjust salt.",
+        "nutrition": {
+          "calories": 170,
+          "protein_g": 28,
+          "carbs_g": 9,
+          "fat_g": 2,
+          "fiber_g": 2
+        },
+        "why_better": [
+          "Browning the chicken skin-side down before pressure cooking creates Maillard compounds that infuse the entire broth — skipping this step means the soup's flavour comes only from boiling, which gives a flat, one-dimensional result",
+          "Charring the onion and garlic cut-side down (a classic French technique for consommé and Vietnamese pho) adds caramel sweetness and slight bitterness that balance the richness of the stock and give it that distinctive golden depth",
+          "Salting the chicken 30 min ahead pulls moisture to the surface and back in by osmosis (dry brine effect), seasoning the meat all the way through rather than just its exterior — the shredded chicken in the final soup will be noticeably more flavourful"
+        ]
+      }
+    },
+    {
+      "id": "french-beef-stew",
+      "name": "French Beef Stew",
+      "category": "dinner",
+      "cuisine": "French",
+      "date_logged": "2026-03-30",
+      "serving_note": "per ~1.5 cup serving (serves 5)",
+      "good": {
+        "ingredients": [
+          "lean beef",
+          "potatoes",
+          "carrots",
+          "onions",
+          "beef broth",
+          "Worcestershire sauce",
+          "salt",
+          "pepper",
+          "bay leaf"
+        ],
+        "method": "Instant Pot, 25 min. Everything in together.",
+        "nutrition": {
+          "calories": 340,
+          "protein_g": 34,
+          "carbs_g": 28,
+          "fat_g": 10,
+          "fiber_g": 4
+        }
+      },
+      "best": {
+        "ingredients": [
+          "beef chuck, cut into 2-inch cubes",
+          "Yukon Gold potatoes",
+          "carrots, cut on the bias",
+          "pearl onions (or 2 yellow onions, roughly chopped)",
+          "lardons or thick-cut bacon, diced",
+          "homemade or high-quality unsalted beef stock",
+          "1 cup dry red wine (Burgundy or Côtes du Rhône)",
+          "2 tbsp tomato paste",
+          "fresh thyme + bay leaves",
+          "Worcestershire sauce, to finish",
+          "flour, for dredging"
+        ],
+        "method": "Salt beef generously 30 min ahead (dry brine). Pat dry, dredge lightly in flour, sear in batches in a hot Dutch oven until deeply browned on all sides — don't crowd the pan. Remove beef. Render lardons, sauté onions and carrots in the fat until softened. Add tomato paste, cook 2 min until it darkens and smells nutty. Deglaze with red wine, scraping up every bit of fond. Add stock, thyme, bay leaves, and seared beef. Braise in a 325°F oven 2–2.5 hours (or Instant Pot 35 min high pressure). Add potatoes in the last 30 min. Finish with a splash of Worcestershire and fresh parsley.",
+        "nutrition": {
+          "calories": 490,
+          "protein_g": 36,
+          "carbs_g": 32,
+          "fat_g": 24,
+          "fiber_g": 4
+        },
+        "why_better": [
+          "Chuck has abundant intramuscular fat that renders during the braise, self-basting every cube and keeping it tender — lean beef has no protection and turns dry and fibrous under heat",
+          "Searing in batches on a dry surface creates a deep Maillard crust: dozens of new aromatic compounds that the Instant Pot's boiling environment can never develop; this crust is the flavour backbone of the whole dish",
+          "Darkening the tomato paste before deglazing drives off its raw, tinny edge and concentrates its umami; the red wine then lifts all the caramelised fond from the pan — that fond is pure concentrated flavour that would otherwise be scrubbed off and lost"
+        ]
+      }
+    }
+  ]
+}

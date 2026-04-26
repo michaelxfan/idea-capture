@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Michael Fan Indeed Search App</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1d212b;
+    --panel-3: #222634;
+    --text: #e6e8ee;
+    --muted: #9aa3b2;
+    --line: #262b38;
+    --accent: #6aa9ff;
+    --good: #4ade80;
+    --mid: #facc15;
+    --bad: #f87171;
+    --chip: #2a3040;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 14px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  /* Header */
+  header { border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 24px; }
+  .brand-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 13px; margin: 28px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+  h3 { font-size: 17px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Refresh button + dates */
+  .refresh-block { text-align: right; }
+  .refresh-dates { font-size: 12px; color: var(--muted); margin-bottom: 8px; line-height: 1.45; }
+  .refresh-dates strong { color: var(--text); font-weight: 600; }
+  #runRefresh { background: var(--accent); color: #0b1220; border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
+  #runRefresh:hover { filter: brightness(1.08); }
+  #runRefresh.copied { background: var(--good); }
+  #runRefresh svg { width: 14px; height: 14px; }
+
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stat .n { font-size: 20px; font-weight: 700; line-height: 1.1; }
+  .stat .l { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Today's Actions */
+  .actions { background: linear-gradient(135deg, #1a2332 0%, #1d2436 100%); border: 1px solid #2d3a5a; border-radius: 12px; padding: 18px 22px; margin-bottom: 24px; }
+  .actions h2 { margin-top: 0; color: var(--accent); }
+  .actions ol { margin: 8px 0 0; padding-left: 22px; }
+  .actions li { margin-bottom: 8px; }
+  .actions li:last-child { margin-bottom: 0; }
+  .actions .when { display: inline-block; background: #2a3a5a; color: var(--accent); font-size: 11px; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 6px; font-weight: 600; }
+
+  /* Pipeline */
+  .pipeline { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin-bottom: 24px; }
+  .pipeline-grid { display: grid; grid-template-columns: 2.2fr 0.7fr 1.1fr 0.9fr 1fr; gap: 10px; align-items: center; font-size: 13px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .pipeline-grid:first-of-type { border-top: 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 4px; }
+  .pipeline-grid .role-name { color: var(--text); }
+  .pipeline-grid select { background: var(--panel-3); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-family: inherit; width: 100%; }
+  .mini-score { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; }
+  .mini-score.good { color: var(--good); }
+  .mini-score.mid { color: var(--mid); }
+  .mini-score.bad { color: var(--bad); }
+
+  /* Card */
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+  .card.near { background: var(--panel-2); }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .title-block { flex: 1 1 auto; min-width: 0; }
+  .meta { margin-top: 6px; color: var(--muted); font-size: 13px; display: flex; gap: 14px; flex-wrap: wrap; }
+
+  /* 3-score block */
+  .scores { flex: 0 0 auto; text-align: right; min-width: 220px; }
+  .score-row { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .score-row .label { min-width: 68px; text-align: right; }
+  .score-row .val { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; min-width: 32px; color: var(--text); }
+  .score-row.blended { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 6px; }
+  .score-row.blended .label { color: var(--text); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
+  .score-row.blended .val { font-size: 26px; line-height: 1; }
+  .score-row .val.good { color: var(--good); }
+  .score-row .val.mid { color: var(--mid); }
+  .score-row .val.bad { color: var(--bad); }
+  .decision { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 8px; }
+  .decision.now { background: #163d28; color: #4ade80; border: 1px solid #1f5a3a; }
+  .decision.week { background: #173c52; color: #7dd3fc; border: 1px solid #205c7d; }
+  .decision.maybe { background: #3f3417; color: var(--mid); border: 1px solid #574821; }
+  .decision.skip { background: #3a1e1e; color: #fca5a5; border: 1px solid #5a2c2c; }
+  .decision.verify { background: #3a2c17; color: #fdba74; border: 1px solid #5a4421; }
+
+  /* Effort / ROI badges */
+  .badges { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; background: var(--panel-3); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
+  .badge strong { color: var(--text); font-weight: 600; }
+  .badge.roi-high strong { color: var(--good); }
+  .badge.roi-mid strong { color: var(--mid); }
+  .badge.roi-low strong { color: var(--bad); }
+  .badge.eff-low strong { color: var(--good); }
+  .badge.eff-mid strong { color: var(--mid); }
+  .badge.eff-high strong { color: var(--bad); }
+
+  /* Why it fits */
+  .why { margin-top: 14px; padding: 12px 14px; background: #121620; border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; }
+  .why h4 { margin: 0 0 6px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .why ul { margin: 0; padding-left: 18px; }
+  .why li { margin-bottom: 4px; font-size: 13px; }
+  .why li:last-child { margin-bottom: 0; }
+  .why li strong { color: var(--text); }
+
+  /* Company Intel (collapsible) */
+  details.intel-details { margin-top: 12px; background: #12161f; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  details.intel-details > summary { list-style: none; cursor: pointer; padding: 10px 14px; user-select: none; }
+  details.intel-details > summary::-webkit-details-marker { display: none; }
+  .intel-summary-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; flex-wrap: wrap; }
+  .intel-summary-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; white-space: nowrap; }
+  .intel-summary-score { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .intel-summary-score.good { color: var(--good); }
+  .intel-summary-score.mid { color: var(--mid); }
+  .intel-summary-score.bad { color: var(--bad); }
+  .intel-summary-divider { color: var(--line); }
+  .intel-summary-tagline { color: var(--text); flex: 1 1 auto; min-width: 0; }
+  .intel-summary-toggle { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-left: auto; white-space: nowrap; }
+  details.intel-details[open] .intel-summary-toggle::before { content: "Hide ▾"; }
+  details.intel-details:not([open]) .intel-summary-toggle::before { content: "Details ▸"; }
+  details.intel-details > summary:hover .intel-summary-toggle { color: var(--text); }
+  .intel-body { padding: 0 14px 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .intel-grid { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 13px; margin-bottom: 10px; }
+  .intel-grid .k { color: var(--muted); font-size: 12px; }
+  .intel-grid .v { color: var(--text); }
+  .flags { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+  .flag { font-size: 12.5px; padding: 6px 10px; border-radius: 6px; line-height: 1.45; }
+  .flag.green { background: #0f2419; color: #86efac; border-left: 3px solid var(--good); }
+  .flag.red { background: #2a1717; color: #fca5a5; border-left: 3px solid var(--bad); }
+  .flag.yellow { background: #2b2310; color: #fde68a; border-left: 3px solid var(--mid); }
+  .flag strong { color: inherit; }
+
+  /* Credibility */
+  .cred { margin-top: 10px; padding: 9px 12px; background: #121620; border-left: 3px solid var(--good); border-radius: 0 6px 6px 0; font-size: 12.5px; color: var(--muted); }
+  .cred.warn { border-color: var(--mid); }
+  .cred.bad { border-color: var(--bad); }
+  .cred strong { color: var(--text); }
+
+  /* Card footer */
+  .card-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  .apply { display: inline-block; padding: 8px 16px; background: var(--accent); color: #0b1220; border-radius: 8px; font-weight: 600; font-size: 13px; }
+  .apply:hover { text-decoration: none; filter: brightness(1.08); }
+  .apply.muted { background: var(--panel-3); color: var(--muted); border: 1px solid var(--line); }
+  .status-inline { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .status-inline select { background: var(--panel-3); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; font-size: 12px; font-family: inherit; }
+
+  /* Footer-level breakdowns */
+  details.footer-breakdowns { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 0; margin-top: 20px; overflow: hidden; }
+  details.footer-breakdowns > summary { list-style: none; cursor: pointer; padding: 14px 18px; user-select: none; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  details.footer-breakdowns > summary::-webkit-details-marker { display: none; }
+  details.footer-breakdowns[open] > summary { color: var(--text); border-bottom: 1px solid var(--line); }
+  details.footer-breakdowns[open] > summary::after { content: " ▾"; }
+  details.footer-breakdowns:not([open]) > summary::after { content: " ▸"; }
+  .breakdowns-body { padding: 18px; }
+  .breakdowns-body .role-section { margin-bottom: 24px; }
+  .breakdowns-body .role-section:last-child { margin-bottom: 0; }
+  .breakdowns-body h4 { margin: 0 0 10px; font-size: 14px; color: var(--text); }
+  .breakdowns-body h4 .role-section-scores { color: var(--muted); font-size: 12px; font-weight: 400; margin-left: 6px; }
+  .dim-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 6px; }
+  @media (max-width: 720px) { .dim-wrap { grid-template-columns: 1fr; } }
+  .dim-wrap h5 { margin: 0 0 4px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  table.dims { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.dims td { padding: 4px 6px; border-top: 1px solid var(--line); }
+  table.dims td:first-child { color: var(--muted); width: 55%; }
+  table.dims td:nth-child(2) { width: 15%; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  table.dims td:last-child { color: var(--muted); font-size: 12px; }
+
+  /* History */
+  .history-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .history-head, .history-row { display: grid; grid-template-columns: 2.4fr 1fr 1fr 1fr 0.6fr; gap: 10px; align-items: center; padding: 11px 16px; font-size: 13px; }
+  .history-head { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--line); }
+  .history-row { border-top: 1px solid var(--line); }
+  .history-row:first-child { border-top: 0; }
+  .history-role-title { color: var(--text); font-weight: 600; font-size: 13px; line-height: 1.3; }
+  .history-role-company { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .history-dates { color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .history-empty { padding: 18px 20px; color: var(--muted); font-size: 13px; }
+  .history-remove { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 4px; padding: 2px 8px; cursor: pointer; font-family: inherit; font-size: 14px; line-height: 1; margin-left: 6px; }
+  .history-remove:hover { background: var(--panel-3); color: var(--bad); border-color: var(--bad); }
+  .history-link { color: var(--accent); font-size: 12px; text-decoration: none; }
+  .history-link:hover { text-decoration: underline; }
+  .history-new-badge { display: inline-block; background: #163d28; color: var(--good); font-size: 10px; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em; margin-left: 6px; font-weight: 700; vertical-align: middle; }
+  .history-actions-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 11px; }
+  .clear-history { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 5px 11px; cursor: pointer; font-family: inherit; font-size: 11px; }
+  .clear-history:hover { background: var(--panel-3); color: var(--bad); border-color: var(--bad); }
+
+  /* Reject list */
+  .reject-list { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 0; }
+  .reject-list .r { display: flex; justify-content: space-between; gap: 12px; padding: 9px 18px; border-top: 1px solid var(--line); font-size: 13px; }
+  .reject-list .r:first-child { border-top: 0; }
+  .reject-list .r .why-fail { color: var(--bad); font-size: 12.5px; }
+  .reject-list .r .t { flex: 1; }
+
+  .footer-note { margin-top: 28px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+  /* Modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; max-width: 520px; width: 100%; }
+  .modal h3 { margin: 0 0 10px; font-size: 16px; }
+  .modal p { margin: 0 0 10px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+  .modal code { background: var(--panel-3); color: var(--text); padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .modal pre { background: #0b0e15; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; color: var(--text); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-word; margin: 6px 0 0; line-height: 1.5; }
+  .modal .close { margin-top: 14px; text-align: right; }
+  .modal .close button { background: var(--panel-3); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-family: inherit; font-size: 12px; }
+  .modal .close button:hover { background: var(--line); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Current refresh roles (consumed by history tracker) -->
+<script type="application/json" id="currentRoles">[
+  {"id":"csc","title":"Director of Growth","company":"CSC Generation","decision":"Apply — DD First","skip":false,"applyUrl":"https://to.indeed.com/aa249dwpykmq","refreshDate":"2026-04-18"},
+  {"id":"alphalion","title":"Director of Growth Marketing","company":"Alphalion","decision":"Low-Effort Rep","skip":false,"applyUrl":"https://to.indeed.com/aayxk9x9j299","refreshDate":"2026-04-18"},
+  {"id":"mav","title":"Director, Integrated Marketing Communications","company":"MAV Beauty","decision":"Skip","skip":true,"applyUrl":"https://to.indeed.com/aapyvfmt9bwq","refreshDate":"2026-04-18"},
+  {"id":"momofuku","title":"Director of eCommerce","company":"Momofuku Goods","decision":"Skip","skip":true,"applyUrl":"https://to.indeed.com/aa2rflgcvv7f","refreshDate":"2026-04-18"},
+  {"id":"ipsy","title":"Director, E-Commerce Growth & Marketplace Partnerships","company":"IPSY","decision":"Skip","skip":true,"applyUrl":"https://to.indeed.com/aa8xnz66gsyb","refreshDate":"2026-04-18"},
+  {"id":"sundays","title":"Director of Integrated Marketing","company":"Sundays For Dogs","decision":"Skip","skip":true,"applyUrl":"https://to.indeed.com/aax2sb2dzb2y","refreshDate":"2026-04-18"}
+]</script>
+
+<header>
+  <div class="brand-row">
+    <div>
+      <h1>Michael Fan Indeed Search App</h1>
+      <div class="sub">Director, Ecommerce &amp; Performance Marketing · Toronto, ON · Source: Indeed · Dual-scored (role + company)</div>
+    </div>
+    <div class="refresh-block">
+      <div class="refresh-dates">
+        <strong>Last refresh:</strong> Sat, Apr 18, 2026<br>
+        <strong>Next refresh:</strong> Sat, Apr 25, 2026
+      </div>
+      <button id="runRefresh" title="Copy refresh prompt and open Claude Code">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+        Run Weekly Refresh
+      </button>
+    </div>
+  </div>
+  <div class="summary">
+    <div class="stat"><div class="n" style="color:var(--accent)">1</div><div class="l">Apply this week</div></div>
+    <div class="stat"><div class="n" style="color:var(--mid)">1</div><div class="l">Low-effort rep</div></div>
+    <div class="stat"><div class="n" style="color:var(--bad)">4</div><div class="l">Skip</div></div>
+    <div class="stat"><div class="n">10+</div><div class="l">Rejected</div></div>
+  </div>
+</header>
+
+<!-- TODAY'S ACTIONS -->
+<section class="actions">
+  <h2>Today's Actions</h2>
+  <ol>
+    <li><span class="when">Today</span> <strong>Apply to CSC Generation — with culture DD.</strong> Role fit is 8.3 but company score dropped to 5.6 because Indeed shows <strong>31% CEO approval, "POOR" interview experience, and negative recommend-friend signals.</strong> Still apply (remote + Toronto-friendly, strong scope), but treat first-round interviews as <em>your</em> DD.</li>
+    <li><span class="when">Today</span> <strong>Cross-check CSC on Glassdoor + LinkedIn.</strong> Look at (1) CEO Justin Yoshimura's posts, (2) current/former employees of Sur La Table / Backcountry who joined post-acquisition, (3) Glassdoor review trend (improving or declining?).</li>
+    <li><span class="when">Before applying</span> <strong>Verify Alphalion is still actively hiring.</strong> 80+ days stale, zero Indeed company footprint — if CMO LinkedIn shows recent activity, fire off a 20-min tailored app. Otherwise skip.</li>
+    <li><span class="when">Skip</span> <strong>MAV Beauty.</strong> Role-fit is weak (5.4) and company score is 3.9 — MAV Beauty Brands filed CCAA creditor protection in July 2023. Firm pass.</li>
+    <li><span class="when">Next refresh</span> <strong>Expand beyond Indeed.</strong> LinkedIn, Built In Toronto, and Wellfound have stronger exec-level DTC coverage.</li>
+  </ol>
+</section>
+
+<!-- LIVE PIPELINE TRACKER -->
+<h2>Live Pipeline</h2>
+<div class="pipeline">
+  <div class="pipeline-grid"><div>Role</div><div>Blended</div><div>Decision</div><div>Effort · ROI</div><div>Status</div></div>
+  <div class="pipeline-grid" data-role="csc">
+    <div class="role-name"><strong>CSC Generation</strong> — Director of Growth</div>
+    <div><span class="mini-score mid">7.0</span></div>
+    <div><span class="decision week">Apply — DD First</span></div>
+    <div>Low · <strong style="color:var(--mid)">Med</strong></div>
+    <div><select data-status="csc"><option>Not Applied</option><option>Applied</option><option>Screening</option><option>Interviewing</option><option>Offer</option><option>Rejected</option><option>Passed</option></select></div>
+  </div>
+  <div class="pipeline-grid" data-role="alphalion">
+    <div class="role-name"><strong>Alphalion</strong> — Director of Growth Marketing</div>
+    <div><span class="mini-score mid">6.0</span></div>
+    <div><span class="decision maybe">Low-Effort Rep</span></div>
+    <div>Low · <strong style="color:var(--bad)">Low</strong></div>
+    <div><select data-status="alphalion"><option>Not Applied</option><option>Applied</option><option>Screening</option><option>Interviewing</option><option>Offer</option><option>Rejected</option><option>Passed</option></select></div>
+  </div>
+  <div class="pipeline-grid" data-role="mav">
+    <div class="role-name"><strong>MAV Beauty</strong> — Director, IMC</div>
+    <div><span class="mini-score bad">4.7</span></div>
+    <div><span class="decision skip">Skip</span></div>
+    <div>Med · <strong style="color:var(--bad)">Low</strong></div>
+    <div><select data-status="mav"><option>Not Applied</option><option>Applied</option><option>Screening</option><option>Interviewing</option><option>Offer</option><option>Rejected</option><option>Passed</option></select></div>
+  </div>
+</div>
+
+<h2>Scored Roles</h2>
+
+<!-- 1. CSC Generation -->
+<div class="card">
+  <div class="card-head">
+    <div class="title-block">
+      <h3>Director of Growth <span style="color:var(--muted)">· CSC Generation</span></h3>
+      <div class="meta">
+        <span>Remote US &amp; Canada · Toronto hybrid OK</span>
+        <span>$151K–$178K USD (~$205K–$242K CAD)</span>
+        <span>Posted Apr 18, 2026</span>
+      </div>
+      <div class="badges">
+        <span class="badge eff-low">Effort: <strong>Low</strong></span>
+        <span class="badge roi-mid">ROI: <strong>Medium</strong></span>
+        <span class="badge">Reports to CGO</span>
+      </div>
+    </div>
+    <div class="scores">
+      <div class="score-row"><span class="label">Role Fit</span><span class="val good">8.3</span></div>
+      <div class="score-row"><span class="label">Company</span><span class="val bad">5.6</span></div>
+      <div class="score-row blended"><span class="label">Blended</span><span class="val mid">7.0</span></div>
+      <div class="decision week">Apply — DD First</div>
+    </div>
+  </div>
+
+  <div class="why">
+    <h4>Why the role fits Michael</h4>
+    <ul>
+      <li>JD asks for "challenge stagnant assumptions, push testing cadence" — you lived this when you took RiseDesk from 0.3% to <strong>0.9% CVR</strong> via 15 photoshoots and creative-led CRO.</li>
+      <li>"Cross-functional growth across brand / merch / site / paid / demand" — mirrors your in-house Meta + Google + Pinterest + TikTok ownership at <strong>5.9 MER</strong>.</li>
+      <li>Reports directly to Chief Growth Officer, C-suite access, "leadership opportunities across the portfolio" — clear VP path in 18–24 months.</li>
+    </ul>
+  </div>
+
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Company Intel</span>
+        <span class="intel-summary-score bad">5.6</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">⚠ $1B holdco across 13 brands (Sur La Table, Backcountry) — but Indeed shows <strong>31% CEO approval</strong>, POOR interview experience, negative recommend-friend</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Industry</div><div class="v">Omnichannel retail holding co · acquires distressed brands &amp; transforms via "Genesis" AI platform</div>
+        <div class="k">Portfolio</div><div class="v">Sur La Table, Backcountry, One Kings Lane, Z Gallerie, + ~9 others</div>
+        <div class="k">Scale</div><div class="v">Founded 2016 · 501–1,000 employees · $1B+ revenue (JD claim) · Merrillville, IN HQ</div>
+        <div class="k">Leadership</div><div class="v">Founder/CEO Justin Yoshimura · PE/infrastructure fund–backed</div>
+        <div class="k">Sector (Indeed)</div><div class="v">Financial Services — unusual; consistent with holdco/PE-style structure</div>
+      </div>
+      <div class="flags">
+        <div class="flag green"><strong>✓ Real scale:</strong> $1B+ revenue, 13 brands, fresh posting with named hiring manager, explicit Toronto-hybrid option.</div>
+        <div class="flag red"><strong>✗ Indeed sentiment is poor:</strong> CEO approval <strong>31%</strong> · Interview experience rated <strong>POOR</strong> · Salary satisfaction 0/2 · Recommend-friend 1/4. Small samples but all directionally negative.</div>
+        <div class="flag yellow"><strong>⚠ Strategic risk:</strong> Acquiring-distressed-retail is capital- and turnaround-intensive. Sur La Table and Z Gallerie both came out of bankruptcy.</div>
+      </div>
+    </div>
+  </details>
+
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Hiring Manager</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">Reports to <strong>Chief Growth Officer</strong> (unnamed) · Company founder/CEO <strong>Justin Yoshimura</strong> · LinkedIn search recommended to identify CGO</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Reports to</div><div class="v">Chief Growth Officer (name not disclosed in JD)</div>
+        <div class="k">Company CEO</div><div class="v">Justin Yoshimura (founder, per company materials — Indeed returned no CEO name)</div>
+        <div class="k">Find on LinkedIn</div><div class="v"><a href="https://www.linkedin.com/search/results/people/?keywords=%22Chief+Growth+Officer%22+%22CSC+Generation%22" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Search CGO at CSC Generation →</a></div>
+      </div>
+      <div style="margin-top:10px;padding:9px 12px;background:#121620;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;font-size:12.5px;color:var(--text)">
+        <strong>DD checklist before applying:</strong>
+        <ul style="margin:4px 0 0;padding-left:18px;color:var(--muted)">
+          <li>Tenure &gt;18 months = stable; &lt;12 months = possible turnover flag (relevant given 31% CEO approval)</li>
+          <li>Recent LinkedIn activity confirms the role is genuinely filling</li>
+          <li>Prior holdco/portfolio-retail operator background is stronger than a pure consulting CGO</li>
+          <li>Warm-intro vectors: Rotman alumni or Bell / Greenhouse Juice connects at any of the 13 portfolio brands (Sur La Table, Backcountry, One Kings Lane)</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <div class="cred">
+    <strong>Posting credibility: clean.</strong> Posted today · tight comp band · named CGO · Toronto-eligible. The posting is legitimate; questions are about the company underneath.
+  </div>
+
+  <div class="card-foot">
+    <a class="apply" href="https://to.indeed.com/aa249dwpykmq" target="_blank" rel="noopener">Apply on Indeed →</a>
+    <div class="status-inline">Status: <select data-status="csc"><option>Not Applied</option><option>Applied</option><option>Screening</option><option>Interviewing</option><option>Offer</option><option>Rejected</option><option>Passed</option></select></div>
+  </div>
+</div>
+
+<!-- 2. Alphalion -->
+<div class="card">
+  <div class="card-head">
+    <div class="title-block">
+      <h3>Director of Growth Marketing <span style="color:var(--muted)">· Alphalion (Alpha Lion)</span></h3>
+      <div class="meta">
+        <span>Remote (global)</span>
+        <span>$145K–$180K USD (~$197K–$245K CAD)</span>
+        <span>Posted Jan 28, 2026 · 80+ days old</span>
+      </div>
+      <div class="badges">
+        <span class="badge eff-low">Effort: <strong>Low</strong></span>
+        <span class="badge roi-low">ROI: <strong>Low</strong></span>
+        <span class="badge">Reports to CMO</span>
+      </div>
+    </div>
+    <div class="scores">
+      <div class="score-row"><span class="label">Role Fit</span><span class="val mid">6.9</span></div>
+      <div class="score-row"><span class="label">Company</span><span class="val bad">5.0</span></div>
+      <div class="score-row blended"><span class="label">Blended</span><span class="val mid">6.0</span></div>
+      <div class="decision maybe">Low-Effort Rep</div>
+    </div>
+  </div>
+
+  <div class="why">
+    <h4>Why the role fits Michael</h4>
+    <ul>
+      <li>"Paid + CRO + influencer + creative as one integrated system" — this IS the RiseDesk playbook (Meta/Google/Pinterest/TikTok + 120 videos/month, 50M+ views).</li>
+      <li>Health/wellness DTC is rubric-perfect industry fit.</li>
+      <li>LTV:CAC + contribution margin discipline aligns with your 392% budget scale at 5.9 MER.</li>
+    </ul>
+  </div>
+
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Company Intel</span>
+        <span class="intel-summary-score bad">5.0</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">⚠ Mid-tier supplement DTC · <strong>zero Indeed footprint</strong> (no reviews, no CEO data) · posting 80+ days stale</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Industry</div><div class="v">Sports nutrition &amp; supplements DTC</div>
+        <div class="k">Scale</div><div class="v">Private · no Indeed company data (no employee count, no reviews, no CEO data)</div>
+        <div class="k">Model</div><div class="v">"High-growth brand in the middle of meaningful scale" (JD claim) — unverified</div>
+        <div class="k">Leadership</div><div class="v">CMO exists (role reports to them); CEO not publicly surfaced</div>
+        <div class="k">Competitive set</div><div class="v">Ghost, Legion, Alani Nu, Bucked Up — Alpha Lion is mid-tier</div>
+      </div>
+      <div class="flags">
+        <div class="flag green"><strong>✓ Comp + flex:</strong> Strong band, fully global-remote, direct CMO report — real exec-level role if real.</div>
+        <div class="flag red"><strong>✗ Stale + invisible:</strong> 80+ days posted, zero Indeed footprint. Combination is a ghost-job fingerprint.</div>
+        <div class="flag yellow"><strong>⚠ Category headwinds:</strong> DTC supplements is hyper-competitive with margin pressure and commoditized creative.</div>
+      </div>
+    </div>
+  </details>
+
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Hiring Manager</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">Reports to <strong>CMO</strong> (unnamed) · No Indeed CEO data · LinkedIn presence is your only verification signal</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Reports to</div><div class="v">CMO (name not disclosed in JD)</div>
+        <div class="k">Company CEO</div><div class="v">Not surfaced on Indeed company page</div>
+        <div class="k">Find on LinkedIn</div><div class="v"><a href="https://www.linkedin.com/search/results/people/?keywords=%22CMO%22+%22Alpha+Lion%22" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Search CMO at Alpha Lion →</a></div>
+      </div>
+      <div style="margin-top:10px;padding:9px 12px;background:#121620;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;font-size:12.5px;color:var(--text)">
+        <strong>DD checklist — determines whether to apply at all:</strong>
+        <ul style="margin:4px 0 0;padding-left:18px;color:var(--muted)">
+          <li>Is a CMO listed on LinkedIn and actively posting? Last post &gt;90 days old = ghost-job confirmation</li>
+          <li>CMO tenure — has the CMO changed in the last 6 months? Turnover at the role you'd report to = flag</li>
+          <li>Recent reposts on LinkedIn / company careers page = role is still genuinely open</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <div class="cred warn">
+    <strong>Posting credibility: flag.</strong> Verify CMO has recent LinkedIn activity and the role hasn't been quietly filled. 15 min of LinkedIn sleuthing before investing in a tailored app.
+  </div>
+
+  <div class="card-foot">
+    <a class="apply" href="https://to.indeed.com/aayxk9x9j299" target="_blank" rel="noopener">Apply on Indeed →</a>
+    <div class="status-inline">Status: <select data-status="alphalion"><option>Not Applied</option><option>Applied</option><option>Screening</option><option>Interviewing</option><option>Offer</option><option>Rejected</option><option>Passed</option></select></div>
+  </div>
+</div>
+
+<!-- 3. MAV Beauty -->
+<div class="card">
+  <div class="card-head">
+    <div class="title-block">
+      <h3>Director, Integrated Marketing Communications <span style="color:var(--muted)">· MAV Beauty</span></h3>
+      <div class="meta">
+        <span>Vaughan, ON · 4 days on-site</span>
+        <span>$140K–$165K CAD + bonus</span>
+        <span>Posted Apr 8, 2026</span>
+      </div>
+      <div class="badges">
+        <span class="badge eff-mid">Effort: <strong>Medium</strong></span>
+        <span class="badge roi-low">ROI: <strong>Low</strong></span>
+        <span class="badge">Reports to CMO</span>
+      </div>
+    </div>
+    <div class="scores">
+      <div class="score-row"><span class="label">Role Fit</span><span class="val bad">5.4</span></div>
+      <div class="score-row"><span class="label">Company</span><span class="val bad">3.9</span></div>
+      <div class="score-row blended"><span class="label">Blended</span><span class="val bad">4.7</span></div>
+      <div class="decision skip">Skip</div>
+    </div>
+  </div>
+
+  <div class="why">
+    <h4>Why it's a weak fit</h4>
+    <ul>
+      <li>JD is heavily PR / earned / influencer / brand-comms. Your strength is <strong>performance marketing, CRO, DTC P&amp;L</strong> — not earned-media strategy.</li>
+      <li>Comp midpoint ($152K CAD) sits <strong>below your $160K floor</strong>.</li>
+      <li>4 days on-site in Vaughan — limited flexibility.</li>
+    </ul>
+  </div>
+
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Company Intel</span>
+        <span class="intel-summary-score bad">3.9</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">✗ Beauty CPG portfolio (Marc Anthony, Renpure) · <strong>filed CCAA creditor protection Jul 2023</strong> · post-restructuring rebuild</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Industry</div><div class="v">Beauty CPG — haircare, personal care, beauty-led wellness</div>
+        <div class="k">Portfolio</div><div class="v">Marc Anthony True Professional, Cake Beauty, Renpure, Sky Organics</div>
+        <div class="k">History</div><div class="v">Previously MAV Beauty Brands (TSX:MAV) · <strong style="color:var(--bad)">Filed CCAA creditor protection Jul 2023</strong> · Taken private post-restructuring</div>
+        <div class="k">Distribution</div><div class="v">US + Canada retail partnerships, Amazon presence</div>
+        <div class="k">Scale</div><div class="v">No Indeed company data available · Vaughan ON HQ</div>
+      </div>
+      <div class="flags">
+        <div class="flag red"><strong>✗ Recent CCAA filing:</strong> Canadian equivalent of Chapter 11. Post-distress rebuild, not a growth story.</div>
+        <div class="flag red"><strong>✗ Underleveled comp:</strong> Director at $140–165K CAD = Senior Manager market rate.</div>
+        <div class="flag yellow"><strong>⚠ Brand equity remnant:</strong> Marc Anthony True Professional still has retail shelf and brand recognition — that's the only real positive.</div>
+      </div>
+    </div>
+  </details>
+
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Hiring Manager</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">Reports to <strong>CMO</strong> · Post-CCAA leadership not publicly surfaced · low priority given overall Skip</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Reports to</div><div class="v">CMO (name not disclosed in JD)</div>
+        <div class="k">Company CEO</div><div class="v">Post-restructuring leadership not in public sources</div>
+        <div class="k">Find on LinkedIn</div><div class="v"><a href="https://www.linkedin.com/search/results/people/?keywords=%22CMO%22+%22MAV+Beauty%22" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Search CMO at MAV Beauty →</a></div>
+      </div>
+      <div style="margin-top:10px;padding:9px 12px;background:#121620;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;font-size:12.5px;color:var(--text)">
+        <strong>DD checklist (only if reconsidering the Skip):</strong>
+        <ul style="margin:4px 0 0;padding-left:18px;color:var(--muted)">
+          <li>CMO tenure relative to July 2023 CCAA filing — pre-restructuring holdovers vs. fresh post-private leadership signal very different risk profiles</li>
+          <li>Ask about 12-month turnaround plan and what "success" looks like for the comms function specifically</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <div class="cred bad">
+    <strong>Posting credibility: underleveled Director role at a post-restructuring company.</strong> Declining to pursue is directionally correct.
+  </div>
+
+  <div class="card-foot">
+    <a class="apply muted" href="https://to.indeed.com/aapyvfmt9bwq" target="_blank" rel="noopener">View on Indeed →</a>
+    <div class="status-inline">Status: <select data-status="mav"><option>Not Applied</option><option>Applied</option><option>Screening</option><option>Interviewing</option><option>Offer</option><option>Rejected</option><option>Passed</option></select></div>
+  </div>
+</div>
+
+<h2>Near-Misses — Location Disqualifies (company-scored for reference)</h2>
+
+<div class="card near">
+  <div class="card-head">
+    <div class="title-block">
+      <h3>Director of eCommerce <span style="color:var(--muted)">· Momofuku Goods</span></h3>
+      <div class="meta">
+        <span style="color:var(--bad)">Manhattan, NY — onsite only</span>
+        <span>$150K–$170K USD + bonus + stock</span>
+        <span>Posted Mar 30, 2026</span>
+      </div>
+    </div>
+    <div class="scores">
+      <div class="score-row"><span class="label">Role Fit</span><span class="val" style="color:var(--muted)">N/A*</span></div>
+      <div class="score-row"><span class="label">Company</span><span class="val good">8.3</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">*Hard-fails location filter</div>
+    </div>
+  </div>
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Company Intel</span>
+        <span class="intel-summary-score good">8.3</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">✓ David Chang premium food CPG · VC-backed (Thrive et al) · strong brand, real DTC momentum — location is the <strong>only</strong> blocker</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Industry</div><div class="v">Premium pantry / specialty food CPG · DTC + Amazon + retailer.com</div>
+        <div class="k">Scale</div><div class="v">Founded 2020 by David Chang &amp; Momofuku Group · VC-backed (Thrive Capital et al)</div>
+        <div class="k">Leadership</div><div class="v">CEO Marguerite Zabar Mariscal (Momofuku Group) · David Chang founder</div>
+        <div class="k">Brand equity</div><div class="v">One of the strongest founder brands in US food — restaurants, cookbooks, media</div>
+      </div>
+      <div class="flags">
+        <div class="flag green"><strong>✓ Premium franchise with real DTC momentum:</strong> growing SKU line, strong retail distribution, well-capitalized, category-defining brand, mature hiring team per JD.</div>
+        <div class="flag yellow"><strong>⚠ Only blocker is location:</strong> if you'd relocate or could negotiate remote, this would score ~8.5 blended.</div>
+      </div>
+    </div>
+  </details>
+  <div class="card-foot"><a class="apply muted" href="https://to.indeed.com/aa2rflgcvv7f" target="_blank" rel="noopener">View on Indeed →</a></div>
+</div>
+
+<div class="card near">
+  <div class="card-head">
+    <div class="title-block">
+      <h3>Director, E-Commerce Growth &amp; Marketplace Partnerships <span style="color:var(--muted)">· IPSY</span></h3>
+      <div class="meta">
+        <span style="color:var(--bad)">Remote US-only (16 states, Canadians excluded)</span>
+        <span>$130K–$190K USD</span>
+        <span>Posted Apr 2, 2026</span>
+      </div>
+    </div>
+    <div class="scores">
+      <div class="score-row"><span class="label">Role Fit</span><span class="val" style="color:var(--muted)">N/A*</span></div>
+      <div class="score-row"><span class="label">Company</span><span class="val mid">5.9</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">*Hard-fails location filter</div>
+    </div>
+  </div>
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Company Intel</span>
+        <span class="intel-summary-score mid">5.9</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">~ Beauty subscription (Glam Bag, BoxyCharm) · CEO <strong>74% approval</strong> but category in transition · post-layoffs</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Industry</div><div class="v">Beauty subscription &amp; personal care · Glam Bag, BoxyCharm, Icon Box</div>
+        <div class="k">Scale</div><div class="v">Founded 2011 · 201–500 employees · Santa Monica HQ · BFA Industries parent</div>
+        <div class="k">Leadership</div><div class="v">CEO Scott Gilbertson · Indeed CEO approval <strong style="color:var(--good)">74%</strong></div>
+        <div class="k">Reviews</div><div class="v">Interview experience <strong>EXCELLENT</strong> · Recommend-friend 31/23 (mixed)</div>
+      </div>
+      <div class="flags">
+        <div class="flag green"><strong>✓ Strong leadership signal:</strong> 74% CEO approval is well above healthy, interview experience EXCELLENT.</div>
+        <div class="flag yellow"><strong>⚠ Category in transition:</strong> Subscription beauty under pressure from TikTok Shop/Shein. Revenue "decline to state" on Indeed. Had public layoffs post-BFA merger (2023–24).</div>
+      </div>
+    </div>
+  </details>
+  <div class="card-foot"><a class="apply muted" href="https://to.indeed.com/aa8xnz66gsyb" target="_blank" rel="noopener">View on Indeed →</a></div>
+</div>
+
+<div class="card near">
+  <div class="card-head">
+    <div class="title-block">
+      <h3>Director of Integrated Marketing <span style="color:var(--muted)">· Sundays For Dogs</span></h3>
+      <div class="meta">
+        <span style="color:var(--bad)">Remote — "~50 FTE across the U.S." (likely US-only)</span>
+        <span>Comp not disclosed</span>
+        <span>Posted Feb 9, 2026 · 70+ days old</span>
+      </div>
+    </div>
+    <div class="scores">
+      <div class="score-row"><span class="label">Role Fit</span><span class="val" style="color:var(--muted)">N/A*</span></div>
+      <div class="score-row"><span class="label">Company</span><span class="val mid">5.8</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">*Hard-fails location filter</div>
+    </div>
+  </div>
+  <details class="intel-details">
+    <summary>
+      <div class="intel-summary-row">
+        <span class="intel-summary-label">Company Intel</span>
+        <span class="intel-summary-score mid">5.8</span>
+        <span class="intel-summary-divider">·</span>
+        <span class="intel-summary-tagline">~ Founder-led pet food DTC (air-dried, subscription) · ~50 FTE · capital-intensive category at sub-scale</span>
+        <span class="intel-summary-toggle"></span>
+      </div>
+    </summary>
+    <div class="intel-body">
+      <div class="intel-grid">
+        <div class="k">Industry</div><div class="v">Premium pet food DTC · air-dried, subscription model</div>
+        <div class="k">Scale</div><div class="v">~50 FTE · Cleveland, OH HQ · Founder-led · Series A funded</div>
+        <div class="k">Founders</div><div class="v">Michael &amp; Tory Waxman (husband/wife team)</div>
+        <div class="k">Competitive set</div><div class="v">Farmer's Dog, Ollie, Nom Nom — crowded premium DTC pet food</div>
+      </div>
+      <div class="flags">
+        <div class="flag green"><strong>✓ Mission-led DTC:</strong> Clean subscription model, loyal customer base, real product differentiation.</div>
+        <div class="flag yellow"><strong>⚠ Small &amp; opaque:</strong> 50-person team, no Indeed reviews, comp undisclosed, posting stale.</div>
+      </div>
+    </div>
+  </details>
+  <div class="card-foot"><a class="apply muted" href="https://to.indeed.com/aax2sb2dzb2y" target="_blank" rel="noopener">View on Indeed →</a></div>
+</div>
+
+<h2>History — <span id="historyCount">0</span> Tracked Roles <span style="text-transform:none;font-size:11px;font-weight:400;letter-spacing:0;margin-left:6px;color:var(--muted)">(non-skip only · persists locally across refreshes)</span></h2>
+<div class="history-wrap">
+  <div class="history-head">
+    <div>Role</div>
+    <div>Decision</div>
+    <div>Pipeline Status</div>
+    <div>First / Last Seen</div>
+    <div></div>
+  </div>
+  <div id="historyList"></div>
+</div>
+<div class="history-actions-row">
+  <span class="sub" style="font-size:11px">Stored in your browser (localStorage). Clearing browser data will erase history.</span>
+  <button id="clearHistory" class="clear-history" type="button">Clear history</button>
+</div>
+
+<h2>Rejected on Hard Filters</h2>
+<div class="reject-list">
+  <div class="r"><div class="t"><strong>Director, Digital Marketing</strong> — Cologix (Toronto)</div><div class="why-fail">B2B data center · industry mismatch</div></div>
+  <div class="r"><div class="t"><strong>Director of Marketing, HSA</strong> — Health-E Commerce (Dallas)</div><div class="why-fail">Dallas onsite</div></div>
+  <div class="r"><div class="t"><strong>Director of Lifecycle Marketing</strong> — Truly Free (MI)</div><div class="why-fail">$110–130K USD · onsite</div></div>
+  <div class="r"><div class="t"><strong>Director, Insights &amp; Analytics</strong> — Canada Goose (Toronto)</div><div class="why-fail">Analytics specialist — filter #4</div></div>
+  <div class="r"><div class="t"><strong>Director, Marketing Strategy</strong> — TRADER Corporation (Toronto)</div><div class="why-fail">Auto marketplace · weak consumer DTC fit</div></div>
+  <div class="r"><div class="t"><strong>Head of Marketing</strong> — Jobscan (LA)</div><div class="why-fail">$100–165K USD · LA onsite</div></div>
+  <div class="r"><div class="t"><strong>Head of Marketing</strong> — Robert Half (Toronto)</div><div class="why-fail">Staffing-agency posting</div></div>
+  <div class="r"><div class="t"><strong>Senior Google Ads &amp; Paid Media Manager</strong> — Consultus Digital (Toronto)</div><div class="why-fail">$105–120K CAD · Manager title</div></div>
+  <div class="r"><div class="t"><strong>Director Communications, Marketing &amp; Engagement</strong> — Touchstone Institute</div><div class="why-fail">Non-profit · weak fit</div></div>
+  <div class="r"><div class="t"><strong>Brand Marketing Director</strong> — BBC International (Remote)</div><div class="why-fail">Footwear · comp undisclosed · narrow brand</div></div>
+  <div class="r"><div class="t"><strong>Director of Operations / Retail / COO roles</strong></div><div class="why-fail">Not ecommerce/marketing function</div></div>
+</div>
+
+<details class="footer-breakdowns">
+  <summary>Full Scoring Breakdowns — Role Fit &amp; Company Rubrics</summary>
+  <div class="breakdowns-body">
+
+    <div class="role-section">
+      <h4>CSC Generation — Director of Growth <span class="role-section-scores">Role Fit 8.3 · Company 5.6 · Blended 7.0</span></h4>
+      <div class="dim-wrap">
+        <div>
+          <h5>Role Fit — 8.3</h5>
+          <table class="dims">
+            <tr><td>P&amp;L / scope (20%)</td><td>9</td><td>Cross-functional growth across 13 brands.</td></tr>
+            <tr><td>Career trajectory (20%)</td><td>8</td><td>Reports to CGO, portfolio path.</td></tr>
+            <tr><td>Compensation (15%)</td><td>8</td><td>Top of band ≈ $242K CAD.</td></tr>
+            <tr><td>Role leverage (15%)</td><td>9</td><td>Brand · merch · site · paid · demand.</td></tr>
+            <tr><td>Industry fit (10%)</td><td>7</td><td>Home/lifestyle DTC.</td></tr>
+            <tr><td>Team + manager (10%)</td><td>8</td><td>CGO direct report.</td></tr>
+            <tr><td>Location (10%)</td><td>10</td><td>Remote US+Canada / Toronto hybrid.</td></tr>
+          </table>
+        </div>
+        <div>
+          <h5>Company Score — 5.6</h5>
+          <table class="dims">
+            <tr><td>Legitimacy &amp; Stability (20%)</td><td>8</td><td>Real, operational, $1B+ rev claim.</td></tr>
+            <tr><td>Financial Health (20%)</td><td>6</td><td>M&amp;A-dependent, private, opaque.</td></tr>
+            <tr><td>Leadership Team (20%)</td><td>3</td><td>CEO approval 31% on Indeed.</td></tr>
+            <tr><td>Growth Trajectory (15%)</td><td>7</td><td>13 brands, portfolio expansion.</td></tr>
+            <tr><td>Market Position (15%)</td><td>6</td><td>Novel holdco bet, unproven at scale.</td></tr>
+            <tr><td>Culture / Sentiment (10%)</td><td>2</td><td>POOR interview, 1/4 recommend.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-section">
+      <h4>Alphalion — Director of Growth Marketing <span class="role-section-scores">Role Fit 6.9 · Company 5.0 · Blended 6.0</span></h4>
+      <div class="dim-wrap">
+        <div>
+          <h5>Role Fit — 6.9</h5>
+          <table class="dims">
+            <tr><td>P&amp;L / scope (20%)</td><td>7</td><td>Owns full growth engine.</td></tr>
+            <tr><td>Career trajectory (20%)</td><td>6</td><td>Mid-size brand, VP path unclear.</td></tr>
+            <tr><td>Compensation (15%)</td><td>8</td><td>Strong range + perf bonus.</td></tr>
+            <tr><td>Role leverage (15%)</td><td>7</td><td>4-channel integration.</td></tr>
+            <tr><td>Industry fit (10%)</td><td>8</td><td>Health/wellness DTC.</td></tr>
+            <tr><td>Team + manager (10%)</td><td>7</td><td>CMO direct report.</td></tr>
+            <tr><td>Location (10%)</td><td>10</td><td>Remote global.</td></tr>
+          </table>
+        </div>
+        <div>
+          <h5>Company Score — 5.0</h5>
+          <table class="dims">
+            <tr><td>Legitimacy &amp; Stability (20%)</td><td>5</td><td>Brand exists; transparency limited.</td></tr>
+            <tr><td>Financial Health (20%)</td><td>5</td><td>Private, unclear funding.</td></tr>
+            <tr><td>Leadership Team (20%)</td><td>5</td><td>No public CEO/exec visibility.</td></tr>
+            <tr><td>Growth Trajectory (15%)</td><td>6</td><td>"Scaling" per JD, unverified.</td></tr>
+            <tr><td>Market Position (15%)</td><td>4</td><td>Mid-tier supplement brand.</td></tr>
+            <tr><td>Culture / Sentiment (10%)</td><td>5</td><td>No data either way.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="role-section">
+      <h4>MAV Beauty — Director, IMC <span class="role-section-scores">Role Fit 5.4 · Company 3.9 · Blended 4.7</span></h4>
+      <div class="dim-wrap">
+        <div>
+          <h5>Role Fit — 5.4</h5>
+          <table class="dims">
+            <tr><td>P&amp;L / scope (20%)</td><td>4</td><td>No P&amp;L; manages comms budget.</td></tr>
+            <tr><td>Career trajectory (20%)</td><td>5</td><td>Comms track, not ecomm track.</td></tr>
+            <tr><td>Compensation (15%)</td><td>4</td><td>Below/at floor.</td></tr>
+            <tr><td>Role leverage (15%)</td><td>6</td><td>Cross-channel comms integrator.</td></tr>
+            <tr><td>Industry fit (10%)</td><td>8</td><td>Beauty — strong.</td></tr>
+            <tr><td>Team + manager (10%)</td><td>7</td><td>CMO direct report.</td></tr>
+            <tr><td>Location (10%)</td><td>6</td><td>Vaughan GTA · 4-day onsite.</td></tr>
+          </table>
+        </div>
+        <div>
+          <h5>Company Score — 3.9</h5>
+          <table class="dims">
+            <tr><td>Legitimacy &amp; Stability (20%)</td><td>3</td><td>Recent CCAA filing.</td></tr>
+            <tr><td>Financial Health (20%)</td><td>3</td><td>Post-restructuring rebuild.</td></tr>
+            <tr><td>Leadership Team (20%)</td><td>4</td><td>Turnover thru restructuring.</td></tr>
+            <tr><td>Growth Trajectory (15%)</td><td>4</td><td>Post-CCAA stabilization.</td></tr>
+            <tr><td>Market Position (15%)</td><td>5</td><td>Real retail distribution remains.</td></tr>
+            <tr><td>Culture / Sentiment (10%)</td><td>5</td><td>No data.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</details>
+
+<div class="footer-note">
+  <strong style="color:var(--text)">This week's read:</strong> Only CSC Generation deserves a real application — but the company score is dragged down to 5.6 by serious Indeed culture signals (31% CEO approval, POOR interview rep). Apply, but treat first-round interviews as your own due diligence. Everything else is a skip, a stale lead worth 20 minutes max, or a location-blocked near-miss. Next refresh, widen beyond Indeed.
+</div>
+
+</div>
+
+<!-- Refresh instructions modal -->
+<div class="modal-bg" id="refreshModal" role="dialog" aria-modal="true" aria-labelledby="refreshTitle">
+  <div class="modal">
+    <h3 id="refreshTitle">Refresh prompt copied to clipboard ✓</h3>
+    <p>Paste it into Claude Code to rerun the Saturday search and regenerate this page. Pipeline status values you've set will be preserved.</p>
+    <p><strong style="color:var(--text)">In Terminal:</strong></p>
+    <pre>cd ~/Desktop/claude/job-search &amp;&amp; claude</pre>
+    <p style="margin-top:10px"><strong style="color:var(--text)">Then paste:</strong></p>
+    <pre id="promptText"></pre>
+    <div class="close"><button type="button" id="closeModal">Got it</button></div>
+  </div>
+</div>
+
+<script>
+  // --- Refresh button: copy prompt to clipboard and show modal ---
+  (function () {
+    const REFRESH_PROMPT = "Rerun the Saturday job search using the criteria in CLAUDE.md, pulling a BALANCED batch from BOTH sources: ~25 credible Indeed roles + ~25 credible LinkedIn roles = ~50 total. Indeed flow: use the get_job_details + get_company_data MCP calls; run 4-6 title variants across Director Ecommerce / Performance Marketing / Growth / DTC / VP Ecommerce / Head of Ecommerce / Senior Director Marketing in Toronto, remote Canada, remote North America. LinkedIn flow: drive the logged-in LinkedIn search via Chrome automation, run 4-6 title variants filtered to Director/Senior Director/Executive levels and last 7 days, extract job URLs, POST them to https://indeed-search-app.vercel.app/api/refresh/linkedin. Score at volume: hard-fail rejects get decision=skip with a one-line note (don't waste tokens on the full rubric). Only fully-qualifying roles get the dual-rubric scoring (Role Fit + Company Score, blended 50/50) with Company Intel and Hiring Manager sections. For cross-posted roles (same company + similar title on both sources), score the first-source entry and mark the second as skip with a 'duplicate of {source}' note. POST scoring updates to /api/refresh on the live Vercel app. Preserve stable role IDs across weeks.";
+    const btn = document.getElementById('runRefresh');
+    const modal = document.getElementById('refreshModal');
+    const promptEl = document.getElementById('promptText');
+    const closeBtn = document.getElementById('closeModal');
+    promptEl.textContent = REFRESH_PROMPT;
+
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(REFRESH_PROMPT);
+        btn.classList.add('copied');
+        btn.childNodes[btn.childNodes.length - 1].nodeValue = ' Copied — see modal';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.childNodes[btn.childNodes.length - 1].nodeValue = ' Run Weekly Refresh';
+        }, 2200);
+      } catch (e) { /* clipboard blocked */ }
+      modal.classList.add('open');
+    });
+
+    closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') modal.classList.remove('open'); });
+  })();
+
+  // --- Pipeline status persistence ---
+  (function () {
+    const STORAGE_KEY = 'jobShortlist.pipelineStatus.v1';
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const selects = document.querySelectorAll('select[data-status]');
+    selects.forEach(sel => {
+      const role = sel.getAttribute('data-status');
+      if (saved[role]) sel.value = saved[role];
+      sel.addEventListener('change', (e) => {
+        const val = e.target.value;
+        saved[role] = val;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        document.querySelectorAll(`select[data-status="${role}"]`).forEach(s => { if (s !== e.target) s.value = val; });
+      });
+    });
+  })();
+
+  // --- History: persist non-skip roles across refreshes ---
+  (function () {
+    const HISTORY_KEY = 'jobShortlist.history.v1';
+    const STATUS_KEY = 'jobShortlist.pipelineStatus.v1';
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    }
+
+    const dataEl = document.getElementById('currentRoles');
+    const currentRoles = dataEl ? JSON.parse(dataEl.textContent) : [];
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+
+    currentRoles.forEach(r => {
+      if (r.skip) return;
+      if (history[r.id]) {
+        history[r.id].lastSeen = r.refreshDate;
+        history[r.id].decision = r.decision;
+        history[r.id].title = r.title;
+        history[r.id].company = r.company;
+        history[r.id].applyUrl = r.applyUrl;
+      } else {
+        history[r.id] = {
+          id: r.id, title: r.title, company: r.company,
+          decision: r.decision, applyUrl: r.applyUrl,
+          firstSeen: r.refreshDate, lastSeen: r.refreshDate
+        };
+      }
+    });
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+    const listEl = document.getElementById('historyList');
+    const countEl = document.getElementById('historyCount');
+
+    function render() {
+      const statusMap = JSON.parse(localStorage.getItem(STATUS_KEY) || '{}');
+      const entries = Object.values(history).sort((a, b) => b.lastSeen.localeCompare(a.lastSeen));
+      countEl.textContent = entries.length;
+
+      if (entries.length === 0) {
+        listEl.innerHTML = '<div class="history-empty">No tracked roles yet. Non-skip roles from future refreshes will appear here automatically.</div>';
+        return;
+      }
+
+      listEl.innerHTML = entries.map(e => {
+        const isNew = e.firstSeen === e.lastSeen;
+        return `
+          <div class="history-row" data-hid="${esc(e.id)}">
+            <div>
+              <div class="history-role-title">${esc(e.title)}${isNew ? '<span class="history-new-badge">New</span>' : ''}</div>
+              <div class="history-role-company">${esc(e.company)}</div>
+            </div>
+            <div>${esc(e.decision)}</div>
+            <div>${esc(statusMap[e.id] || 'Not Applied')}</div>
+            <div class="history-dates">First: ${esc(e.firstSeen)}<br>Last: ${esc(e.lastSeen)}</div>
+            <div style="text-align:right">
+              <a class="history-link" href="${esc(e.applyUrl)}" target="_blank" rel="noopener">View</a>
+              <button class="history-remove" type="button" data-remove="${esc(e.id)}" title="Remove from history">×</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      listEl.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', (ev) => {
+          const id = ev.currentTarget.getAttribute('data-remove');
+          delete history[id];
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+          render();
+        });
+      });
+    }
+    render();
+
+    const clearBtn = document.getElementById('clearHistory');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (!confirm('Clear all tracked history? This cannot be undone.')) return;
+        Object.keys(history).forEach(k => delete history[k]);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        render();
+      });
+    }
+
+    document.querySelectorAll('select[data-status]').forEach(sel => {
+      sel.addEventListener('change', render);
+    });
+  })();
+</script>
+</body>
+</html>

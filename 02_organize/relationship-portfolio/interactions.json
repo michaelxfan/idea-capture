@@ -1,0 +1,434 @@
+{
+  "interactions": [
+    {
+      "id": "i001",
+      "person_id": "alex-chen",
+      "date": "2026-03-30",
+      "interaction_type": "text",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 6,
+      "initiated_by": "me",
+      "notes": "Talked about his side project and Japan trip plans. He sent me a book rec.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "side-project",
+        "japan"
+      ]
+    },
+    {
+      "id": "i002",
+      "person_id": "alex-chen",
+      "date": "2026-03-15",
+      "interaction_type": "coffee",
+      "interaction_quality_score": 9,
+      "interaction_depth_score": 8,
+      "initiated_by": "me",
+      "notes": "2 hours at Sightglass. Deep conversation about career direction, AI risk, and what we actually want to build.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "deep",
+        "career",
+        "in-person"
+      ]
+    },
+    {
+      "id": "i003",
+      "person_id": "alex-chen",
+      "date": "2026-02-20",
+      "interaction_type": "text",
+      "interaction_quality_score": 7,
+      "interaction_depth_score": 4,
+      "initiated_by": "them",
+      "notes": "He sent a meme. We caught up briefly.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": []
+    },
+    {
+      "id": "i004",
+      "person_id": "alex-chen",
+      "date": "2026-01-05",
+      "interaction_type": "dinner",
+      "interaction_quality_score": 10,
+      "interaction_depth_score": 9,
+      "initiated_by": "me",
+      "notes": "New Year's dinner with Alex + 3 others. Great energy. This is the kind of thing we should do more of.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "group",
+        "in-person",
+        "deep"
+      ]
+    },
+    {
+      "id": "i005",
+      "person_id": "alex-chen",
+      "date": "2025-11-10",
+      "interaction_type": "call",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 7,
+      "initiated_by": "them",
+      "notes": "Called to talk through a tough decision he was facing at work. Good catch-up.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "support"
+      ]
+    },
+    {
+      "id": "i006",
+      "person_id": "jordan-rivera",
+      "date": "2026-04-01",
+      "interaction_type": "text",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 5,
+      "initiated_by": "them",
+      "notes": "Good morning text exchange. She sent a restaurant rec.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": []
+    },
+    {
+      "id": "i007",
+      "person_id": "jordan-rivera",
+      "date": "2026-03-29",
+      "interaction_type": "dinner",
+      "interaction_quality_score": 10,
+      "interaction_depth_score": 8,
+      "initiated_by": "me",
+      "notes": "Dinner at Nopa. Best date so far. Talked for 3 hours. She mentioned her creative project. Lots of shared values.",
+      "followup_needed": true,
+      "followup_date": "2026-04-05",
+      "tags": [
+        "deep",
+        "in-person",
+        "creative-project"
+      ]
+    },
+    {
+      "id": "i008",
+      "person_id": "jordan-rivera",
+      "date": "2026-03-22",
+      "interaction_type": "coffee",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 6,
+      "initiated_by": "them",
+      "notes": "Saturday coffee walk. Easy, fun conversation. She brought up wanting to travel to Japan.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "in-person",
+        "casual"
+      ]
+    },
+    {
+      "id": "i009",
+      "person_id": "jordan-rivera",
+      "date": "2026-03-10",
+      "interaction_type": "event",
+      "interaction_quality_score": 7,
+      "interaction_depth_score": 4,
+      "initiated_by": "me",
+      "notes": "Art gallery opening. Met a few of her friends. Good vibe.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "group",
+        "in-person"
+      ]
+    },
+    {
+      "id": "i010",
+      "person_id": "maya-patel",
+      "date": "2026-03-15",
+      "interaction_type": "email",
+      "interaction_quality_score": 7,
+      "interaction_depth_score": 6,
+      "initiated_by": "me",
+      "notes": "Sent her a specific question about founder positioning. She responded with a thoughtful paragraph. Good exchange.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "strategic",
+        "async"
+      ]
+    },
+    {
+      "id": "i011",
+      "person_id": "maya-patel",
+      "date": "2026-02-10",
+      "interaction_type": "coffee",
+      "interaction_quality_score": 9,
+      "interaction_depth_score": 8,
+      "initiated_by": "me",
+      "notes": "45-min coffee at Blue Bottle. Talked about my current work and where I want to be in 3 years. She gave sharp, direct feedback. Exactly what I needed.",
+      "followup_needed": true,
+      "followup_date": "2026-03-10",
+      "tags": [
+        "deep",
+        "in-person",
+        "strategic",
+        "mentorship"
+      ]
+    },
+    {
+      "id": "i012",
+      "person_id": "maya-patel",
+      "date": "2025-12-05",
+      "interaction_type": "email",
+      "interaction_quality_score": 6,
+      "interaction_depth_score": 5,
+      "initiated_by": "me",
+      "notes": "Year-end check-in email. She replied warmly. Short but good.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": []
+    },
+    {
+      "id": "i013",
+      "person_id": "sam-kim",
+      "date": "2026-02-16",
+      "interaction_type": "call",
+      "interaction_quality_score": 9,
+      "interaction_depth_score": 8,
+      "initiated_by": "them",
+      "notes": "45-min call about his fundraise and my product work. We brainstormed distribution for his new tool. High energy, lots of mutual value.",
+      "followup_needed": true,
+      "followup_date": "2026-03-01",
+      "tags": [
+        "deep",
+        "strategy",
+        "product"
+      ]
+    },
+    {
+      "id": "i014",
+      "person_id": "sam-kim",
+      "date": "2026-01-20",
+      "interaction_type": "text",
+      "interaction_quality_score": 7,
+      "interaction_depth_score": 5,
+      "initiated_by": "me",
+      "notes": "Shared an article I thought was relevant to his work. He expanded on it and added context I didn't have.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "async",
+        "ideas"
+      ]
+    },
+    {
+      "id": "i015",
+      "person_id": "sam-kim",
+      "date": "2025-12-10",
+      "interaction_type": "dinner",
+      "interaction_quality_score": 9,
+      "interaction_depth_score": 8,
+      "initiated_by": "me",
+      "notes": "Dinner in NYC when I visited. 3 hours of genuine conversation about what we're both building.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "deep",
+        "in-person",
+        "nyc"
+      ]
+    },
+    {
+      "id": "i016",
+      "person_id": "chris-davis",
+      "date": "2026-02-01",
+      "interaction_type": "text",
+      "interaction_quality_score": 6,
+      "interaction_depth_score": 3,
+      "initiated_by": "me",
+      "notes": "Checked in about his marathon training. Brief exchange. He seemed a bit distracted.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": []
+    },
+    {
+      "id": "i017",
+      "person_id": "chris-davis",
+      "date": "2025-12-20",
+      "interaction_type": "call",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 7,
+      "initiated_by": "them",
+      "notes": "Holiday catch-up call. 30 mins. He mentioned the new relationship. Great energy when we actually talk.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "holiday",
+        "catch-up"
+      ]
+    },
+    {
+      "id": "i018",
+      "person_id": "chris-davis",
+      "date": "2025-10-15",
+      "interaction_type": "dinner",
+      "interaction_quality_score": 9,
+      "interaction_depth_score": 8,
+      "initiated_by": "me",
+      "notes": "Last time I visited NYC. 2-hour dinner. Felt like no time had passed. The depth is there when we're in person.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "deep",
+        "in-person",
+        "nyc"
+      ]
+    },
+    {
+      "id": "i019",
+      "person_id": "leila-torres",
+      "date": "2026-02-26",
+      "interaction_type": "coffee",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 6,
+      "initiated_by": "me",
+      "notes": "Coffee in Hayes Valley. She shared intel on the AI market landscape. Very generous with her knowledge. I should find a way to add value back.",
+      "followup_needed": true,
+      "followup_date": "2026-03-20",
+      "tags": [
+        "strategic",
+        "in-person",
+        "ai"
+      ]
+    },
+    {
+      "id": "i020",
+      "person_id": "leila-torres",
+      "date": "2026-01-20",
+      "interaction_type": "event",
+      "interaction_quality_score": 7,
+      "interaction_depth_score": 4,
+      "initiated_by": "them",
+      "notes": "She invited me to a small dinner she hosted. Met 4 interesting people through her.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "group",
+        "in-person",
+        "network"
+      ]
+    },
+    {
+      "id": "i021",
+      "person_id": "kai-nakamura",
+      "date": "2026-01-02",
+      "interaction_type": "email",
+      "interaction_quality_score": 7,
+      "interaction_depth_score": 5,
+      "initiated_by": "me",
+      "notes": "Sent a genuine note about his latest essay on creative constraints. He replied with gratitude and a follow-up question.",
+      "followup_needed": true,
+      "followup_date": "2026-02-01",
+      "tags": [
+        "async",
+        "ideas",
+        "writing"
+      ]
+    },
+    {
+      "id": "i022",
+      "person_id": "kai-nakamura",
+      "date": "2025-09-20",
+      "interaction_type": "coffee",
+      "interaction_quality_score": 9,
+      "interaction_depth_score": 7,
+      "initiated_by": "them",
+      "notes": "Met at a conference. 20-min conversation that felt much longer. He was warm and intellectually generous. Invited me to follow his Substack.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "in-person",
+        "first-meeting"
+      ]
+    },
+    {
+      "id": "i023",
+      "person_id": "emma-walsh",
+      "date": "2025-12-04",
+      "interaction_type": "whatsapp",
+      "interaction_quality_score": 6,
+      "interaction_depth_score": 4,
+      "initiated_by": "me",
+      "notes": "Holiday message. Short exchange. She seems happy about the new house. Easy warmth but no depth lately.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "holiday"
+      ]
+    },
+    {
+      "id": "i024",
+      "person_id": "emma-walsh",
+      "date": "2025-06-10",
+      "interaction_type": "dinner",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 7,
+      "initiated_by": "them",
+      "notes": "She visited SF for work. Dinner at Zuni. Felt like old times. Easy, warm, funny.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "in-person",
+        "deep"
+      ]
+    },
+    {
+      "id": "i025",
+      "person_id": "ryan-park",
+      "date": "2025-10-05",
+      "interaction_type": "party",
+      "interaction_quality_score": 5,
+      "interaction_depth_score": 2,
+      "initiated_by": "other",
+      "notes": "Ran into each other at a mutual friend's birthday. Quick friendly chat.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "group",
+        "casual"
+      ]
+    },
+    {
+      "id": "i026",
+      "person_id": "zoe-chen",
+      "date": "2026-01-22",
+      "interaction_type": "event",
+      "interaction_quality_score": 8,
+      "interaction_depth_score": 5,
+      "initiated_by": "other",
+      "notes": "Both at the AI Salon. Had a 20-min conversation about her interpretability paper. She was engaged and specific. I should follow up with a thoughtful question.",
+      "followup_needed": true,
+      "followup_date": "2026-02-05",
+      "tags": [
+        "ai",
+        "intellectual",
+        "in-person"
+      ]
+    },
+    {
+      "id": "i027",
+      "person_id": "zoe-chen",
+      "date": "2025-11-15",
+      "interaction_type": "email",
+      "interaction_quality_score": 6,
+      "interaction_depth_score": 4,
+      "initiated_by": "me",
+      "notes": "Cold-ish intro email after seeing her speak. She replied kindly and suggested meeting at the next AI Salon.",
+      "followup_needed": false,
+      "followup_date": null,
+      "tags": [
+        "intro",
+        "async"
+      ]
+    }
+  ]
+}

@@ -13,11 +13,13 @@ export interface Task {
   createdAt: string;
   dueDate?: string;
   completed?: boolean;
+  completedAt?: string;
   clickupTaskId?: string;
   clickupListName?: string;
   clickupUrl?: string;
   imageUrl?: string;
   emailContext?: EmailContext;
+  steps?: string[];
 }
 
 export interface EmailContext {

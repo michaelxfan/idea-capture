@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap");
+
+html, body {
+  background: #f5f1ea;
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: #111; color: #f5f1ea; }

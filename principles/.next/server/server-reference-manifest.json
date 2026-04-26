@@ -1,0 +1,54 @@
+{
+  "node": {
+    "5d3399e778cfef648a363cf5e400c0c330035964": {
+      "workers": {
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/edit/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/page": "rsc",
+        "app/principles/[id]/page": "rsc",
+        "app/principles/[id]/edit/page": "rsc"
+      }
+    },
+    "89536bb7b3db10920938f6f11294417e70461913": {
+      "workers": {
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/edit/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/page": "rsc",
+        "app/principles/[id]/page": "rsc",
+        "app/principles/[id]/edit/page": "rsc"
+      }
+    },
+    "9574829191f1c1c08ca169941ba3b7cddd163749": {
+      "workers": {
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/edit/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/page": "rsc",
+        "app/principles/[id]/page": "rsc",
+        "app/principles/[id]/edit/page": "rsc"
+      }
+    },
+    "be4d52d986b965a1b882701ee40b721c4b7348a9": {
+      "workers": {
+        "app/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!",
+        "app/principles/[id]/edit/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmichaelfan%2FDeveloper%2Fclaude%2Fprinciples%2Fsrc%2Fapp%2Factions.ts%22%2C%5B%22updatePrinciple%22%2C%22movePrinciple%22%2C%22createPrinciple%22%2C%22deletePrinciple%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/page": "rsc",
+        "app/principles/[id]/page": "rsc",
+        "app/principles/[id]/edit/page": "rsc"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "NQXBMGUPpLW5+R0wiHpmfektTB/YEPOCQp04YS/+vFg="
+}

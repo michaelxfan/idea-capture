@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Small Talk Brief — April 10, 2026</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #181c27;
+      --surface2: #1e2333;
+      --border: #2a2f45;
+      --accent: #6c8ef5;
+      --accent2: #a78bfa;
+      --accent3: #34d399;
+      --accent4: #f59e0b;
+      --accent5: #f87171;
+      --text: #e2e8f0;
+      --text-muted: #7c8db5;
+      --text-dim: #4a5578;
+      --tag-bg: #1e2845;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1a1f35 0%, #0f1117 60%);
+      border-bottom: 1px solid var(--border);
+      padding: 36px 40px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(108,142,245,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(108,142,245,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(108,142,245,0.25);
+    }
+    .badge.live {
+      background: rgba(52,211,153,0.12);
+      color: var(--accent3);
+      border-color: rgba(52,211,153,0.25);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .badge.live::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent3);
+      box-shadow: 0 0 6px var(--accent3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .header h1 span {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-sub {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .header-sub strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── QUICK REF CARD ── */
+    .quick-ref {
+      margin: 24px 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .quick-ref-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-ref-header svg { opacity: 0.6; }
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+    .ref-cell {
+      padding: 14px 18px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .ref-cell:nth-child(3n) { border-right: none; }
+    .ref-cell:nth-last-child(-n+3) { border-bottom: none; }
+    .ref-room {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .ref-topic {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      padding: 8px 40px 60px;
+      max-width: 1200px;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+    }
+    .section-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      position: relative;
+      transition: border-color 0.2s, transform 0.15s;
+      cursor: default;
+    }
+    .card:hover {
+      border-color: rgba(108,142,245,0.35);
+      transform: translateY(-1px);
+    }
+    .card-accent-bar {
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      border-radius: var(--radius) 0 0 var(--radius);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+      padding-left: 10px;
+    }
+    .card-why {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding-left: 10px;
+      font-style: italic;
+    }
+
+    .script-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .script-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .script-text {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: var(--border);
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      opacity: 0;
+    }
+    .script-block:hover .copy-btn { opacity: 1; }
+    .copy-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    .copy-btn.copied {
+      background: var(--accent3);
+      color: #fff;
+      opacity: 1;
+    }
+
+    .followup {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(108,142,245,0.05);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(108,142,245,0.12);
+    }
+    .followup-icon {
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      opacity: 0.7;
+    }
+    .followup-text {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Section color themes */
+    .s1 .card-accent-bar { background: #6c8ef5; }
+    .s1 .section-icon { background: rgba(108,142,245,0.12); }
+    .s2 .card-accent-bar { background: #a78bfa; }
+    .s2 .section-icon { background: rgba(167,139,250,0.12); }
+    .s3 .card-accent-bar { background: #34d399; }
+    .s3 .section-icon { background: rgba(52,211,153,0.12); }
+    .s4 .card-accent-bar { background: #f59e0b; }
+    .s4 .section-icon { background: rgba(245,158,11,0.12); }
+    .s5 .card-accent-bar { background: #f87171; }
+    .s5 .section-icon { background: rgba(248,113,113,0.12); }
+    .s6 .card-accent-bar { background: #38bdf8; }
+    .s6 .section-icon { background: rgba(56,189,248,0.12); }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin: 0 40px;
+      padding: 20px 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .footer a { color: var(--text-dim); text-decoration: none; }
+
+    @media (max-width: 700px) {
+      .header, .main, .quick-ref, .footer { padding-left: 18px; padding-right: 18px; }
+      .quick-ref { margin-left: 18px; margin-right: 18px; }
+      .ref-grid { grid-template-columns: repeat(2, 1fr); }
+      .ref-cell:nth-child(2n) { border-right: none; }
+      .ref-cell:nth-child(3n) { border-right: 1px solid var(--border); }
+      .ref-cell:nth-child(2n):last-child { border-right: none; }
+      .cards { grid-template-columns: 1fr; }
+      .header h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-meta">
+    <span class="badge">Toronto · Canada</span>
+    <span class="badge live">Live Brief</span>
+    <span class="badge">April 10, 2026</span>
+  </div>
+  <h1>Small Talk <span>Intelligence Brief</span></h1>
+  <p class="header-sub">Your daily briefing for <strong>10 solid conversation starters</strong> — walk into any room with confidence.</p>
+</div>
+
+<!-- QUICK REFERENCE CARD -->
+<div class="quick-ref">
+  <div class="quick-ref-header">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+    Quick Reference Card
+  </div>
+  <div class="ref-grid">
+    <div class="ref-cell">
+      <div class="ref-room">Office</div>
+      <div class="ref-topic">Carney's Liberals near majority / US tariff surcharge / gas prices</div>
+    </div>
+    <div class="ref-cell">
+      <div class="ref-room">Social / Casual</div>
+      <div class="ref-topic">The Boys S5 (just dropped) / Euphoria S3 this Sunday / BEEF S2</div>
+    </div>
+    <div class="ref-cell">
+      <div class="ref-room">Sports</div>
+      <div class="ref-topic">Blue Jays vs Twins tomorrow (shirt giveaway) / Raptors Sunday</div>
+    </div>
+    <div class="ref-cell">
+      <div class="ref-room">Toronto Locals</div>
+      <div class="ref-topic">Stackt Market Birthday Block Party / cherry blossom window opening</div>
+    </div>
+    <div class="ref-cell">
+      <div class="ref-room">Culture-Forward</div>
+      <div class="ref-topic">Jackson Wang at Coca-Cola Coliseum / Sam Roberts at Massey Hall</div>
+    </div>
+    <div class="ref-cell">
+      <div class="ref-room">Any Room</div>
+      <div class="ref-topic">"What are you doing this weekend?"</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- SECTION 1: Local Context -->
+  <div class="section s1">
+    <div class="section-header">
+      <div class="section-icon">🍁</div>
+      <div class="section-title">Local Context — Toronto / Canada</div>
+      <div class="section-count">3 topics</div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Gas Prices Dropped 13 Cents Overnight</div>
+        <div class="card-why">Prices at the pump fell sharply this morning across Toronto — people notice gas prices immediately and everyone has a reflex opinion on them.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Gas dropped 13 cents overnight — I actually did a double take at the pump this morning. Still volatile with everything going on in the Middle East though."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Have you noticed it at all yet, or are you not driving much these days?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Cherry Blossoms Window Is Opening</div>
+        <div class="card-why">High Park's sakura season traditionally peaks the last two weeks of April — this week's warmth is accelerating the timeline and Torontonians are already talking about it.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Apparently the cherry blossoms at High Park are going to be early this year — like the next two weeks is probably the window. I always mean to go and somehow never plan ahead enough."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Have you actually done it before? Is it worth it or just crowds and phones?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Blue Jays vs Twins — Tomorrow, Shirt Giveaway</div>
+        <div class="card-why">Saturday afternoon home game with an Addison Barger couch shirt giveaway — easy, light sports topic for any crowd, especially going into the weekend.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Jays are home tomorrow — there's a shirt giveaway, which I feel like is the real reason half the crowd shows up. Are you following them at all this season?"</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Do you think this is the year, or are we doing this same conversation in October again?</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 2: Cultural & Social -->
+  <div class="section s2">
+    <div class="section-header">
+      <div class="section-icon">🎬</div>
+      <div class="section-title">Cultural & Social Moments</div>
+      <div class="section-count">4 topics</div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">The Boys Season 5 — Two Days In</div>
+        <div class="card-why">The final season dropped Tuesday on Prime Video — it's the most-talked-about show of the week and everyone who watches has already formed strong opinions.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"The Boys dropped Tuesday — are you watching? Two days in and it already feels like they're going full unhinged for the finale season."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Are you a weekly-episode person or waiting to binge the whole thing?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Euphoria Season 3 — This Sunday</div>
+        <div class="card-why">The biggest HBO drop of the year premieres Sunday April 12 after a four-year hiatus — anticipation is extreme even among people who haven't watched since Season 2.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Euphoria is back this Sunday — four years and somehow the hype is bigger than ever. I genuinely don't know what to expect."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Did you watch the earlier seasons? Are you going in, or is this one you're sitting out?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">BEEF Season 2 — Oscar Isaac & Carey Mulligan</div>
+        <div class="card-why">Netflix's acclaimed anthology series returns with an entirely new cast — Oscar Isaac and Carey Mulligan witness a road rage incident that spirals. Already generating strong early buzz.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"BEEF Season 2 is out — totally new story, new cast with Oscar Isaac and Carey Mulligan. Season 1 was one of my favourite things I've watched in years."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Did you watch Season 1? If not, what's your excuse — it's like 10 episodes.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Hacks Season 5 — The Under-the-Radar One</div>
+        <div class="card-why">HBO's critically beloved comedy dropped yesterday (April 9) — usually flies under the radar but has fierce loyalty among people who've found it. Good differentiator topic.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Hacks is back on HBO — that show never gets enough credit. Jean Smart is one of the best things on TV right now, I'll die on that hill."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Have you seen it? It's one of those shows people either haven't heard of or are obsessed with.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 3: Work-Friendly -->
+  <div class="section s3">
+    <div class="section-header">
+      <div class="section-icon">💼</div>
+      <div class="section-title">Work-Friendly Topics</div>
+      <div class="section-count">3 topics</div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Carney's Liberals Near Majority — Byelections Next Week</div>
+        <div class="card-why">Three federal byelections next week could give PM Carney's government a majority — Canadian political stability is actually a business conversation right now given the trade environment.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Carney is apparently on the edge of a majority — there are three byelections next week that could flip the math. Interesting timing with everything happening on the trade side."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Do you think a majority actually changes anything, or is the playbook the same regardless?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">US Tariff War — Year 2, New Phase</div>
+        <div class="card-why">Supreme Court ruled the original IEEPA tariffs illegal — now a 10% "temporary import surcharge" is in effect instead, and the USMCA review is July. The uncertainty keeps grinding.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"The tariff situation just keeps morphing — courts struck down the original tariffs so now it's a 10% surcharge instead. And USMCA review is July. Every quarter it's something different."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Is it hitting your world directly or more of a background hum at this point?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Canada AI Safety Institute Got Full OpenAI Access</div>
+        <div class="card-why">Canada's AI safety institute secured access to all of OpenAI's protocols — a genuinely interesting policy story that's flying under the radar in most business circles.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Canada's AI safety institute apparently got full access to OpenAI's protocols — like behind-the-curtain access. Quietly kind of a big deal for where AI governance is going."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Do you think government oversight of AI is actually going to matter, or is it always playing catch-up?</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 4: Smart but Casual -->
+  <div class="section s4">
+    <div class="section-header">
+      <div class="section-icon">💡</div>
+      <div class="section-title">"Smart but Casual" Insights</div>
+      <div class="section-count">3 topics</div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Buy Canadian Is Actually Sticking</div>
+        <div class="card-why">Canada's exports to non-US markets are up 17% year-over-year — the "Buy Canadian" shift that seemed like a reaction is proving durable. People are changing actual habits.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"The Buy Canadian thing actually seems to be holding — Canadian exports to non-US markets are up 17%. It started as a political statement and turned into a real economic shift."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Have you actually changed what you buy, or does it mostly feel symbolic?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Wildfire Season Could Be Bad Again</div>
+        <div class="card-why">Experts are forecasting a quiet start to wildfire season but lingering drought could tip things towards another severe summer — after the past few years, this is mainstream conversation.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Apparently wildfire season is supposed to start quietly but could turn bad again mid-summer — they're saying lingering drought is the wild card. Feels like the new annual anxiety."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Have you been in a city when the smoke rolls in? It's a completely different vibe.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Recovery Is Still the New Workout</div>
+        <div class="card-why">Infrared saunas, HRV tracking, and sleep optimization have gone fully mainstream — the conversation has shifted from training harder to recovering smarter, and it's crossing into everyday life.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"The fitness conversation has completely flipped — it's less about how hard you train and more about how well you recover. Saunas, sleep tracking, all of it is just normal now."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Are you into any of that stuff, or does it feel like too much infrastructure around something that should be simple?</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 5: Weekend / Lifestyle -->
+  <div class="section s5">
+    <div class="section-header">
+      <div class="section-icon">🌆</div>
+      <div class="section-title">Weekend / Lifestyle Prompts</div>
+      <div class="section-count">3 topics</div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Stackt Market Birthday Block Party</div>
+        <div class="card-why">Free admission weekend event at Stackt Market this Saturday and Sunday — local vendors, food, good energy. Perfect casual plan for anyone without a full weekend agenda.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Stackt Market is doing their birthday block party this weekend — free to get in, local food vendors, the whole thing. It's the kind of event that sounds low-key but actually ends up being a good afternoon."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Have you been to Stackt much? I feel like it took a while to figure out what it was supposed to be and now it just works.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Sam Roberts Band at Massey Hall — Saturday Night</div>
+        <div class="card-why">Canadian rock institution at one of Toronto's best venues this weekend — hits a specific nostalgic chord for anyone who came of age in the 2000s Canadian music scene.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Sam Roberts is at Massey Hall Saturday night — one of those artists where you forget how many songs you actually know until they start playing."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Are you a Massey Hall person? It's genuinely one of the best rooms in the country for live music.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Hot Docs — Two Weeks Out</div>
+        <div class="card-why">North America's largest documentary festival kicks off April 23 — close enough to plan for, far enough to still feel ahead of the curve when you bring it up.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"Hot Docs is in two weeks — I always mean to actually get tickets in advance and then end up scrambling. Is that something you do?"</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Any genre you'd actually sit through, or is documentary more of a "sounds good in theory" thing?</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION 6: Personal Angle -->
+  <div class="section s6">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div class="section-title">Personal Angle — High Performance & Wellness</div>
+      <div class="section-count">3 topics</div>
+    </div>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Longevity Training Over Aesthetic Training</div>
+        <div class="card-why">The dominant 2026 fitness narrative — shifting from "look good" to "perform well for decades." Zone 2, mobility, and functional strength are replacing HIIT as the gold standard.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"I've been shifting my training toward longevity — less intensity, more consistency. Zone 2, mobility work, thinking about what I can still do at 70. It completely changes how you structure the week."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Have you thought about training that way, or are you still more in the performance mindset?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Movement Snacks Through the Day</div>
+        <div class="card-why">Short movement bursts woven through the workday — trending as a practical alternative to one long gym session, especially for people with back-to-back calendar days.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"I've been doing short movement breaks between calls — like 5 or 10 minutes instead of one long session. Surprisingly it adds up and I feel way less flat by end of day."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Do you have any system for that or do you just kind of power through the whole day?</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-bar"></div>
+        <div class="card-title">Substack as a Signal-to-Noise Upgrade</div>
+        <div class="card-why">Newsletters are exploding as the intentional alternative to the feed — a natural topic for high-performers thinking about information quality and attention.</div>
+        <div class="script-block">
+          <div class="script-label">What to say</div>
+          <div class="script-text">"I've been cutting back on social and replacing it with a few good Substack newsletters — just a different energy. More signal, less noise, more actual thinking."</div>
+          <button class="copy-btn" onclick="copyScript(this)">Copy</button>
+        </div>
+        <div class="followup">
+          <span class="followup-icon">↩</span>
+          <span class="followup-text">Are you selective about what you read, or do you just go down whatever rabbit hole finds you?</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Small Talk Intelligence Brief · Toronto / Canada · April 10, 2026</span>
+  <span>Generated by Claude · Refresh daily</span>
+</div>
+
+<script>
+  function copyScript(btn) {
+    const block = btn.closest('.script-block');
+    const text = block.querySelector('.script-text').textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1800);
+    });
+  }
+</script>
+
+</body>
+</html>
